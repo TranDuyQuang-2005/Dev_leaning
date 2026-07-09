@@ -1,37 +1,92 @@
-<div class="page">
-  <div class="page-title">
-    <h1>Online Code Playground</h1>
-    <p>Viết code, nhập stdin và chạy trực tiếp qua API Judge.</p>
-  </div>
+﻿<div class="page playground-page">
+  <section class="playground-hero card card-pad">
+    <div>
+      <p class="eyebrow">Online Code Playground</p>
+      <h1>Run code nhanh trong trình duyệt</h1>
+      <p class="muted">Viết code, nhập STDIN và chạy qua API Judge. Hỗ trợ Ctrl + Enter để chạy nhanh.</p>
+    </div>
+    <div class="playground-status-card" [class.running]="status==='running'" [class.success]="status==='success'" [class.error]="status==='error'">
+      <span>Verdict</span>
+      <b>{{verdict || 'Ready'}}</b>
+      <small>{{executionTimeMs || 0}} ms <ng-container *ngIf="memoryUsedKb">· {{memoryUsedKb}} KB</ng-container></small>
+    </div>
+  </section>
 
-  <div class="playground">
-    <div class="editor-panel card">
-      <div class="editor-head">
-        <div class="tabs">
-          <button class="tab" *ngFor="let l of languages" [class.active]="language===l.value" type="button" (click)="setLanguage(l.value)">{{l.label}}</button>
-        </div>
-        <div class="action-row">
-          <button class="btn btn-outline" type="button" (click)="reset()">Reset</button>
-          <button class="btn btn-primary" type="button" [disabled]="isRunning" (click)="run()">{{isRunning ? 'Running...' : 'Run Code'}}</button>
-        </div>
-      </div>
-      <div class="editor-label">Editor · Ctrl + Enter để chạy</div>
-      <textarea class="code-area code-editor" [(ngModel)]="code" (keydown.control.enter)="run()" spellcheck="false"></textarea>
+  <section class="playground-toolbar card card-pad">
+    <div class="language-tabs">
+      <button
+        type="button"
+        class="language-tab"
+        *ngFor="let l of languages"
+        [class.active]="language===l.value"
+        (click)="setLanguage(l.value)">
+        <b>{{l.label}}</b>
+        <small>{{l.runtime || ''}}</small>
+      </button>
     </div>
 
-    <div class="console-panel card">
-      <div class="console-tabs"><button class="active">Input / Output</button></div>
-      <label class="muted">STDIN</label>
-      <textarea class="textarea" style="min-height:110px" [(ngModel)]="stdin" placeholder="Nhập input cho chương trình, ví dụ: World"></textarea>
-      <div class="filters" style="margin-top:12px">
-        <b>Verdict: <span [class.status-ok]="verdict==='Accepted'">{{verdict || 'N/A'}}</span></b>
-        <span class="muted">{{executionTimeMs || 0}} ms</span>
-      </div>
-      <label class="muted">STDOUT</label>
-      <pre class="console-output output-box">{{output}}</pre>
-      <label class="muted" *ngIf="error">STDERR</label>
-      <pre class="console-output output-box" *ngIf="error">{{error}}</pre>
-      <div class="alert" style="margin-top:12px">Lưu ý: server cần có runtime tương ứng như Node/Python/JDK/G++ để chạy code local. Production nên chạy trong sandbox Docker/Judge0.</div>
+    <div class="playground-actions">
+      <button class="btn btn-outline" type="button" (click)="loadTemplate()">Load template</button>
+      <button class="btn btn-outline" type="button" (click)="reset()">Reset</button>
+      <button class="btn btn-primary" type="button" [disabled]="isRunning || !code.trim()" (click)="run()">
+        {{isRunning ? 'Running...' : 'Run Code'}}
+      </button>
     </div>
+  </section>
+
+  <section class="playground-grid">
+    <div class="card card-pad editor-panel">
+      <div class="panel-head">
+        <div>
+          <h3>Editor</h3>
+          <p class="muted">{{currentLanguageLabel()}} · {{currentRuntime()}}</p>
+        </div>
+        <span class="kbd">Ctrl + Enter</span>
+      </div>
+
+      <textarea
+        class="textarea code-editor playground-editor"
+        [(ngModel)]="code"
+        spellcheck="false"
+        placeholder="Viết code tại đây..."></textarea>
+    </div>
+
+    <aside class="io-panel">
+      <div class="card card-pad stdin-card">
+        <div class="panel-head compact">
+          <h3>STDIN</h3>
+          <button class="mini-action" type="button" (click)="loadSampleInput()">Sample</button>
+        </div>
+        <textarea class="textarea playground-stdin" [(ngModel)]="stdin" placeholder="Nhập input cho chương trình..."></textarea>
+      </div>
+
+      <div class="card card-pad output-card">
+        <div class="panel-head compact">
+          <h3>Output</h3>
+          <div class="mini-actions">
+            <button class="mini-action" type="button" (click)="copyOutput()">Copy</button>
+            <button class="mini-action" type="button" (click)="clearOutput()">Clear</button>
+          </div>
+        </div>
+
+        <div class="result-meta">
+          <span [class.ok]="status==='success'" [class.bad]="status==='error'" [class.running]="status==='running'">{{verdict || 'N/A'}}</span>
+          <span>{{executionTimeMs || 0}} ms</span>
+          <span *ngIf="lastRunAt">{{lastRunAt}}</span>
+        </div>
+
+        <label class="io-label">STDOUT</label>
+        <pre class="output-box playground-output">{{output}}</pre>
+
+        <ng-container *ngIf="error">
+          <label class="io-label error-label">STDERR</label>
+          <pre class="output-box playground-error">{{error}}</pre>
+        </ng-container>
+      </div>
+    </aside>
+  </section>
+
+  <div class="alert alert-info playground-note">
+    Lưu ý: server cần runtime tương ứng như Node/Python/JDK/G++ để chạy code local. Môi trường production nên chạy trong sandbox Docker/Judge0.
   </div>
 </div>

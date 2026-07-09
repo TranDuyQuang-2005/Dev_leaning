@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -21,8 +21,8 @@ export class ProblemDetailComponent implements OnInit {
   constructor(private route: ActivatedRoute, private api: ApiService) {}
 
   ngOnInit(): void {
-    this.api.get<any>('/api/v1/code/languages').subscribe({ next: r => this.languages = r.data || [] });
-    this.route.paramMap.subscribe(params => {
+    this.api.get<any>('/api/v1/code/languages').subscribe({ next: (r: any) => this.languages = r.data || [] });
+    this.route.paramMap.subscribe((params: any) => {
       const id = Number(params.get('id') || 1);
       this.loadProblem(id);
     });
@@ -32,13 +32,13 @@ export class ProblemDetailComponent implements OnInit {
     this.loading = true;
     this.error = '';
     this.api.get<any>(`/api/v1/code/problems/${id}`).subscribe({
-      next: r => {
+      next: (r: any) => {
         this.problem = r.data;
         this.customInput = this.problem?.testCases?.[0]?.input || '';
         this.setStarterCode();
         this.loading = false;
       },
-      error: e => { this.error = e?.error?.message || 'Không tải được bài lập trình'; this.loading = false; }
+      error: (e: any) => { this.error = e?.error?.message || 'KhÃ´ng táº£i Ä‘Æ°á»£c bÃ i láº­p trÃ¬nh'; this.loading = false; }
     });
   }
 
@@ -61,8 +61,8 @@ export class ProblemDetailComponent implements OnInit {
     this.runResult = null;
     this.error = '';
     this.api.post<any>('/api/v1/code/run', { language: this.language, sourceCode: this.code, stdin: this.customInput, timeLimitMs: this.problem?.timeLimitMs || 3000 }).subscribe({
-      next: r => { this.runResult = r.data || r; this.running = false; },
-      error: e => { this.error = e?.error?.message || 'Không chạy được code'; this.running = false; }
+      next: (r: any) => { this.runResult = r.data || r; this.running = false; },
+      error: (e: any) => { this.error = e?.error?.message || 'KhÃ´ng cháº¡y Ä‘Æ°á»£c code'; this.running = false; }
     });
   }
 
@@ -72,8 +72,8 @@ export class ProblemDetailComponent implements OnInit {
     this.submitResult = null;
     this.error = '';
     this.api.post<any>(`/api/v1/code/problems/${this.problem.id}/submit`, { language: this.language, sourceCode: this.code }).subscribe({
-      next: r => { this.submitResult = r.data || r; this.submitting = false; },
-      error: e => { this.error = e?.error?.message || 'Không submit được bài'; this.submitting = false; }
+      next: (r: any) => { this.submitResult = r.data || r; this.submitting = false; },
+      error: (e: any) => { this.error = e?.error?.message || 'KhÃ´ng submit Ä‘Æ°á»£c bÃ i'; this.submitting = false; }
     });
   }
 
@@ -81,3 +81,4 @@ export class ProblemDetailComponent implements OnInit {
   difficultyBadge(d: any): string { return Number(d) === 3 ? 'badge-red' : Number(d) === 2 ? 'badge-yellow' : 'badge-green'; }
   tagList(): string[] { return (this.problem?.tags || '').split(',').map((x: string) => x.trim()).filter(Boolean); }
 }
+

@@ -1,4 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -76,7 +76,7 @@ public interface IAuthService
     Task<ApiResponse<object>> Register(RegisterRequest request, CancellationToken ct);
     Task<ApiResponse<AuthResponse>> Login(LoginRequest request, string? ip, string? ua, CancellationToken ct);
     Task<ApiResponse<AuthResponse>> Refresh(RefreshTokenRequest request, string? ip, string? ua, CancellationToken ct);
-    Task<ApiResponse<object>> Logout(LogoutRequest request, CancellationToken ct);
+    Task<ApiResponse<object>> Logout(long userId, LogoutRequest request, CancellationToken ct);
     Task<ApiResponse<CurrentUserResponse>> Me(long userId, CancellationToken ct);
 }
 
@@ -94,20 +94,20 @@ public sealed class AuthService : IAuthService
     public async Task<ApiResponse<object>> Register(RegisterRequest r, CancellationToken ct)
     {
         var errors = new List<ApiError>();
-        if (string.IsNullOrWhiteSpace(r.FullName)) errors.Add(new() { Field = "fullName", Message = "Họ tên không được trống" });
-        if (string.IsNullOrWhiteSpace(r.UserName)) errors.Add(new() { Field = "userName", Message = "Tên đăng nhập không được trống" });
-        if (string.IsNullOrWhiteSpace(r.Email)) errors.Add(new() { Field = "email", Message = "Email không được trống" });
-        if (r.Password != r.ConfirmPassword) errors.Add(new() { Field = "confirmPassword", Message = "Mật khẩu xác nhận không khớp" });
+        if (string.IsNullOrWhiteSpace(r.FullName)) errors.Add(new() { Field = "fullName", Message = "Há» tÃªn khÃ´ng Ä‘Æ°á»£c trá»‘ng" });
+        if (string.IsNullOrWhiteSpace(r.UserName)) errors.Add(new() { Field = "userName", Message = "TÃªn Ä‘Äƒng nháº­p khÃ´ng Ä‘Æ°á»£c trá»‘ng" });
+        if (string.IsNullOrWhiteSpace(r.Email)) errors.Add(new() { Field = "email", Message = "Email khÃ´ng Ä‘Æ°á»£c trá»‘ng" });
+        if (r.Password != r.ConfirmPassword) errors.Add(new() { Field = "confirmPassword", Message = "Máº­t kháº©u xÃ¡c nháº­n khÃ´ng khá»›p" });
         if (r.Password.Length < 8 || !r.Password.Any(char.IsUpper) || !r.Password.Any(char.IsLower) || !r.Password.Any(char.IsDigit))
-            errors.Add(new() { Field = "password", Message = "Mật khẩu tối thiểu 8 ký tự, có chữ hoa, chữ thường và số" });
-        if (errors.Count > 0) return ApiResponse<object>.Fail("Dữ liệu đăng ký không hợp lệ", errors);
+            errors.Add(new() { Field = "password", Message = "Máº­t kháº©u tá»‘i thiá»ƒu 8 kÃ½ tá»±, cÃ³ chá»¯ hoa, chá»¯ thÆ°á»ng vÃ  sá»‘" });
+        if (errors.Count > 0) return ApiResponse<object>.Fail("Dá»¯ liá»‡u Ä‘Äƒng kÃ½ khÃ´ng há»£p lá»‡", errors);
 
         var email = r.Email.Trim().ToLower();
         var username = r.UserName.Trim();
         if (await _db.Users.AnyAsync(x => x.Email == email && !x.IsDeleted, ct))
-            return ApiResponse<object>.Fail("Email đã tồn tại");
+            return ApiResponse<object>.Fail("Email Ä‘Ã£ tá»“n táº¡i");
         if (await _db.Users.AnyAsync(x => x.UserName == username && !x.IsDeleted, ct))
-            return ApiResponse<object>.Fail("Tên đăng nhập đã tồn tại");
+            return ApiResponse<object>.Fail("TÃªn Ä‘Äƒng nháº­p Ä‘Ã£ tá»“n táº¡i");
 
         await using var tx = await _db.Database.BeginTransactionAsync(ct);
 
@@ -133,7 +133,7 @@ public sealed class AuthService : IAuthService
         await _db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
 
-        return ApiResponse<object>.Ok(new { user.Id, user.FullName, user.UserName, user.Email }, "Đăng ký thành công");
+        return ApiResponse<object>.Ok(new { user.Id, user.FullName, user.UserName, user.Email }, "ÄÄƒng kÃ½ thÃ nh cÃ´ng");
     }
 
     public async Task<ApiResponse<AuthResponse>> Login(LoginRequest r, string? ip, string? ua, CancellationToken ct)
@@ -144,51 +144,39 @@ public sealed class AuthService : IAuthService
             .Include(x => x.UserPermissions).ThenInclude(x => x.Permission)
             .FirstOrDefaultAsync(x => !x.IsDeleted && (x.Email.ToLower() == value || x.UserName.ToLower() == value), ct);
         if (user == null || string.IsNullOrWhiteSpace(user.PasswordHash) || !BCrypt.Net.BCrypt.Verify(r.Password, user.PasswordHash))
-            return ApiResponse<AuthResponse>.Fail("Tài khoản hoặc mật khẩu không đúng");
-        if (user.Status != 1) return ApiResponse<AuthResponse>.Fail("Tài khoản không hoạt động");
+            return ApiResponse<AuthResponse>.Fail("TÃ i khoáº£n hoáº·c máº­t kháº©u khÃ´ng Ä‘Ãºng");
+        if (user.Status != 1) return ApiResponse<AuthResponse>.Fail("TÃ i khoáº£n khÃ´ng hoáº¡t Ä‘á»™ng");
 
         user.LastLoginAt = DateTime.UtcNow;
         user.FailedLoginCount = 0;
         var response = await CreateAuthResponse(user, ip, ua, null, ct);
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<AuthResponse>.Ok(response, "Đăng nhập thành công");
+        return ApiResponse<AuthResponse>.Ok(response, "ÄÄƒng nháº­p thÃ nh cÃ´ng");
     }
 
     public async Task<ApiResponse<AuthResponse>> Refresh(RefreshTokenRequest r, string? ip, string? ua, CancellationToken ct)
     {
         var userId = _jwt.GetUserIdFromExpiredToken(r.AccessToken);
-        if (userId == null) return ApiResponse<AuthResponse>.Fail("Access token không hợp lệ");
+        if (userId == null) return ApiResponse<AuthResponse>.Fail("Access token khÃ´ng há»£p lá»‡");
         var hash = _jwt.HashToken(r.RefreshToken);
         var old = await _db.RefreshTokens.FirstOrDefaultAsync(x => x.UserId == userId && x.TokenHash == hash, ct);
-        if (old == null || old.RevokedAt != null || old.ExpiresAt <= DateTime.UtcNow) return ApiResponse<AuthResponse>.Fail("Refresh token không hợp lệ");
+        if (old == null || old.RevokedAt != null || old.ExpiresAt <= DateTime.UtcNow) return ApiResponse<AuthResponse>.Fail("Refresh token khÃ´ng há»£p lá»‡");
 
         var user = await _db.Users.Include(x => x.UserRoles).ThenInclude(x => x.Role).ThenInclude(x => x.RolePermissions).ThenInclude(x => x.Permission)
             .Include(x => x.UserPermissions).ThenInclude(x => x.Permission)
             .FirstOrDefaultAsync(x => x.Id == userId, ct);
-        if (user == null) return ApiResponse<AuthResponse>.Fail("Không tìm thấy người dùng");
+        if (user == null) return ApiResponse<AuthResponse>.Fail("KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng");
         var response = await CreateAuthResponse(user, ip, ua, old, ct);
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<AuthResponse>.Ok(response, "Refresh token thành công");
+        return ApiResponse<AuthResponse>.Ok(response, "Refresh token thÃ nh cÃ´ng");
     }
 
-    public async Task<ApiResponse<object>> Logout(LogoutRequest r, CancellationToken ct)
-    {
-        var hash = _jwt.HashToken(r.RefreshToken);
-        var token = await _db.RefreshTokens.FirstOrDefaultAsync(x => x.TokenHash == hash, ct);
-        if (token != null && token.RevokedAt == null)
-        {
-            token.RevokedAt = DateTime.UtcNow;
-            await _db.SaveChangesAsync(ct);
-        }
-        return ApiResponse<object>.Ok(new { }, "Đăng xuất thành công");
-    }
-
-    public async Task<ApiResponse<CurrentUserResponse>> Me(long userId, CancellationToken ct)
+    public async Task<ApiResponse<object>> Logout(long userId, LogoutRequest r, CancellationToken ct) { var refreshToken = r?.RefreshToken?.Trim(); if (string.IsNullOrWhiteSpace(refreshToken)) return ApiResponse<object>.Ok(new { }, "ÄÄƒng xuáº¥t thÃ nh cÃ´ng"); var hash = _jwt.HashToken(refreshToken); var token = await _db.RefreshTokens.FirstOrDefaultAsync(x => x.UserId == userId && x.TokenHash == hash, ct); if (token != null && token.RevokedAt == null) { token.RevokedAt = DateTime.UtcNow; await _db.SaveChangesAsync(ct); } return ApiResponse<object>.Ok(new { }, "ÄÄƒng xuáº¥t thÃ nh cÃ´ng"); } public async Task<ApiResponse<CurrentUserResponse>> Me(long userId, CancellationToken ct)
     {
         var user = await _db.Users.Include(x => x.UserRoles).ThenInclude(x => x.Role).ThenInclude(x => x.RolePermissions).ThenInclude(x => x.Permission)
             .Include(x => x.UserPermissions).ThenInclude(x => x.Permission)
             .FirstOrDefaultAsync(x => x.Id == userId && !x.IsDeleted, ct);
-        return user == null ? ApiResponse<CurrentUserResponse>.Fail("Không tìm thấy người dùng") : ApiResponse<CurrentUserResponse>.Ok(MapUser(user));
+        return user == null ? ApiResponse<CurrentUserResponse>.Fail("KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng") : ApiResponse<CurrentUserResponse>.Ok(MapUser(user));
     }
 
     private async Task<AuthResponse> CreateAuthResponse(User user, string? ip, string? ua, RefreshToken? old, CancellationToken ct)
@@ -234,3 +222,4 @@ public sealed class AuthService : IAuthService
             .ToList()
     };
 }
+

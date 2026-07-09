@@ -1,29 +1,75 @@
-<div class="page">
-  <div class="page-head">
-    <div class="page-title"><h1>Forum</h1><p>Ask questions and share knowledge with the community</p></div>
-    <a class="btn btn-primary" routerLink="/learner/create-post">＋ New Post</a>
-  </div>
-  <div class="filters">
-    <div class="search-wrap"><input class="input" [(ngModel)]="keyword" (keyup.enter)="search()" placeholder="Search posts..."/></div>
-    <select class="select" [(ngModel)]="tag" (change)="search()" style="max-width:220px"><option value="all">All Tags</option><option *ngFor="let t of tags" [value]="t.slug">{{t.name}}</option></select>
+﻿<div class="page forum-page-pro">
+  <section class="forum-hero-pro">
+    <div>
+      <span class="eyebrow">Community</span>
+      <h1>Forum</h1>
+      <p>Đặt câu hỏi, chia sẻ kinh nghiệm và theo dõi các câu trả lời đã được chấp nhận.</p>
+    </div>
+    <a class="btn btn-primary forum-new-post-btn" routerLink="/learner/create-post">+ New Post</a>
+  </section>
+
+  <section class="forum-filter-card-pro">
+    <input class="input forum-search-input-pro" [(ngModel)]="keyword" (keyup.enter)="search()" placeholder="Tìm kiếm bài viết..." />
+    <select class="select forum-tag-select-pro" [(ngModel)]="tag" (change)="search()">
+      <option value="all">Tất cả tag</option>
+      <option *ngFor="let t of tags" [value]="t.slug">{{t.name}}</option>
+    </select>
     <button class="btn btn-outline" type="button" (click)="search()">Search</button>
-  </div>
+    <button class="btn btn-ghost" type="button" (click)="clearFilters()">Reset</button>
+  </section>
+
   <div class="alert" *ngIf="error">{{error}}</div>
-  <div class="empty-state" *ngIf="!loading && !posts.length">Chưa có bài viết nào. Hãy tạo bài đầu tiên.</div>
-  <div class="grid" id="forumList">
-    <div class="card card-pad forum-post-card hover" *ngFor="let post of posts">
-      <div class="forum-row">
-        <div class="vote-col">
-          <button class="btn btn-outline" type="button" [class.active]="post.myVote===1" (click)="vote(post,1)">▲</button><b>{{post.voteScore}}</b><button class="btn btn-outline" type="button" [class.active]="post.myVote===-1" (click)="vote(post,-1)">▼</button>
+  <div class="empty-state card" *ngIf="!loading && !posts.length">Chưa có bài viết nào. Hãy tạo bài đầu tiên.</div>
+
+  <section class="forum-post-list-pro" id="forumList">
+    <article class="forum-post-card-pro" *ngFor="let post of posts; trackBy: trackByPost">
+      <div class="forum-post-main-pro">
+        <div class="forum-post-title-row-pro">
+          <a [routerLink]="['/learner/forum-post',post.id]" class="forum-post-title-link-pro">
+            <h3>{{post.title}}</h3>
+          </a>
+          <span class="status-chip-pro solved" *ngIf="post.isSolved">✓ Solved</span>
         </div>
-        <div style="flex:1">
-          <a [routerLink]="['/learner/forum-post',post.id]"><h3 class="post-title">{{post.title}} <span class="badge badge-green" *ngIf="post.isSolved">✅ Solved</span></h3></a>
-          <img *ngIf="post.firstImageUrl" class="forum-preview-img" [src]="fileViewUrl(post.firstImageUrl)" alt="post image"/><p class="muted">{{post.contentPreview}}</p><p class="muted" *ngIf="post.attachmentCount">📎 {{post.attachmentCount}} attachment(s)</p>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"><span class="badge badge-gray" *ngFor="let t of post.tags">{{t.name}}</span></div>
-          <div class="meta"><div class="meta-left"><span class="avatar" style="width:28px;height:28px">{{initials(post)}}</span><span>{{post.authorName}}</span><span>💬 {{post.commentCount}} comments</span><span *ngIf="post.isSolved">✅ answered</span><span>👁 {{post.viewCount}}</span></div><span>{{date(post.createdAt)}}</span></div>
-          <div class="action-row" style="margin-top:10px"><button class="btn btn-ghost" type="button" (click)="bookmark(post)">{{post.isBookmarked?'Bỏ lưu':'Bookmark'}}</button></div>
+
+        <img *ngIf="post.firstImageUrl" class="forum-preview-img-pro" [src]="fileViewUrl(post.firstImageUrl)" alt="post image" />
+
+        <p class="forum-post-preview-pro">{{post.contentPreview}}</p>
+
+        <div class="forum-tags-pro" *ngIf="post.tags?.length">
+          <span class="tag-chip-pro" *ngFor="let t of post.tags">{{t.name}}</span>
+        </div>
+
+        <div class="forum-post-meta-pro">
+          <div class="forum-author-pro">
+            <span class="avatar avatar-sm">{{initials(post)}}</span>
+            <span>{{post.authorName}}</span>
+          </div>
+          <span class="forum-meta-iconline"><svg class="forum-ui-icon forum-ui-icon-comment" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-6.2A8 8 0 1 1 21 12Z"/></svg> {{post.commentCount || 0}}</span>
+          <span class="forum-meta-iconline" *ngIf="post.attachmentCount"><svg class="forum-ui-icon forum-ui-icon-paperclip" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.4 11.6 12 21a6 6 0 0 1-8.5-8.5l10-10a4 4 0 0 1 5.7 5.7l-10 10a2 2 0 0 1-2.8-2.8l9.4-9.4"/></svg> {{post.attachmentCount}}</span>
+          <span class="forum-meta-iconline"><svg class="forum-ui-icon forum-ui-icon-eye" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg> {{post.viewCount || 0}}</span>
+          <span class="forum-date-pro">{{date(post.createdAt)}}</span>
         </div>
       </div>
-    </div>
+
+      <aside class="forum-post-actions-pro">
+        <div class="mini-reactions-pro">
+          <button type="button" class="icon-reaction-pro" [class.active]="post.myVote===1" title="Like" aria-label="Like" (click)="vote(post,1)">
+            <svg class="forum-ui-icon forum-ui-icon-like" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10v10"/><path d="M14 10h4.6a2 2 0 0 1 2 2.4l-1.2 6A2 2 0 0 1 17.4 20H9a2 2 0 0 1-2-2v-8h2.6a2 2 0 0 0 1.9-1.4L13 4a2 2 0 0 1 2 2.5L14 10Z"/></svg><b>{{likeCount(post)}}</b>
+          </button>
+          <button type="button" class="icon-reaction-pro" [class.active-dislike]="post.myVote===-1" title="Dislike" aria-label="Dislike" (click)="vote(post,-1)">
+            <svg class="forum-ui-icon forum-ui-icon-dislike" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 14V4"/><path d="M10 14H5.4a2 2 0 0 1-2-2.4l1.2-6A2 2 0 0 1 6.6 4H15a2 2 0 0 1 2 2v8h-2.6a2 2 0 0 0-1.9 1.4L11 20a2 2 0 0 1-2-2.5L10 14Z"/></svg><b>{{dislikeCount(post)}}</b>
+          </button>
+        </div>
+        <button class="btn btn-ghost bookmark-btn-pro" type="button" (click)="bookmark(post)">{{post.isBookmarked ? 'Bỏ lưu' : 'Bookmark'}}</button>
+        <a class="btn btn-outline detail-btn-pro" [routerLink]="['/learner/forum-post',post.id]">Xem chi tiết</a>
+      </aside>
+    </article>
+  </section>
+
+  <div class="pagination-pro" *ngIf="totalPages > 1">
+    <button class="btn btn-outline" type="button" [disabled]="pageIndex <= 1" (click)="prevPage()">Trước</button>
+    <span>Trang {{pageIndex}} / {{totalPages}}</span>
+    <button class="btn btn-outline" type="button" [disabled]="pageIndex >= totalPages" (click)="nextPage()">Sau</button>
   </div>
 </div>
+

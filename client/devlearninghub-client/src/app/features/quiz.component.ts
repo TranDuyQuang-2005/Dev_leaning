@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -28,14 +28,14 @@ export class QuizComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const quizSetId = Number(this.route.snapshot.paramMap.get('id'));
     this.api.post<any>('/api/v1/quiz-attempts', { quizSetId }).subscribe({
-      next: r => {
+      next: (r: any) => {
         this.attempt = r.data;
         this.result = null;
         this.secondsLeft = (this.attempt?.timeLimitMinutes || 0) * 60;
         if (this.secondsLeft > 0) this.startTimer();
       },
-      error: e => {
-        this.error = e?.error?.message || 'Không bắt đầu được quiz. Kiểm tra quiz set có câu hỏi chưa hoặc bạn đã hết lượt làm bài.';
+      error: (e: any) => {
+        this.error = e?.error?.message || 'KhÃ´ng báº¯t Ä‘áº§u Ä‘Æ°á»£c quiz. Kiá»ƒm tra quiz set cÃ³ cÃ¢u há»i chÆ°a hoáº·c báº¡n Ä‘Ã£ háº¿t lÆ°á»£t lÃ m bÃ i.';
       }
     });
   }
@@ -52,7 +52,7 @@ export class QuizComponent implements OnInit, OnDestroy {
       if (this.secondsLeft <= 0) {
         this.secondsLeft = 0;
         clearInterval(this.timer);
-        this.warning = 'Đã hết thời gian. Hệ thống tự động nộp bài.';
+        this.warning = 'ÄÃ£ háº¿t thá»i gian. Há»‡ thá»‘ng tá»± Ä‘á»™ng ná»™p bÃ i.';
         this.submit(true);
       }
     }, 1000);
@@ -76,14 +76,14 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   submit(auto = false): void {
     if (!this.attempt?.attemptId) {
-      this.error = 'Không tìm thấy lượt làm bài.';
+      this.error = 'KhÃ´ng tÃ¬m tháº¥y lÆ°á»£t lÃ m bÃ i.';
       return;
     }
 
     const total = this.attempt?.questions?.length || 0;
     const skipped = total - this.answeredCount;
     if (!auto && skipped > 0) {
-      const ok = confirm(`Bạn còn ${skipped} câu chưa chọn. Vẫn nộp bài?`);
+      const ok = confirm(`Báº¡n cÃ²n ${skipped} cÃ¢u chÆ°a chá»n. Váº«n ná»™p bÃ i?`);
       if (!ok) return;
     }
 
@@ -98,16 +98,16 @@ export class QuizComponent implements OnInit, OnDestroy {
     };
 
     this.api.post<any>(`/api/v1/quiz-attempts/${this.attempt.attemptId}/submit`, body).subscribe({
-      next: r => {
+      next: (r: any) => {
         this.result = r.data;
         this.isSubmitting = false;
         if (this.timer) clearInterval(this.timer);
         localStorage.setItem('quiz-progress-' + this.attempt.quizSetId, '100');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       },
-      error: e => {
+      error: (e: any) => {
         this.isSubmitting = false;
-        this.error = e?.error?.message || 'Không nộp được bài.';
+        this.error = e?.error?.message || 'KhÃ´ng ná»™p Ä‘Æ°á»£c bÃ i.';
       }
     });
   }
@@ -123,11 +123,12 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   selectedText(question: any): string {
     const selected = question.options?.filter((x: any) => x.isSelected).map((x: any) => x.content) || [];
-    return selected.length ? selected.join(', ') : 'Chưa chọn đáp án';
+    return selected.length ? selected.join(', ') : 'ChÆ°a chá»n Ä‘Ã¡p Ã¡n';
   }
 
   correctText(question: any): string {
     const correct = question.options?.filter((x: any) => x.isCorrect).map((x: any) => x.content) || [];
-    return correct.length ? correct.join(', ') : 'Chưa có đáp án đúng';
+    return correct.length ? correct.join(', ') : 'ChÆ°a cÃ³ Ä‘Ã¡p Ã¡n Ä‘Ãºng';
   }
 }
+
