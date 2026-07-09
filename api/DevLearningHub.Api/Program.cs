@@ -20,6 +20,7 @@ builder.Logging.AddDebug();
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.Configure<ObjectStorageOptions>(builder.Configuration.GetSection("ObjectStorage"));
+builder.Services.Configure<CodeRunnerOptions>(builder.Configuration.GetSection("CodeRunner"));
 var jwt = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>() ?? throw new InvalidOperationException("JwtSettings is missing");
 
 builder.Services.AddDbContext<DevLearningHubDbContext>(options =>
@@ -34,9 +35,20 @@ builder.Services.AddScoped<IUserModuleService, UserModuleService>();
 builder.Services.AddScoped<ILearningModuleService, LearningModuleService>();
 builder.Services.AddScoped<IFileModuleService, FileModuleService>();
 builder.Services.AddScoped<IPersonalPracticeService, PersonalPracticeService>();
+builder.Services.AddScoped<IRoadmapService, RoadmapService>();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IObjectStorageService, ObjectStorageService>();
 builder.Services.AddScoped<IForumModuleService, ForumModuleService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<LocalCodeExecutionProvider>();
+builder.Services.AddHttpClient<Judge0ExecutionProvider>();
+builder.Services.AddScoped<ICodeExecutionProvider>(sp =>
+{
+    var provider = builder.Configuration.GetValue<string>("CodeRunner:Provider") ?? "Local";
+    return provider.Equals("Judge0", StringComparison.OrdinalIgnoreCase)
+        ? sp.GetRequiredService<Judge0ExecutionProvider>()
+        : sp.GetRequiredService<LocalCodeExecutionProvider>();
+});
 builder.Services.AddScoped<ICodeJudgeService, CodeJudgeService>();
 
 builder.Services.AddControllers()
@@ -102,6 +114,14 @@ builder.Services.AddRateLimiter(options =>
         RateLimitPartition.GetFixedWindowLimiter(
             httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+    options.AddPolicy("file-upload", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(5), QueueLimit = 0 }));
+    options.AddPolicy("forum-write", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = 20, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
 });
 
 builder.Services.AddEndpointsApiExplorer();

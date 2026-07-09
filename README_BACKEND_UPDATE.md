@@ -30,7 +30,7 @@
 - Post/comment DTOs now include `LikeCount`, `DislikeCount`, `VoteScore`, `MyVote`, `Replies`, `ReplyCount`, `CommentCount`, and `IsAcceptedAnswer`.
 - Vote logic toggles same vote off, switches opposite votes, and does not intentionally create duplicate votes for the same user/post or user/comment.
 - EF model now has unique indexes for post/comment vote ownership.
-- Reply mapping flattens nested replies to the top-level comment reply list so a one-level frontend does not break.
+- Reply mapping preserves `ParentCommentId`; the learner forum detail page normalizes flat or nested `replies`/`threadReplies` into `threadReplies` with `replyDepth`.
 - Accepted answer now supports both comments and replies; only the chosen item is marked accepted and the rest are cleared.
 
 ## Personal practice security
@@ -118,3 +118,128 @@ For local dev, fix the SQL Server/TLS configuration or use a development connect
 
 - Configure real SMTP for password reset and email verification instead of logging tokens.
 - Run database update and E2E flows against a working local SQL Server.
+
+## Code Judge compatibility update
+
+- Safe DB script added: `database/update_backend_code_judge_schema.sql`.
+- Run this script before testing Code Playground/Judge on an existing database.
+- Do not run the destructive baseline SQL against an existing schema.
+- The script adds missing `CodeSubmissions` columns, relaxes legacy `CodingProblemId`/`ProgrammingLanguageId` to nullable, syncs `ProblemId` and `CreatedAt`, creates `CodeSubmissionTestCaseResults` when missing, seeds `ProgrammingLanguages`, and uses `ON DELETE NO ACTION` for new compatibility FKs.
+
+## Code runner language support
+
+- `GET /api/v1/code/languages` now returns centralized runtime metadata and starter templates.
+- Active languages: `python`, `javascript`, `typescript`, `java`, `c`, `cpp`, `csharp`, `go`.
+- Required runtimes: Python 3, Node.js, TypeScript compiler, JDK, GCC/G++, .NET SDK, Go.
+- Local runner uses per-run OS temp directories, hard timeouts, process-tree kill on timeout, output truncation, and readable missing-runtime errors.
+- Production TODO: move code execution to Docker/Judge0/Kubernetes sandbox.
+
+## Progress and leaderboard APIs
+
+- Added `GET /api/v1/me/progress/overview`.
+- Added `GET /api/v1/me/progress/topics`.
+- Added `GET /api/v1/me/progress/roadmap`.
+- Added `GET /api/v1/leaderboard`.
+
+## Forum file proxy reminder
+
+- Forum attachment responses continue to expose `/api/v1/files/{id}/view`.
+- Frontend must prepend backend base URL `http://localhost:5000`.
+- Do not point the frontend directly at MinIO port `9000`, do not require public buckets, and do not expose MinIO keys.
+
+## Notification backend update
+
+- Safe DB script added: `database/update_backend_notifications.sql`.
+- Run the script in SSMS against the existing DevLearningHub database. It is idempotent and does not drop tables.
+- The script creates `Notifications`, separate indexes for `UserId`, `IsRead`, `CreatedAt`, the composite read-list index, and the `Users` FK with `ON DELETE NO ACTION`.
+- Notification API endpoints:
+  - `GET /api/v1/notifications`
+  - `GET /api/v1/notifications/unread-count`
+  - `POST /api/v1/notifications/{id}/read`
+  - `POST /api/v1/notifications/read-all`
+  - `DELETE /api/v1/notifications/{id}`
+- All notification endpoints require `[Authorize]` and scope reads/writes/deletes to the current JWT user.
+- Events creating notifications:
+  - `quiz.passed` when a learner submits and passes a quiz.
+  - `code.accepted` when a coding problem submission is accepted.
+  - `forum.reply` when another user replies/comments on a learner's post.
+  - `forum.accepted_answer` when a learner's comment/reply is marked as accepted.
+  - `account.locked` and `account.unlocked` when admin locks/unlocks a user.
+- Event metadata includes an `eventKey`; the service checks tracked and existing notifications to avoid duplicate notifications for the same event.
+
+Run notification DB update:
+
+```sql
+database/update_backend_notifications.sql
+```
+
+## Code runner provider update
+
+- `ICodeExecutionProvider` added with `RunAsync` and `ExecuteTestCasesAsync`.
+- `LocalCodeExecutionProvider` keeps the current local process runner behavior: temp folder, timeout, process cleanup, missing-runtime messages, and output truncation.
+- `Judge0ExecutionProvider` provides a basic Judge0 HTTP integration and returns a clear error if Judge0 is not reachable:
+  `Judge0 service is not available. Please start Judge0 or switch CodeRunner:Provider to Local.`
+- Existing frontend APIs remain unchanged:
+  - `POST /api/v1/code/run`
+  - `POST /api/v1/code/problems/{id}/submit`
+  - `GET /api/v1/code/languages`
+- Configure provider in `api/DevLearningHub.Api/appsettings.json`:
+
+```json
+"CodeRunner": {
+  "Provider": "Local",
+  "DefaultTimeLimitMs": 5000,
+  "MaxOutputBytes": 262144,
+  "Judge0": {
+    "BaseUrl": "http://localhost:2358",
+    "TimeoutSeconds": 20
+  }
+}
+```
+
+## Notification backend
+
+- Added `Notifications` table support through safe script `database/update_backend_notifications.sql`.
+- Run the script on an existing database before demoing notification features. It is idempotent and does not drop existing data.
+- User endpoints:
+  - `GET /api/v1/notifications`
+  - `GET /api/v1/notifications/unread-count`
+  - `POST /api/v1/notifications/{id}/read`
+  - `POST /api/v1/notifications/read-all`
+  - `DELETE /api/v1/notifications/{id}`
+- All notification endpoints require `[Authorize]` and are scoped to the authenticated user.
+- Notification events currently created:
+  - `quiz.passed` when a submitted quiz reaches the passing score.
+  - `code.accepted` when a code submission is Accepted.
+  - `forum.reply` when another user comments/replies to the user's forum post.
+  - `forum.accepted_answer` when a user's comment/reply is marked accepted.
+  - `account.locked` and `account.unlocked` when admin locks/unlocks a user.
+
+## Code runner provider abstraction
+
+- Code execution now goes through `ICodeExecutionProvider`.
+- `LocalCodeExecutionProvider` keeps the current local runner behavior: temp folder per run, timeout, cleanup, and output truncation.
+- `Judge0ExecutionProvider` is available as a configurable provider and returns a clear error if Judge0 is not reachable.
+- Switch to Judge0 by setting `CodeRunner:Provider` to `Judge0`; roll back by setting it back to `Local`.
+- Config:
+
+```json
+"CodeRunner": {
+  "Provider": "Local",
+  "DefaultTimeLimitMs": 5000,
+  "MaxOutputBytes": 262144,
+  "Judge0": {
+    "BaseUrl": "http://localhost:2358",
+    "TimeoutSeconds": 20
+  }
+}
+```
+
+- Frontend APIs stay unchanged: `POST /api/v1/code/run`, `POST /api/v1/code/problems/{id}/submit`, and `GET /api/v1/code/languages`.
+
+## Forum nested comments
+
+- `forum-post.component.ts` rebuilds comment trees with `normalizeComments()`.
+- It supports `id`/`commentId`, `parentCommentId`/`parentId`/`parentComment.id`, `replies`, `threadReplies`, and `acceptedCommentId`.
+- Replies to replies send the exact replied comment id as `parentCommentId`.
+- The UI renders root answers plus flattened `threadReplies` with `replyDepth`, expand/collapse controls, voting, reporting, delete, and accepted answer states.

@@ -1,26 +1,189 @@
-<div class="page" style="max-width:980px;margin:auto" *ngIf="post">
-  <div class="muted"><a routerLink="/learner/forum">Forum</a> / Post #{{post.id}}</div>
-  <div class="alert success" *ngIf="message">{{message}}</div><div class="alert" *ngIf="error">{{error}}</div>
-  <article class="card card-pad">
-    <div class="forum-row">
-      <div class="vote-col"><button class="btn btn-outline" [class.active]="post.myVote===1" (click)="votePost(1)">▲</button><b style="font-size:20px">{{post.voteScore}}</b><button class="btn btn-outline" [class.active]="post.myVote===-1" (click)="votePost(-1)">▼</button></div>
-      <div style="flex:1">
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <h1 style="margin-top:0;margin-bottom:8px">{{post.title}}</h1>
-          <span class="badge badge-green" *ngIf="post.isSolved">✅ Solved</span>
+﻿<div class="page forum-detail-pro" *ngIf="post">
+  <nav class="forum-breadcrumb-pro">
+    <a routerLink="/learner/forum">Forum</a>
+    <span>/</span>
+    <span>Post #{{post.id}}</span>
+  </nav>
+
+  <div class="alert alert-ok" *ngIf="message">{{message}}</div>
+  <div class="alert alert-error" *ngIf="error">{{error}}</div>
+
+  <article class="forum-question-card-pro">
+    <div class="forum-question-head-pro">
+      <div>
+        <div class="forum-title-row-pro">
+          <h1>{{post.title}}</h1>
+          <span class="status-chip-pro solved" *ngIf="post.isSolved">✓ Solved</span>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px"><span class="badge badge-gray" *ngFor="let t of post.tags">{{t.name}}</span></div>
-        <p style="white-space:pre-line">{{post.content}}</p>
-        <div class="attachment-grid" *ngIf="post.attachments?.length"><a class="attachment-card" *ngFor="let a of post.attachments" [href]="fileViewUrl(a)" target="_blank"><img *ngIf="isImage(a)" [src]="fileViewUrl(a)" [alt]="a.originalFileName"/><div *ngIf="!isImage(a)" class="file-icon">📎</div><div class="attachment-info"><b>{{a.originalFileName}}</b><span>{{a.fileType}} · {{a.storageProvider}}</span></div></a></div>
-        <div class="meta-left" style="margin-top:24px"><span class="avatar">{{post.authorInitials}}</span><b>{{post.authorName}}</b><span class="muted">{{date(post.createdAt)}}</span></div>
-        <div class="action-row" style="margin-top:16px"><button class="btn btn-outline" (click)="bookmark()">{{post.isBookmarked?'Bỏ lưu':'Bookmark'}}</button><a class="btn btn-outline" *ngIf="post.canEdit" [routerLink]="['/learner/edit-post',post.id]">Edit</a><button class="btn btn-ghost" *ngIf="post.canEdit" (click)="deletePost()">Delete</button><button class="btn btn-ghost" (click)="openReport('Post',post.id)">Report</button><button class="btn btn-outline" *ngIf="post.canAcceptAnswer && post.acceptedCommentId" (click)="clearAcceptedAnswer()">Bỏ câu trả lời đúng</button></div>
+        <div class="forum-tags-pro" *ngIf="post.tags?.length">
+          <span class="tag-chip-pro" *ngFor="let t of post.tags">{{t.name}}</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="forum-question-content-pro">{{post.content}}</p>
+
+    <div class="attachment-grid attachment-grid-pro" *ngIf="post.attachments?.length">
+      <a class="attachment-card attachment-card-pro" *ngFor="let a of post.attachments" [href]="fileViewUrl(a)" target="_blank">
+        <img *ngIf="isImage(a)" [src]="fileViewUrl(a)" [alt]="a.originalFileName" />
+        <div *ngIf="!isImage(a)" class="file-icon"><svg class="forum-ui-icon forum-ui-icon-paperclip" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.4 11.6 12 21a6 6 0 0 1-8.5-8.5l10-10a4 4 0 0 1 5.7 5.7l-10 10a2 2 0 0 1-2.8-2.8l9.4-9.4"/></svg></div>
+        <div class="attachment-info">
+          <b>{{a.originalFileName}}</b>
+          <span>{{attachmentMeta(a)}}</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="forum-question-foot-pro">
+      <div class="forum-author-pro">
+        <span class="avatar">{{post.authorInitials || 'U'}}</span>
+        <div>
+          <b>{{post.authorName || 'Unknown user'}}</b>
+          <span>{{date(post.createdAt)}}</span>
+        </div>
+      </div>
+
+      <div class="forum-action-bar-pro">
+        <button class="icon-reaction-pro" type="button" [class.active]="post.myVote===1" title="Like" aria-label="Like" (click)="votePost(1)">
+          <svg class="forum-ui-icon forum-ui-icon-like" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10v10"/><path d="M14 10h4.6a2 2 0 0 1 2 2.4l-1.2 6A2 2 0 0 1 17.4 20H9a2 2 0 0 1-2-2v-8h2.6a2 2 0 0 0 1.9-1.4L13 4a2 2 0 0 1 2 2.5L14 10Z"/></svg><b>{{likeCount(post)}}</b>
+        </button>
+        <button class="icon-reaction-pro" type="button" [class.active-dislike]="post.myVote===-1" title="Dislike" aria-label="Dislike" (click)="votePost(-1)">
+          <svg class="forum-ui-icon forum-ui-icon-dislike" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 14V4"/><path d="M10 14H5.4a2 2 0 0 1-2-2.4l1.2-6A2 2 0 0 1 6.6 4H15a2 2 0 0 1 2 2v8h-2.6a2 2 0 0 0-1.9 1.4L11 20a2 2 0 0 1-2-2.5L10 14Z"/></svg><b>{{dislikeCount(post)}}</b>
+        </button>
+        <button class="soft-action-pro" type="button" (click)="bookmark()">{{post.isBookmarked ? 'Bỏ lưu' : 'Bookmark'}}</button>
+        <a class="soft-action-pro" *ngIf="post.canEdit" [routerLink]="['/learner/edit-post',post.id]"><svg class="forum-ui-icon forum-ui-icon-edit" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg><span class="action-text">Edit</span></a>
+        <button class="soft-action-pro danger" type="button" *ngIf="post.canEdit" (click)="deletePost()"><svg class="forum-ui-icon forum-ui-icon-trash" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 15H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg><span class="action-text">Delete</span></button>
+        <button class="soft-action-pro" type="button" (click)="openReport('Post',post.id)"><svg class="forum-ui-icon forum-ui-icon-flag" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4"/><path d="M5 4h11l-1 4 1 4H5"/></svg><span class="action-text">Report</span></button>
+        <button class="soft-action-pro success" type="button" *ngIf="post.canAcceptAnswer && post.acceptedCommentId" (click)="clearAcceptedAnswer()"><svg class="forum-ui-icon forum-ui-icon-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span class="action-text">Bỏ câu trả lời đúng</span></button>
       </div>
     </div>
   </article>
-  <div class="section-head"><h2>Answers ({{post.comments?.length||0}})</h2></div>
-  <div class="alert success" *ngIf="post.isSolved">Bài viết này đã có câu trả lời đúng. Câu trả lời được chọn sẽ được đưa lên đầu danh sách.</div>
-  <ng-container *ngFor="let c of post.comments"><ng-container *ngTemplateOutlet="commentTpl;context:{c:c,level:0}"></ng-container></ng-container>
-  <ng-template #commentTpl let-c="c" let-level="level"><div class="card card-pad comment-card" [class.accepted-answer]="c.isAcceptedAnswer" [style.margin-left.px]="level*32"><div class="vote-col"><button class="btn btn-outline" [class.active]="c.myVote===1" (click)="voteComment(c,1)">▲</button><b>{{c.voteScore}}</b><button class="btn btn-outline" [class.active]="c.myVote===-1" (click)="voteComment(c,-1)">▼</button></div><div style="flex:1"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div class="meta-left"><span class="avatar">{{c.authorInitials}}</span><b>{{c.authorName}}</b><span class="badge badge-green" *ngIf="c.isAcceptedAnswer">✅ Câu trả lời đúng</span></div><span class="muted">{{date(c.createdAt)}}</span></div><p style="white-space:pre-line">{{c.content}}</p><div class="answer-actions"><button class="reaction-link-btn" type="button" (click)="replyTo=c.id">Trả lời</button><button class="reaction-link-btn" type="button" *ngIf="post.canAcceptAnswer && !c.parentCommentId && !c.isAcceptedAnswer" [disabled]="acceptingId===c.id" (click)="acceptAnswer(c)">Đánh dấu đúng</button><button class="reaction-link-btn" type="button" *ngIf="post.canAcceptAnswer && !c.parentCommentId && c.isAcceptedAnswer" (click)="clearAcceptedAnswer()">Bỏ đánh dấu đúng</button><button class="reaction-link-btn" type="button" *ngIf="c.canEdit" (click)="deleteComment(c)">Xóa</button><button class="reaction-link-btn" type="button" (click)="openReport('Comment',c.id)">Report</button></div><div *ngIf="replyTo===c.id" style="margin-top:10px"><textarea class="textarea" rows="3" [(ngModel)]="replyContent" placeholder="Write your reply..."></textarea><button class="btn btn-primary" type="button" (click)="addComment(c.id)">Post Reply</button><button class="btn btn-outline" type="button" (click)="replyTo=null">Cancel</button></div><ng-container *ngFor="let r of c.replies"><ng-container *ngTemplateOutlet="commentTpl;context:{c:r,level:level+1}"></ng-container></ng-container></div></div></ng-template>
-  <div class="card card-pad"><h3>Your Answer</h3><textarea class="textarea" placeholder="Write your answer..." [(ngModel)]="answer"></textarea><button class="btn btn-primary" style="margin-top:12px" (click)="addComment()">Post Answer</button></div>
-  <div class="modal-backdrop" *ngIf="reportTarget"><div class="card card-pad" style="max-width:520px;margin:10vh auto"><h3>Report {{reportTarget.targetType}}</h3><textarea class="textarea" [(ngModel)]="reportReason" placeholder="Lý do report..."></textarea><div class="action-row" style="margin-top:12px"><button class="btn btn-primary" (click)="sendReport()">Send Report</button><button class="btn btn-outline" (click)="reportTarget=null">Cancel</button></div></div></div>
+
+  <section class="forum-answer-header-pro">
+    <div>
+      <h2>Answers ({{answerCount}})</h2>
+      <p *ngIf="totalCommentCount !== answerCount">{{totalCommentCount}} bình luận gồm cả phản hồi</p>
+    </div>
+  </section>
+
+  <div class="empty-state card" *ngIf="!answers.length">Chưa có câu trả lời. Hãy là người trả lời đầu tiên.</div>
+
+  <section class="forum-answer-list-pro">
+    <article class="forum-answer-card-pro" *ngFor="let c of visibleAnswers; trackBy: trackByComment" [class.accepted-root]="c.isAcceptedAnswer">
+      <div class="accepted-ribbon-pro" *ngIf="c.isAcceptedAnswer">Accepted Answer</div>
+
+      <div class="comment-header-pro">
+        <div class="forum-author-inline-pro">
+          <span class="avatar avatar-sm">{{c.authorInitials || 'U'}}</span>
+          <b>{{c.authorName || 'Unknown user'}}</b>
+          <span class="status-chip-pro accepted" *ngIf="c.isAcceptedAnswer">✓ Câu trả lời đúng</span>
+        </div>
+        <span class="comment-date-pro">{{date(c.createdAt)}}</span>
+      </div>
+
+      <p class="comment-text-pro">{{c.content}}</p>
+
+      <div class="forum-action-bar-pro compact">
+        <button class="icon-reaction-pro" type="button" [class.active]="c.myVote===1" title="Like" aria-label="Like" (click)="voteComment(c,1)">
+          <svg class="forum-ui-icon forum-ui-icon-like" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10v10"/><path d="M14 10h4.6a2 2 0 0 1 2 2.4l-1.2 6A2 2 0 0 1 17.4 20H9a2 2 0 0 1-2-2v-8h2.6a2 2 0 0 0 1.9-1.4L13 4a2 2 0 0 1 2 2.5L14 10Z"/></svg><b>{{likeCount(c)}}</b>
+        </button>
+        <button class="icon-reaction-pro" type="button" [class.active-dislike]="c.myVote===-1" title="Dislike" aria-label="Dislike" (click)="voteComment(c,-1)">
+          <svg class="forum-ui-icon forum-ui-icon-dislike" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 14V4"/><path d="M10 14H5.4a2 2 0 0 1-2-2.4l1.2-6A2 2 0 0 1 6.6 4H15a2 2 0 0 1 2 2v8h-2.6a2 2 0 0 0-1.9 1.4L11 20a2 2 0 0 1-2-2.5L10 14Z"/></svg><b>{{dislikeCount(c)}}</b>
+        </button>
+        <button class="soft-action-pro" type="button" (click)="startReply(c)"><svg class="forum-ui-icon forum-ui-icon-comment" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-6.2A8 8 0 1 1 21 12Z"/></svg><span class="action-text">Trả lời</span></button>
+        <button class="soft-action-pro success" type="button" *ngIf="canAccept(c)" [disabled]="acceptingId===c.id" (click)="acceptAnswer(c)"><svg class="forum-ui-icon forum-ui-icon-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span class="action-text">Đánh dấu đúng</span></button>
+        <button class="soft-action-pro success" type="button" *ngIf="post.canAcceptAnswer && c.isAcceptedAnswer" (click)="clearAcceptedAnswer()"><svg class="forum-ui-icon forum-ui-icon-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span class="action-text">Bỏ đánh dấu đúng</span></button>
+        <button class="soft-action-pro danger" type="button" *ngIf="c.canEdit" (click)="deleteComment(c)"><svg class="forum-ui-icon forum-ui-icon-trash" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 15H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg><span class="action-text">Xóa</span></button>
+        <button class="soft-action-pro" type="button" (click)="openReport('Comment',c.id)"><svg class="forum-ui-icon forum-ui-icon-flag" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4"/><path d="M5 4h11l-1 4 1 4H5"/></svg><span class="action-text">Report</span></button>
+      </div>
+
+      <div class="reply-composer-pro" *ngIf="replyTo===c.id">
+        <textarea class="textarea" rows="3" [(ngModel)]="replyContent" placeholder="Viết phản hồi cho câu trả lời này..."></textarea>
+        <div class="forum-action-bar-pro compact">
+          <button class="btn btn-primary" type="button" (click)="addComment(c.id)">Gửi phản hồi</button>
+          <button class="btn btn-outline" type="button" (click)="cancelReply()">Hủy</button>
+        </div>
+      </div>
+
+      <div class="reply-thread-pro" *ngIf="c.threadReplies?.length">
+        <div class="reply-thread-head-pro">
+          <span>{{c.threadReplies.length}} phản hồi</span>
+        </div>
+
+        <div class="reply-item-pro" *ngFor="let r of getVisibleReplies(c); trackBy: trackByComment" [class.accepted-reply]="r.isAcceptedAnswer" [style.margin-left.px]="replyIndent(r)">
+          <div class="accepted-ribbon-pro mini" *ngIf="r.isAcceptedAnswer">Accepted Answer</div>
+
+          <div class="comment-header-pro small">
+            <div class="forum-author-inline-pro">
+              <span class="avatar avatar-xs">{{r.authorInitials || 'U'}}</span>
+              <b>{{r.authorName || 'Unknown user'}}</b>
+              <span class="status-chip-pro accepted" *ngIf="r.isAcceptedAnswer">✓ Đúng</span>
+            </div>
+            <span class="comment-date-pro">{{date(r.createdAt)}}</span>
+          </div>
+
+          <p class="comment-text-pro reply-text-pro">{{r.content}}</p>
+
+          <div class="forum-action-bar-pro compact reply-actions-pro">
+            <button class="icon-reaction-pro small" type="button" [class.active]="r.myVote===1" title="Like" aria-label="Like" (click)="voteComment(r,1)">
+              <svg class="forum-ui-icon forum-ui-icon-like" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10v10"/><path d="M14 10h4.6a2 2 0 0 1 2 2.4l-1.2 6A2 2 0 0 1 17.4 20H9a2 2 0 0 1-2-2v-8h2.6a2 2 0 0 0 1.9-1.4L13 4a2 2 0 0 1 2 2.5L14 10Z"/></svg><b>{{likeCount(r)}}</b>
+            </button>
+            <button class="icon-reaction-pro small" type="button" [class.active-dislike]="r.myVote===-1" title="Dislike" aria-label="Dislike" (click)="voteComment(r,-1)">
+              <svg class="forum-ui-icon forum-ui-icon-dislike" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 14V4"/><path d="M10 14H5.4a2 2 0 0 1-2-2.4l1.2-6A2 2 0 0 1 6.6 4H15a2 2 0 0 1 2 2v8h-2.6a2 2 0 0 0-1.9 1.4L11 20a2 2 0 0 1-2-2.5L10 14Z"/></svg><b>{{dislikeCount(r)}}</b>
+            </button>
+            <button class="soft-action-pro small" type="button" (click)="startReply(r)"><svg class="forum-ui-icon forum-ui-icon-comment" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-6.2A8 8 0 1 1 21 12Z"/></svg><span class="action-text">Trả lời</span></button>
+            <button class="soft-action-pro small success" type="button" *ngIf="canAccept(r)" [disabled]="acceptingId===r.id" (click)="acceptAnswer(r)"><svg class="forum-ui-icon forum-ui-icon-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span class="action-text">Đánh dấu đúng</span></button>
+            <button class="soft-action-pro small success" type="button" *ngIf="post.canAcceptAnswer && r.isAcceptedAnswer" (click)="clearAcceptedAnswer()"><svg class="forum-ui-icon forum-ui-icon-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span class="action-text">Bỏ đánh dấu</span></button>
+            <button class="soft-action-pro small danger" type="button" *ngIf="r.canEdit" (click)="deleteComment(r)"><svg class="forum-ui-icon forum-ui-icon-trash" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 15H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg><span class="action-text">Xóa</span></button>
+            <button class="soft-action-pro small" type="button" (click)="openReport('Comment',r.id)"><svg class="forum-ui-icon forum-ui-icon-flag" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4"/><path d="M5 4h11l-1 4 1 4H5"/></svg><span class="action-text">Report</span></button>
+          </div>
+
+          <div class="reply-composer-pro nested" *ngIf="replyTo===r.id">
+            <textarea class="textarea" rows="3" [(ngModel)]="replyContent" placeholder="Viết phản hồi..."></textarea>
+            <div class="forum-action-bar-pro compact">
+              <button class="btn btn-primary" type="button" (click)="addComment(r.id)">Gửi phản hồi</button>
+              <button class="btn btn-outline" type="button" (click)="cancelReply()">Hủy</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="show-more-wrap-pro" *ngIf="hiddenRepliesCount(c) > 0">
+          <button class="show-more-btn-pro" type="button" (click)="toggleReplyThread(c)">Xem thêm {{hiddenRepliesCount(c)}} phản hồi</button>
+        </div>
+
+        <div class="show-more-wrap-pro" *ngIf="isReplyThreadExpanded(c) && c.threadReplies.length > visibleReplyLimit">
+          <button class="show-more-btn-pro secondary" type="button" (click)="toggleReplyThread(c)">Thu gọn phản hồi</button>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <div class="show-more-wrap-pro answer-show-more" *ngIf="hiddenAnswersCount > 0 && !showAllAnswers">
+    <button class="show-more-btn-pro" type="button" (click)="showMoreAnswers()">Xem thêm {{hiddenAnswersCount}} câu trả lời</button>
+  </div>
+
+  <div class="show-more-wrap-pro answer-show-more" *ngIf="showAllAnswers && answers.length > visibleAnswerLimit">
+    <button class="show-more-btn-pro secondary" type="button" (click)="collapseAnswers()">Thu gọn câu trả lời</button>
+  </div>
+
+  <section class="answer-composer-pro">
+    <div>
+      <h3>Your Answer</h3>
+      <p>Viết câu trả lời chính cho bài viết. Phản hồi ngắn nên dùng nút “Trả lời” dưới từng bình luận.</p>
+    </div>
+    <textarea class="textarea" rows="5" placeholder="Write your answer..." [(ngModel)]="answer"></textarea>
+    <button class="btn btn-primary" type="button" (click)="addComment()">Post Answer</button>
+  </section>
+
+  <div class="modal-backdrop" *ngIf="reportTarget">
+    <div class="card card-pad report-modal-pro">
+      <h3>Report {{reportTarget.targetType}}</h3>
+      <textarea class="textarea" [(ngModel)]="reportReason" placeholder="Lý do report..."></textarea>
+      <div class="forum-action-bar-pro compact">
+        <button class="btn btn-primary" type="button" (click)="sendReport()">Send Report</button>
+        <button class="btn btn-outline" type="button" (click)="reportTarget=null">Cancel</button>
+      </div>
+    </div>
+  </div>
 </div>
+

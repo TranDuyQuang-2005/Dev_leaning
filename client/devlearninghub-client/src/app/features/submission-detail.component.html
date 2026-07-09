@@ -1,0 +1,39 @@
+<div class="page">
+  <a class="btn btn-outline" routerLink="/learner/problems">← Quay lại Problems</a>
+  <div class="alert alert-error" *ngIf="error" style="white-space:pre-line">{{error}}</div>
+  <div class="empty-state" *ngIf="loading">Đang tải submission...</div>
+
+  <section class="card card-pad" *ngIf="submission">
+    <div class="page-head">
+      <div>
+        <h1>Submission #{{submission.id || submission.submissionId}}</h1>
+        <p class="muted">{{submission.problemTitle || ('Problem #' + submission.problemId)}}</p>
+      </div>
+      <span class="badge badge-gray">{{submission.status || submission.verdict}}</span>
+    </div>
+    <div class="grid grid-4">
+      <div><b>Ngôn ngữ</b><p class="muted">{{submission.language}}</p></div>
+      <div><b>Điểm</b><p class="muted">{{submission.score ?? '-'}}</p></div>
+      <div><b>Runtime</b><p class="muted">{{submission.runtimeMs || submission.executionTimeMs || '-'}} ms</p></div>
+      <div><b>Memory</b><p class="muted">{{submission.memoryKb || '-'}} KB</p></div>
+    </div>
+    <p class="muted">Nộp lúc: {{submission.submittedAt | date:'short'}}</p>
+    <h3>Source Code</h3>
+    <pre class="output-box">{{submission.sourceCode}}</pre>
+  </section>
+
+  <section class="card card-pad" *ngIf="submission" style="margin-top:18px">
+    <h3>Testcase Results</h3>
+    <div class="example" *ngFor="let tc of tests; let i=index" style="margin-bottom:12px">
+      <b>#{{tc.displayOrder || i + 1}} {{tc.status || tc.verdict}}</b>
+      <span class="badge" [ngClass]="tc.passed ? 'badge-green' : 'badge-red'">{{tc.passed ? 'Passed' : 'Failed'}}</span>
+      <ng-container *ngIf="tc.input || tc.expectedOutput; else hiddenCase">
+        <small class="muted">Input</small><pre class="output-box">{{tc.input}}</pre>
+        <small class="muted">Expected</small><pre class="output-box">{{tc.expectedOutput}}</pre>
+      </ng-container>
+      <ng-template #hiddenCase><p class="muted">Hidden testcase</p></ng-template>
+      <small class="muted">Actual</small><pre class="output-box">{{tc.actualOutput || '(no output)'}}</pre>
+      <pre class="output-box" *ngIf="tc.error">{{tc.error}}</pre>
+    </div>
+  </section>
+</div>

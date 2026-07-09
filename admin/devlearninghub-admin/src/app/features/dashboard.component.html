@@ -6,7 +6,7 @@
     </a>
     <div class="action-row">
       <a class="btn btn-outline" routerLink="/code">Code Judge</a>
-      <a class="btn btn-outline" href="http://localhost:4200/learner/dashboard">Back to User Workspace</a>
+      <button type="button" class="admin-sso-link" (click)="openUserWorkspace()">Back to User Workspace</button>
       <button class="btn btn-ghost" type="button" (click)="auth.logout()">Logout</button>
     </div>
   </header>
@@ -14,27 +14,32 @@
   <main class="admin-wrap">
     <div class="page-title">
       <h1>Admin Panel</h1>
-      <p>Manage quiz categories, questions, quiz sets, imports and users.</p>
+      <p>Manage quiz categories, questions, quiz sets, imports, users and access control.</p>
     </div>
 
     <div class="grid grid-4" style="margin:24px 0">
-      <div class="card card-pad stat-card"><div><p class="muted">Total Users</p><div class="stat-value">{{users.length}}</div></div><div class="stat-icon blue-bg">👥</div></div>
-      <div class="card card-pad stat-card"><div><p class="muted">Total Questions</p><div class="stat-value">{{questions.length}}</div></div><div class="stat-icon green-bg">📘</div></div>
-      <div class="card card-pad stat-card"><div><p class="muted">Quiz Sets</p><div class="stat-value">{{quizSets.length}}</div></div><div class="stat-icon purple-bg">📝</div></div>
-      <div class="card card-pad stat-card"><div><p class="muted">Categories</p><div class="stat-value">{{categories.length}}</div></div><div class="stat-icon orange-bg">🏷</div></div>
+      <div class="card card-pad stat-card"><div><p class="muted">Total Users</p><div class="stat-value">{{users.length}}</div></div><div class="stat-icon blue-bg">U</div></div>
+      <div class="card card-pad stat-card"><div><p class="muted">Total Questions</p><div class="stat-value">{{questions.length}}</div></div><div class="stat-icon green-bg">Q</div></div>
+      <div class="card card-pad stat-card"><div><p class="muted">Quiz Sets</p><div class="stat-value">{{quizSets.length}}</div></div><div class="stat-icon purple-bg">S</div></div>
+      <div class="card card-pad stat-card"><div><p class="muted">Categories</p><div class="stat-value">{{categories.length}}</div></div><div class="stat-icon orange-bg">C</div></div>
     </div>
 
     <div class="alert alert-ok" *ngIf="message">{{message}}</div>
-    <div class="alert alert-error" *ngIf="error">{{error}}</div>
+    <div class="alert alert-error" *ngIf="error" style="white-space:pre-line">{{error}}</div>
 
     <div class="card card-pad">
       <h2>Content Management</h2>
       <div class="admin-tabs">
-        <button class="admin-tab" [class.active]="tab==='questions'" (click)="tab='questions'">Questions</button>
-        <button class="admin-tab" [class.active]="tab==='categories'" (click)="tab='categories'">Categories</button>
-        <button class="admin-tab" [class.active]="tab==='quizsets'" (click)="tab='quizsets'">Quiz Sets</button>
-        <button class="admin-tab" [class.active]="tab==='users'" (click)="tab='users'">Users</button>
-        <button class="admin-tab" [class.active]="tab==='import'" (click)="tab='import'">Import Questions</button><a class="admin-tab" routerLink="/forum">Forum Management</a>
+        <button class="admin-tab" [class.active]="tab==='questions'" (click)="setTab('questions')">Questions</button>
+        <button class="admin-tab" [class.active]="tab==='categories'" (click)="setTab('categories')">Categories</button>
+        <button class="admin-tab" [class.active]="tab==='quizsets'" (click)="setTab('quizsets')">Quiz Sets</button>
+        <button class="admin-tab" [class.active]="tab==='users'" (click)="setTab('users')">Users</button>
+        <button class="admin-tab" [class.active]="tab==='access'" (click)="setTab('access')">Access Control</button>
+        <button class="admin-tab" [class.active]="tab==='roadmaps'" (click)="setTab('roadmaps')">Roadmaps</button>
+        <button class="admin-tab" [class.active]="tab==='audit'" (click)="setTab('audit')">Audit Logs</button>
+        <button class="admin-tab" [class.active]="tab==='analytics'" (click)="setTab('analytics')">Quiz Analytics</button>
+        <button class="admin-tab" [class.active]="tab==='import'" (click)="setTab('import')">Import Questions</button>
+        <a class="admin-tab" routerLink="/forum">Forum Management</a>
       </div>
 
       <section class="admin-panel" [class.active]="tab==='questions'">
@@ -45,6 +50,7 @@
             <option *ngFor="let c of categories" [ngValue]="c.id">{{c.name}}</option>
           </select>
           <button class="btn btn-primary" type="button" (click)="showQuestionForm=!showQuestionForm; editingQuestionId=null">Add Question</button>
+          <button class="btn btn-outline" type="button" (click)="exportQuestions()">Export Questions CSV</button>
         </div>
 
         <form class="admin-form card card-pad" *ngIf="showQuestionForm" (ngSubmit)="createOrUpdateQuestion()">
@@ -58,7 +64,7 @@
           <div class="form-group"><label>Question explanation</label><textarea class="textarea" name="explanation" [(ngModel)]="questionForm.explanation" placeholder="Lời giải thích hiển thị sau khi user nộp bài"></textarea></div>
           <div class="grid grid-2">
             <div class="form-group card card-pad" *ngFor="let o of questionForm.options; let i=index">
-              <label>Option {{i+1}}</label>
+              <label>Option {{i + 1}}</label>
               <input class="input" [(ngModel)]="o.content" [name]="'op'+i" placeholder="Answer content">
               <label style="margin-top:8px"><input type="radio" name="correctOption" [checked]="o.isCorrect" (change)="markCorrect(i)"> Correct answer</label>
               <input class="input" style="margin-top:8px" [(ngModel)]="o.explanation" [name]="'opex'+i" placeholder="Option explanation">
@@ -100,7 +106,7 @@
           </div>
           <div class="action-row"><button class="btn btn-primary">{{editingCategoryId ? 'Update Category' : 'Save Category'}}</button><button class="btn btn-outline" type="button" (click)="cancelCategoryEdit()">Cancel</button></div>
         </form>
-        <table class="table"><thead><tr><th>ID</th><th>Name</th><th>Slug</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let c of categories"><td>{{c.id}}</td><td>{{c.name}}</td><td>{{c.slug}}</td><td>{{c.description}}</td><td><span class="badge" [ngClass]="statusBadge(c.status)">{{statusText(c.status)}}</span></td><td class="action-row"><button class="btn btn-outline" type="button" (click)="editCategory(c)">Edit</button><button class="btn btn-ghost" type="button" (click)="deleteCategory(c)">Delete</button></td></tr></tbody></table>
+        <table class="table"><thead><tr><th>ID</th><th>Name</th><th>Slug</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let c of categories"><td>{{c.id}}</td><td>{{c.name}}</td><td>{{c.slug}}</td><td>{{c.description || 'Không có mô tả'}}</td><td><span class="badge" [ngClass]="statusBadge(c.status)">{{statusText(c.status)}}</span></td><td class="action-row"><button class="btn btn-outline" type="button" (click)="editCategory(c)">Edit</button><button class="btn btn-ghost" type="button" (click)="deleteCategory(c)">Delete</button></td></tr></tbody></table>
       </section>
 
       <section class="admin-panel" [class.active]="tab==='quizsets'">
@@ -124,7 +130,6 @@
             <label><input type="checkbox" name="shuffleOptions" [(ngModel)]="quizSetForm.shuffleOptions"> Shuffle options</label>
             <div class="form-group"><label>Status</label><select class="select" name="status" [(ngModel)]="quizSetForm.status"><option [ngValue]="1">Active</option><option [ngValue]="0">Inactive</option></select></div>
           </div>
-
           <div class="card card-pad" style="margin-top:14px">
             <div class="filters"><h3 style="margin:0">Attach Questions</h3><select class="select" style="max-width:260px" [(ngModel)]="quizSetForm.categoryId" name="attachCategory"><option *ngFor="let c of categories" [ngValue]="c.id">{{c.name}}</option></select></div>
             <p class="muted">Chọn câu hỏi cần gắn vào bộ đề. Không cần nhập ID thủ công nữa.</p>
@@ -139,28 +144,143 @@
             <div class="alert" *ngIf="!selectableQuestions.length">Category này chưa có câu hỏi. Hãy import CSV/Excel hoặc tạo câu hỏi thủ công trước.</div>
             <b>Selected: {{quizSetForm.questions.length}} questions</b>
           </div>
-
           <div class="action-row" style="margin-top:14px"><button class="btn btn-primary">{{editingQuizSetId ? 'Update Quiz Set' : 'Save Quiz Set'}}</button><button class="btn btn-outline" type="button" (click)="cancelQuizSetEdit()">Cancel</button></div>
         </form>
 
         <div class="filters"><select class="select" style="max-width:240px" [(ngModel)]="quizSetCategoryFilter"><option value="all">All categories</option><option *ngFor="let c of categories" [ngValue]="c.id">{{c.name}}</option></select></div>
-        <table class="table"><thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Questions</th><th>Time</th><th>Attempts</th><th>Status</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let q of filteredQuizSets"><td>{{q.id}}</td><td><b>{{q.title}}</b><div class="muted">{{q.slug}}</div></td><td>{{categoryName(q.categoryId)}}</td><td>{{q.questionCount}}</td><td>{{q.timeLimitMinutes || '-'}} min</td><td>{{q.maxAttempts || '∞'}}</td><td><span class="badge" [ngClass]="statusBadge(q.status)">{{statusText(q.status)}}</span></td><td class="action-row"><button class="btn btn-outline" type="button" (click)="editQuizSet(q)">Edit</button><button class="btn btn-ghost" type="button" (click)="deleteQuizSet(q)">Delete</button></td></tr></tbody></table>
+        <table class="table"><thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Questions</th><th>Time</th><th>Attempts</th><th>Status</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let q of filteredQuizSets"><td>{{q.id}}</td><td><b>{{q.title}}</b><div class="muted">{{q.slug}}</div></td><td>{{categoryName(q.categoryId)}}</td><td>{{q.questionCount}}</td><td>{{q.timeLimitMinutes || '-'}} min</td><td>{{q.maxAttempts || '∞'}}</td><td><span class="badge" [ngClass]="statusBadge(q.status)">{{statusText(q.status)}}</span></td><td class="action-row"><button class="btn btn-outline" type="button" (click)="editQuizSet(q)">Edit</button><button class="btn btn-outline" type="button" (click)="exportQuiz(q)">Export Quiz CSV</button><button class="btn btn-ghost" type="button" (click)="deleteQuizSet(q)">Delete</button></td></tr></tbody></table>
+      </section>
+
+      <section class="admin-panel" [class.active]="tab==='roadmaps'">
+        <div class="grid grid-2">
+          <form class="admin-form card card-pad" (ngSubmit)="saveRoadmapTrack()">
+            <h3>{{editingRoadmapTrackId ? 'Edit Learning Track #' + editingRoadmapTrackId : 'Create Learning Track'}}</h3>
+            <div class="grid grid-2">
+              <div class="form-group"><label>Title</label><input class="input" name="roadmapTrackTitle" [(ngModel)]="roadmapTrackForm.title" (input)="autoRoadmapTrackSlug()"></div>
+              <div class="form-group"><label>Slug</label><input class="input" name="roadmapTrackSlug" [(ngModel)]="roadmapTrackForm.slug"></div>
+              <div class="form-group"><label>Level</label><select class="select" name="roadmapTrackLevel" [(ngModel)]="roadmapTrackForm.level"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div>
+              <div class="form-group"><label>Estimated hours</label><input class="input" type="number" name="roadmapTrackHours" [(ngModel)]="roadmapTrackForm.estimatedHours"></div>
+              <div class="form-group"><label>Sort order</label><input class="input" type="number" name="roadmapTrackSort" [(ngModel)]="roadmapTrackForm.sortOrder"></div>
+              <label><input type="checkbox" name="roadmapTrackPublished" [(ngModel)]="roadmapTrackForm.isPublished"> Published</label>
+            </div>
+            <div class="form-group"><label>Description</label><textarea class="textarea" name="roadmapTrackDescription" [(ngModel)]="roadmapTrackForm.description"></textarea></div>
+            <div class="form-group"><label>Thumbnail URL</label><input class="input" name="roadmapTrackThumb" [(ngModel)]="roadmapTrackForm.thumbnailUrl"></div>
+            <div class="action-row"><button class="btn btn-primary">{{editingRoadmapTrackId ? 'Update Track' : 'Save Track'}}</button><button class="btn btn-outline" type="button" (click)="cancelRoadmapTrackEdit()">Cancel</button></div>
+          </form>
+
+          <div class="card card-pad">
+            <h3>Learning Tracks</h3>
+            <div class="filters"><select class="select" [(ngModel)]="selectedRoadmapTrackId" name="selectedRoadmapTrackId"><option value="">All tracks</option><option *ngFor="let t of roadmapTracks" [ngValue]="t.id">{{t.title}}</option></select></div>
+            <table class="table"><thead><tr><th>ID</th><th>Track</th><th>Courses</th><th>State</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let t of roadmapTracks"><td>{{t.id}}</td><td><b>{{t.title}}</b><div class="muted">{{t.slug}}</div></td><td>{{t.courseCount || t.courses?.length || 0}}</td><td><span class="badge" [ngClass]="t.isPublished ? 'badge-green' : 'badge-gray'">{{t.isPublished ? 'Published' : 'Draft'}}</span></td><td class="action-row"><button class="btn btn-outline" type="button" (click)="editRoadmapTrack(t)">Edit</button><button class="btn btn-ghost" type="button" (click)="deleteRoadmapTrack(t)">Delete</button></td></tr></tbody></table>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:18px">
+          <form class="admin-form card card-pad" (ngSubmit)="saveRoadmapCourse()">
+            <h3>{{editingRoadmapCourseId ? 'Edit Course #' + editingRoadmapCourseId : 'Create Course'}}</h3>
+            <div class="grid grid-2">
+              <div class="form-group"><label>Track</label><select class="select" name="roadmapCourseTrack" [(ngModel)]="roadmapCourseForm.trackId"><option *ngFor="let t of roadmapTracks" [ngValue]="t.id">{{t.title}}</option></select></div>
+              <div class="form-group"><label>Level</label><select class="select" name="roadmapCourseLevel" [(ngModel)]="roadmapCourseForm.level"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div>
+              <div class="form-group"><label>Title</label><input class="input" name="roadmapCourseTitle" [(ngModel)]="roadmapCourseForm.title" (input)="autoRoadmapCourseSlug()"></div>
+              <div class="form-group"><label>Slug</label><input class="input" name="roadmapCourseSlug" [(ngModel)]="roadmapCourseForm.slug"></div>
+              <div class="form-group"><label>Estimated hours</label><input class="input" type="number" name="roadmapCourseHours" [(ngModel)]="roadmapCourseForm.estimatedHours"></div>
+              <div class="form-group"><label>Sort order</label><input class="input" type="number" name="roadmapCourseSort" [(ngModel)]="roadmapCourseForm.sortOrder"></div>
+            </div>
+            <div class="form-group"><label>Short description</label><input class="input" name="roadmapCourseShort" [(ngModel)]="roadmapCourseForm.shortDescription"></div>
+            <div class="form-group"><label>Description</label><textarea class="textarea" name="roadmapCourseDescription" [(ngModel)]="roadmapCourseForm.description"></textarea></div>
+            <div class="grid grid-2">
+              <div class="form-group"><label>Requirements, one per line</label><textarea class="textarea" name="roadmapCourseReq" [(ngModel)]="roadmapCourseForm.requirementsText"></textarea></div>
+              <div class="form-group"><label>Learning outcomes, one per line</label><textarea class="textarea" name="roadmapCourseOutcomes" [(ngModel)]="roadmapCourseForm.learningOutcomesText"></textarea></div>
+            </div>
+            <div class="grid grid-2">
+              <div class="form-group"><label>Related course IDs</label><input class="input" name="roadmapCourseRelated" [(ngModel)]="roadmapCourseForm.relatedCourseIdsText" placeholder="1,2,3"></div>
+              <div class="form-group"><label>Prerequisite course IDs</label><input class="input" name="roadmapCoursePrereq" [(ngModel)]="roadmapCourseForm.prerequisiteCourseIdsText" placeholder="1,2"></div>
+              <label><input type="checkbox" name="roadmapCourseSequential" [(ngModel)]="roadmapCourseForm.requiresSequentialCompletion"> Requires sequential completion</label>
+              <label><input type="checkbox" name="roadmapCoursePublished" [(ngModel)]="roadmapCourseForm.isPublished"> Published</label>
+            </div>
+            <div class="action-row"><button class="btn btn-primary">{{editingRoadmapCourseId ? 'Update Course' : 'Save Course'}}</button><button class="btn btn-outline" type="button" (click)="cancelRoadmapCourseEdit()">Cancel</button></div>
+          </form>
+
+          <div class="card card-pad">
+            <h3>Courses</h3>
+            <table class="table"><thead><tr><th>ID</th><th>Course</th><th>Modules</th><th>State</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let c of filteredRoadmapCourses" [class.active-row]="selectedRoadmapCourseId===c.id"><td>{{c.id}}</td><td><b>{{c.title}}</b><div class="muted">{{c.slug}}</div></td><td>{{c.modules?.length || c.totalModules || 0}}</td><td><span class="badge" [ngClass]="c.isPublished ? 'badge-green' : 'badge-gray'">{{c.isPublished ? 'Published' : 'Draft'}}</span></td><td class="action-row"><button class="btn btn-outline" type="button" (click)="selectedRoadmapCourseId=c.id; selectedRoadmapModuleId=c.modules?.[0]?.id || ''">Open</button><button class="btn btn-outline" type="button" (click)="editRoadmapCourse(c)">Edit</button><button class="btn btn-ghost" type="button" (click)="deleteRoadmapCourse(c)">Delete</button></td></tr></tbody></table>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:18px">
+          <form class="admin-form card card-pad" (ngSubmit)="saveRoadmapModule()">
+            <h3>{{editingRoadmapModuleId ? 'Edit Module #' + editingRoadmapModuleId : 'Add Module'}}</h3>
+            <p class="muted">Course: {{selectedRoadmapCourse?.title || 'Choose a course from the table'}}</p>
+            <div class="grid grid-2">
+              <div class="form-group"><label>Title</label><input class="input" name="roadmapModuleTitle" [(ngModel)]="roadmapModuleForm.title"></div>
+              <div class="form-group"><label>Sort order</label><input class="input" type="number" name="roadmapModuleSort" [(ngModel)]="roadmapModuleForm.sortOrder"></div>
+              <div class="form-group"><label>Estimated minutes</label><input class="input" type="number" name="roadmapModuleMinutes" [(ngModel)]="roadmapModuleForm.estimatedMinutes"></div>
+              <label><input type="checkbox" name="roadmapModulePrevious" [(ngModel)]="roadmapModuleForm.requiresPreviousModuleCompletion"> Requires previous module</label>
+              <label><input type="checkbox" name="roadmapModuleLocked" [(ngModel)]="roadmapModuleForm.isLockedByDefault"> Locked by default</label>
+              <label><input type="checkbox" name="roadmapModulePublished" [(ngModel)]="roadmapModuleForm.isPublished"> Published</label>
+            </div>
+            <div class="form-group"><label>Description</label><textarea class="textarea" name="roadmapModuleDescription" [(ngModel)]="roadmapModuleForm.description"></textarea></div>
+            <div class="action-row"><button class="btn btn-primary">{{editingRoadmapModuleId ? 'Update Module' : 'Save Module'}}</button><button class="btn btn-outline" type="button" (click)="cancelRoadmapModuleEdit()">Cancel</button></div>
+          </form>
+
+          <div class="card card-pad">
+            <h3>Modules</h3>
+            <table class="table"><thead><tr><th>ID</th><th>Module</th><th>Lessons</th><th>State</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let m of selectedRoadmapModules" [class.active-row]="selectedRoadmapModuleId===m.id"><td>{{m.id}}</td><td><b>{{m.title}}</b></td><td>{{m.lessons?.length || 0}}</td><td><span class="badge" [ngClass]="m.isPublished ? 'badge-green' : 'badge-gray'">{{m.isPublished ? 'Published' : 'Draft'}}</span></td><td class="action-row"><button class="btn btn-outline" type="button" (click)="selectedRoadmapModuleId=m.id">Open</button><button class="btn btn-outline" type="button" (click)="editRoadmapModule(m)">Edit</button><button class="btn btn-ghost" type="button" (click)="deleteRoadmapModule(m)">Delete</button></td></tr></tbody></table>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:18px">
+          <form class="admin-form card card-pad" (ngSubmit)="saveRoadmapLesson()">
+            <h3>{{editingRoadmapLessonId ? 'Edit Lesson #' + editingRoadmapLessonId : 'Add Lesson'}}</h3>
+            <p class="muted">Module: {{selectedRoadmapModule?.title || 'Choose a module from the table'}}</p>
+            <div class="grid grid-2">
+              <div class="form-group"><label>Title</label><input class="input" name="roadmapLessonTitle" [(ngModel)]="roadmapLessonForm.title"></div>
+              <div class="form-group"><label>Type</label><select class="select" name="roadmapLessonType" [(ngModel)]="roadmapLessonForm.type"><option>Reading</option><option>Video</option><option>Quiz</option><option>CodePractice</option><option>Assignment</option></select></div>
+              <div class="form-group"><label>Sort order</label><input class="input" type="number" name="roadmapLessonSort" [(ngModel)]="roadmapLessonForm.sortOrder"></div>
+              <div class="form-group"><label>Estimated minutes</label><input class="input" type="number" name="roadmapLessonMinutes" [(ngModel)]="roadmapLessonForm.estimatedMinutes"></div>
+              <div class="form-group" *ngIf="roadmapLessonForm.type==='Video'"><label>Video URL</label><input class="input" name="roadmapLessonVideo" [(ngModel)]="roadmapLessonForm.videoUrl"></div>
+              <div class="form-group" *ngIf="roadmapLessonForm.type==='Quiz'"><label>Quiz set</label><select class="select" name="roadmapLessonQuizSet" [(ngModel)]="roadmapLessonForm.quizSetId"><option [ngValue]="null">Choose quiz set</option><option *ngFor="let q of quizSets" [ngValue]="q.id">#{{q.id}} {{q.title}}</option></select></div>
+              <div class="form-group" *ngIf="roadmapLessonForm.type==='CodePractice'"><label>Coding problem ID</label><input class="input" type="number" name="roadmapLessonProblem" [(ngModel)]="roadmapLessonForm.codingProblemId"></div>
+              <div class="form-group"><label>Unlock after lesson ID</label><input class="input" type="number" name="roadmapLessonUnlock" [(ngModel)]="roadmapLessonForm.unlockAfterLessonId"></div>
+            </div>
+            <div class="grid grid-4">
+              <label><input type="checkbox" name="roadmapLessonPrevious" [(ngModel)]="roadmapLessonForm.requiresPreviousLessonCompletion"> Requires previous lesson</label>
+              <label><input type="checkbox" name="roadmapLessonRequired" [(ngModel)]="roadmapLessonForm.isRequired"> Required</label>
+              <label><input type="checkbox" name="roadmapLessonPreview" [(ngModel)]="roadmapLessonForm.isPreview"> Preview</label>
+              <label><input type="checkbox" name="roadmapLessonPublished" [(ngModel)]="roadmapLessonForm.isPublished"> Published</label>
+            </div>
+            <div class="form-group"><label>Content</label><textarea class="textarea" name="roadmapLessonContent" [(ngModel)]="roadmapLessonForm.content"></textarea></div>
+            <div class="action-row"><button class="btn btn-primary">{{editingRoadmapLessonId ? 'Update Lesson' : 'Save Lesson'}}</button><button class="btn btn-outline" type="button" (click)="cancelRoadmapLessonEdit()">Cancel</button></div>
+          </form>
+
+          <div class="card card-pad">
+            <h3>Lessons</h3>
+            <table class="table"><thead><tr><th>ID</th><th>Lesson</th><th>Type</th><th>Lock</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let l of selectedRoadmapLessons"><td>{{l.id}}</td><td><b>{{l.title}}</b><div class="muted">Order {{l.sortOrder}} · {{l.estimatedMinutes}} min</div></td><td><span class="badge badge-blue">{{l.type}}</span></td><td><span class="badge badge-gray" *ngIf="l.isPreview">Preview</span><span class="badge badge-yellow" *ngIf="l.requiresPreviousLessonCompletion">Sequential</span></td><td class="action-row"><button class="btn btn-outline" type="button" (click)="editRoadmapLesson(l)">Edit</button><button class="btn btn-ghost" type="button" (click)="deleteRoadmapLesson(l)">Delete</button></td></tr></tbody></table>
+          </div>
+        </div>
       </section>
 
       <section class="admin-panel" [class.active]="tab==='users'">
         <div class="grid grid-2">
           <div class="card card-pad">
             <h3>Accounts</h3>
-            <p class="muted">Bấm vào tài khoản để xem toàn bộ quyền lẻ trong hệ thống. Tick/untick từng quyền để cập nhật trực tiếp cho tài khoản.</p>
+            <p class="muted">Bấm vào tài khoản để quản lý quyền lẻ, nhóm quyền, trạng thái khóa và quyền hiệu lực.</p>
             <table class="table">
-              <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Current Roles</th><th>Action</th></tr></thead>
+              <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Roles</th><th>Status</th><th>Action</th></tr></thead>
               <tbody>
                 <tr *ngFor="let u of users" [class.active-row]="userPermissionDetail?.user?.id===u.id">
                   <td>{{u.id}}</td>
                   <td><b>{{u.fullName}}</b><div class="muted">{{u.userName}}</div></td>
                   <td>{{u.email}}</td>
                   <td><span class="badge badge-gray" *ngFor="let r of u.roles">{{r.name}}</span><span class="muted" *ngIf="!u.roles?.length">Chưa có role</span></td>
-                  <td><button class="btn btn-outline" type="button" (click)="openPermissionPanel(u)">Phân quyền lẻ</button></td>
+                  <td><span class="badge badge-gray">{{userStatus(u)}}</span></td>
+                  <td class="action-row">
+                    <button class="btn btn-outline" type="button" (click)="openPermissionPanel(u)">Phân quyền lẻ</button>
+                    <button class="btn btn-outline" type="button" (click)="openAssignGroups(u)">Gán nhóm quyền</button>
+                    <button class="btn btn-outline" type="button" (click)="viewEffectivePermissions(u)">Xem quyền hiệu lực</button>
+                    <button class="btn btn-ghost" type="button" (click)="openLockUser(u)">Khóa</button>
+                    <button class="btn btn-outline" type="button" (click)="unlockUser(u)">Mở khóa</button>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -174,10 +294,7 @@
               </div>
               <button class="btn btn-outline" type="button" (click)="closePermissionPanel()">Close</button>
             </div>
-            <div class="alert">
-              Đây là phân quyền theo từng quyền lẻ, không phải nhóm quyền/role. Tick = gán quyền trực tiếp cho tài khoản.
-              Nhãn "Từ role" nghĩa là tài khoản đang có quyền đó thông qua role hiện tại.
-            </div>
+            <div class="alert">Đây là phân quyền theo từng quyền lẻ. Quyền lẻ có thể gán trực tiếp cho user hoặc đưa vào nhóm quyền.</div>
             <div class="permission-check-list" style="max-height:520px;overflow:auto">
               <div *ngFor="let module of permissionModules" style="margin-bottom:18px">
                 <h4 style="margin:0 0 10px">{{module}}</h4>
@@ -200,7 +317,7 @@
 
           <div class="card card-pad" *ngIf="!userPermissionDetail">
             <h3>Permission Guide</h3>
-            <p class="muted">Danh sách quyền lẻ hiện có trong hệ thống:</p>
+            <p class="muted">Quyền lẻ có thể gán trực tiếp cho user hoặc đưa vào nhóm quyền.</p>
             <div class="example" *ngFor="let p of permissions" style="margin-bottom:10px">
               <b>{{p.name}}</b>
               <span class="badge badge-gray" style="margin-left:8px">{{p.code}}</span>
@@ -210,39 +327,198 @@
         </div>
       </section>
 
+      <section class="admin-panel" [class.active]="tab==='access'">
+        <div class="grid grid-2">
+          <form class="card card-pad" (ngSubmit)="savePermissionGroup()">
+            <h3>{{editingGroupId ? 'Sửa nhóm quyền' : '+ Tạo nhóm quyền'}}</h3>
+            <div class="grid grid-2">
+              <div class="form-group"><label>Name</label><input class="input" name="groupName" [(ngModel)]="groupForm.name" required></div>
+              <div class="form-group"><label>Code</label><input class="input" name="groupCode" [(ngModel)]="groupForm.code" required></div>
+            </div>
+            <div class="form-group"><label>Description</label><textarea class="textarea" name="groupDescription" [(ngModel)]="groupForm.description"></textarea></div>
+            <h4>Permissions</h4>
+            <div style="max-height:260px;overflow:auto">
+              <label class="example" *ngFor="let p of permissions" style="display:block;margin-bottom:8px">
+                <input type="checkbox" [checked]="groupForm.permissionIds.includes(p.id)" (change)="toggleArrayValue(groupForm.permissionIds, p.id, $any($event.target).checked)">
+                <b>{{p.name}}</b> <span class="badge badge-gray">{{p.code}}</span>
+              </label>
+            </div>
+            <div class="action-row" style="margin-top:12px"><button class="btn btn-primary">Lưu nhóm quyền</button><button class="btn btn-outline" type="button" (click)="cancelGroupEdit()">Hủy</button></div>
+          </form>
+
+          <div class="card card-pad">
+            <h3>Assign Group To Role</h3>
+            <div class="form-group"><label>Role</label><select class="select" [(ngModel)]="selectedRoleId" name="selectedRole" (change)="loadRoleGroups()"><option value="">Chọn role</option><option *ngFor="let role of roles" [ngValue]="role.id">{{role.name}}</option></select></div>
+            <div style="max-height:260px;overflow:auto">
+              <label class="example" *ngFor="let g of permissionGroups" style="display:block;margin-bottom:8px">
+                <input type="checkbox" [checked]="selectedRoleGroupIds.includes(g.id)" (change)="toggleArrayValue(selectedRoleGroupIds, g.id, $any($event.target).checked)">
+                <b>{{g.name}}</b> <span class="badge badge-gray">{{g.code}}</span>
+              </label>
+            </div>
+            <button class="btn btn-primary" type="button" (click)="saveRoleGroups()">Lưu nhóm quyền cho role</button>
+          </div>
+        </div>
+
+        <div class="card card-pad" style="margin-top:18px">
+          <h3>Permission Groups</h3>
+          <table class="table">
+            <thead><tr><th>ID</th><th>Name</th><th>Code</th><th>Description</th><th>System</th><th>Permissions</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let group of permissionGroups">
+                <td>{{group.id}}</td>
+                <td><b>{{group.name}}</b></td>
+                <td><span class="badge badge-gray">{{group.code}}</span></td>
+                <td>{{group.description || 'Không có mô tả'}}</td>
+                <td>{{group.isSystem ? 'Yes' : 'No'}}</td>
+                <td>{{group.permissions?.length || group.permissionCount || 0}}</td>
+                <td class="action-row"><button class="btn btn-outline" type="button" (click)="editPermissionGroup(group)">Edit</button><button class="btn btn-outline" type="button" (click)="openManageGroup(group)">Manage Permissions</button><button class="btn btn-ghost" type="button" [disabled]="group.isSystem" (click)="deletePermissionGroup(group)">Delete</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card card-pad" style="margin-top:18px" *ngIf="managingGroup">
+          <div class="filters"><h3 style="margin:0">Manage Permissions: {{managingGroup.name}}</h3><button class="btn btn-outline" type="button" (click)="managingGroup=null">Close</button></div>
+          <div class="grid grid-2">
+            <label class="example" *ngFor="let p of permissions">
+              <input type="checkbox" [checked]="selectedGroupPermissionIds.includes(p.id)" (change)="toggleArrayValue(selectedGroupPermissionIds, p.id, $any($event.target).checked)">
+              <b>{{p.name}}</b> <span class="badge badge-gray">{{p.code}}</span>
+            </label>
+          </div>
+          <button class="btn btn-primary" type="button" (click)="saveGroupPermissions()">Lưu permissions</button>
+        </div>
+
+        <div class="card card-pad" style="margin-top:18px" *ngIf="selectedUserForGroups">
+          <div class="filters"><h3 style="margin:0">Gán nhóm quyền: {{selectedUserForGroups.fullName || selectedUserForGroups.email}}</h3><button class="btn btn-outline" type="button" (click)="selectedUserForGroups=null">Close</button></div>
+          <div class="grid grid-2">
+            <label class="example" *ngFor="let g of permissionGroups">
+              <input type="checkbox" [checked]="selectedUserGroupIds.includes(g.id)" (change)="toggleArrayValue(selectedUserGroupIds, g.id, $any($event.target).checked)">
+              <b>{{g.name}}</b> <span class="badge badge-gray">{{g.code}}</span>
+            </label>
+          </div>
+          <button class="btn btn-primary" type="button" (click)="saveUserGroups()">Lưu nhóm quyền cho user</button>
+        </div>
+
+        <div class="card card-pad" style="margin-top:18px" *ngIf="effectivePermissions">
+          <div class="filters"><h3 style="margin:0">Quyền hiệu lực: {{effectiveUser?.fullName || effectiveUser?.email}}</h3><button class="btn btn-outline" type="button" (click)="effectivePermissions=null">Close</button></div>
+          <h4>Direct permissions</h4><span class="badge badge-gray" *ngFor="let p of permissionArray(effectivePermissions.directPermissions)">{{permissionCode(p)}}</span>
+          <h4>Role permissions</h4><span class="badge badge-green" *ngFor="let p of permissionArray(effectivePermissions.rolePermissions)">{{permissionCode(p)}}</span>
+          <h4>Role permission groups</h4><span class="badge badge-yellow" *ngFor="let p of permissionArray(effectivePermissions.rolePermissionGroups)">{{permissionCode(p)}}</span>
+          <h4>User permission groups</h4><span class="badge badge-yellow" *ngFor="let p of permissionArray(effectivePermissions.userPermissionGroups)">{{permissionCode(p)}}</span>
+          <h4>Effective permissions</h4><span class="badge badge-green" *ngFor="let p of permissionArray(effectivePermissions.effectivePermissions)">{{permissionCode(p)}}</span>
+        </div>
+      </section>
+
+      <section class="admin-panel" [class.active]="tab==='audit'">
+        <div class="card card-pad">
+          <h3>Audit Logs</h3>
+          <div class="grid grid-4">
+            <div class="form-group"><label>Actor User ID</label><input class="input" name="actorUserId" [(ngModel)]="auditFilters.actorUserId"></div>
+            <div class="form-group"><label>Action</label><input class="input" name="action" [(ngModel)]="auditFilters.action"></div>
+            <div class="form-group"><label>Target Type</label><input class="input" name="targetType" [(ngModel)]="auditFilters.targetType"></div>
+            <div class="form-group"><label>Page Size</label><input class="input" type="number" name="pageSize" [(ngModel)]="auditFilters.pageSize"></div>
+            <div class="form-group"><label>From Date</label><input class="input" type="date" name="fromDate" [(ngModel)]="auditFilters.fromDate"></div>
+            <div class="form-group"><label>To Date</label><input class="input" type="date" name="toDate" [(ngModel)]="auditFilters.toDate"></div>
+          </div>
+          <button class="btn btn-primary" type="button" (click)="loadAuditLogs()">Lọc audit logs</button>
+        </div>
+        <table class="table" style="margin-top:18px">
+          <thead><tr><th>Created At</th><th>Actor</th><th>Action</th><th>Target</th><th>IP</th><th>User Agent</th><th>Detail</th></tr></thead>
+          <tbody><tr *ngFor="let log of auditLogs"><td>{{log.createdAt | date:'short'}}</td><td>{{log.actorUserName || log.actorUserId}}</td><td><span class="badge badge-gray">{{log.action}}</span></td><td>{{log.targetType}} #{{log.targetId}}</td><td>{{log.ipAddress}}</td><td>{{log.userAgent}}</td><td><button class="btn btn-outline" type="button" (click)="auditDetail=log">Xem chi tiết</button></td></tr></tbody>
+        </table>
+        <div class="card card-pad" style="margin-top:18px" *ngIf="auditDetail">
+          <div class="filters"><h3 style="margin:0">Audit Detail</h3><button class="btn btn-outline" type="button" (click)="auditDetail=null">Close</button></div>
+          <div class="grid grid-2">
+            <div><h4>Old Value JSON</h4><pre class="output-box">{{prettyJson(auditDetail.oldValueJson)}}</pre></div>
+            <div><h4>New Value JSON</h4><pre class="output-box">{{prettyJson(auditDetail.newValueJson)}}</pre></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="admin-panel" [class.active]="tab==='analytics'">
+        <div class="grid grid-4" *ngIf="quizOverview">
+          <div class="card card-pad"><p class="muted">Total Attempts</p><div class="stat-value">{{quizOverview.totalAttempts || 0}}</div></div>
+          <div class="card card-pad"><p class="muted">Unique Users</p><div class="stat-value">{{quizOverview.uniqueUsers || 0}}</div></div>
+          <div class="card card-pad"><p class="muted">Average Score</p><div class="stat-value">{{quizOverview.averageScore || 0}}</div></div>
+          <div class="card card-pad"><p class="muted">Pass Rate</p><div class="stat-value">{{quizOverview.passRate || 0}}%</div></div>
+          <div class="card card-pad"><p class="muted">Fail Rate</p><div class="stat-value">{{quizOverview.failRate || 0}}%</div></div>
+          <div class="card card-pad"><p class="muted">Quiz Sets</p><div class="stat-value">{{quizOverview.totalQuizSets || quizSets.length}}</div></div>
+          <div class="card card-pad"><p class="muted">Questions</p><div class="stat-value">{{quizOverview.totalQuestions || questions.length}}</div></div>
+        </div>
+
+        <div class="card card-pad" style="margin-top:18px">
+          <h3>Quiz Set Statistics</h3>
+          <div class="action-row">
+            <select class="select" style="max-width:320px" [(ngModel)]="selectedStatsQuizSetId" name="statsQuizSetId">
+              <option value="">Chọn quiz set</option>
+              <option *ngFor="let q of quizSets" [ngValue]="q.id">#{{q.id}} {{q.title}}</option>
+            </select>
+            <button class="btn btn-primary" type="button" (click)="loadQuizStats()">Tải thống kê</button>
+          </div>
+          <div class="grid grid-4" style="margin-top:16px" *ngIf="quizStats">
+            <div><b>Total Attempts</b><p class="muted">{{quizStats.totalAttempts || 0}}</p></div>
+            <div><b>Unique Users</b><p class="muted">{{quizStats.uniqueUsers || 0}}</p></div>
+            <div><b>Average Score</b><p class="muted">{{quizStats.averageScore || 0}}</p></div>
+            <div><b>Highest Score</b><p class="muted">{{quizStats.highestScore || 0}}</p></div>
+            <div><b>Lowest Score</b><p class="muted">{{quizStats.lowestScore || 0}}</p></div>
+            <div><b>Pass Count</b><p class="muted">{{quizStats.passCount || 0}}</p></div>
+            <div><b>Fail Count</b><p class="muted">{{quizStats.failCount || 0}}</p></div>
+            <div><b>Average Duration</b><p class="muted">{{quizStats.averageDurationSeconds || 0}}s</p></div>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:18px">
+          <div class="card card-pad">
+            <h3>Reset Attempt</h3>
+            <div class="form-group"><label>Attempt ID</label><input class="input" name="resetAttemptId" [(ngModel)]="resetAttemptId"></div>
+            <button class="btn btn-primary" type="button" (click)="resetAttempt()">Reset Attempt</button>
+          </div>
+          <div class="card card-pad">
+            <h3>Reset User Attempts In Quiz</h3>
+            <div class="grid grid-2">
+              <div class="form-group"><label>Quiz Set ID</label><input class="input" name="resetQuizSetId" [(ngModel)]="resetQuizSetId"></div>
+              <div class="form-group"><label>User ID</label><input class="input" name="resetUserId" [(ngModel)]="resetUserId"></div>
+            </div>
+            <button class="btn btn-primary" type="button" (click)="resetUserQuizAttempts()">Reset Attempts</button>
+          </div>
+        </div>
+      </section>
+
       <section class="admin-panel" [class.active]="tab==='import'">
         <div class="card card-pad">
           <h3>Import Questions from Excel/CSV</h3>
           <p class="muted">Dành cho Admin/Giảng viên nhập ngân hàng câu hỏi. Tải file mẫu CSV, mở bằng Excel, điền câu hỏi rồi lưu lại dạng .csv để import vào database.</p>
-
-          <div class="alert">
-            Người học không import file. Người học chỉ vào Learning để làm quiz và xem kết quả.
-          </div>
-
+          <div class="alert">Import tại đây dùng cho Admin/Giảng viên nhập ngân hàng câu hỏi chung. Người học có khu vực Tự luyện riêng để upload file câu hỏi cá nhân, dữ liệu chỉ thuộc về tài khoản đó.</div>
           <div class="grid grid-2">
             <div>
               <h4>1. Tải file mẫu</h4>
               <p class="muted">File có các cột: CategoryId, Title, Content, OptionA-D, CorrectOption, Explanation.</p>
               <button class="btn btn-outline" type="button" (click)="downloadCsvTemplate()">Download CSV Template</button>
             </div>
-
             <div>
               <h4>2. Upload CSV</h4>
               <input class="input" type="file" (change)="pick($event)" accept=".csv">
               <button class="btn btn-primary" type="button" (click)="importFile()" style="margin-top:12px">Import CSV</button>
             </div>
           </div>
-
           <details style="margin-top:18px">
             <summary>Advanced: Import JSON cho developer/seed dữ liệu</summary>
             <p class="muted">JSON chỉ dùng cho kiểm thử kỹ thuật hoặc seed dữ liệu, không phải luồng chính trong thực tế.</p>
             <input class="input" type="file" (change)="pick($event)" accept=".json">
             <button class="btn btn-outline" type="button" (click)="importJsonFile()" style="margin-top:12px">Import JSON Advanced</button>
           </details>
-
           <pre class="output-box" *ngIf="importResult">{{importResult | json}}</pre>
         </div>
       </section>
+    </div>
+
+    <div class="modal-backdrop" *ngIf="lockUserTarget">
+      <div class="card card-pad" style="max-width:560px;margin:60px auto">
+        <div class="filters"><h3 style="margin:0">Khóa tài khoản {{lockUserTarget.fullName || lockUserTarget.email}}</h3><button class="btn btn-outline" type="button" (click)="lockUserTarget=null">Close</button></div>
+        <div class="form-group"><label>Lý do</label><textarea class="textarea" name="lockReason" [(ngModel)]="lockForm.reason"></textarea></div>
+        <div class="form-group"><label>Khóa đến</label><input class="input" type="datetime-local" name="lockUntil" [(ngModel)]="lockForm.lockUntil"></div>
+        <button class="btn btn-primary" type="button" (click)="lockUser()">Khóa tài khoản</button>
+      </div>
     </div>
   </main>
 </div>

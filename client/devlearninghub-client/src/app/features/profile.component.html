@@ -1,1 +1,62 @@
-<div class="page"><div class="card card-pad"><div class="page-head"><div style="display:flex;gap:18px;align-items:center"><div class="avatar avatar-xl">{{initials}}</div><div><h1 style="margin:0">{{auth.currentUser()?.fullName || profile.fullName || 'User'}}</h1><p class="muted">{{auth.currentUser()?.email}}</p><p class="muted">Member of Dev-Learning Hub</p></div></div><button class="btn btn-primary" type="button" (click)="editing=!editing">Edit Profile</button></div><div class="grid grid-3" style="margin:16px 0"><div class="example" style="text-align:center"><div class="stat-value" style="color:var(--blue)">Level {{level}}</div><span class="muted">Current Level</span></div><div class="example" style="text-align:center"><div class="stat-value" style="color:#ca8a04">{{stats.reputation||0}}</div><span class="muted">Total XP</span></div><div class="example" style="text-align:center"><div class="stat-value" style="color:#ea580c">{{stats.streakDays||0}} days</div><span class="muted">Current Streak</span></div></div><div style="display:flex;justify-content:space-between;font-size:14px"><span>Progress to Level {{level+1}}</span><b>{{stats.reputation||0}} / {{nextLevelXp}} XP</b></div><div class="progress"><span [style.width.%]="xpPercent"></span></div></div><form class="card card-pad" *ngIf="editing" (ngSubmit)="save()"><h3>Update Profile</h3><div class="grid grid-2"><div class="form-group"><label>Full name</label><input class="input" name="fullName" [(ngModel)]="profile.fullName"></div><div class="form-group"><label>Headline</label><input class="input" name="headline" [(ngModel)]="profile.headline"></div></div><div class="form-group"><label>Bio</label><textarea class="textarea" name="bio" [(ngModel)]="profile.bio"></textarea></div><div class="alert alert-ok" *ngIf="message">{{message}}</div><button class="btn btn-primary">Save Profile</button></form><div class="grid grid-4"><div class="card card-pad" style="text-align:center;color:#2563eb"><div class="stat-value" style="color:var(--gray-900)">{{stats.totalQuizAttempts||0}}</div><p class="muted">Quizzes Completed</p></div><div class="card card-pad" style="text-align:center;color:#16a34a"><div class="stat-value" style="color:var(--gray-900)">{{stats.acceptedCodeSubmissions||0}}</div><p class="muted">Problems Solved</p></div><div class="card card-pad" style="text-align:center;color:#7c3aed"><div class="stat-value" style="color:var(--gray-900)">{{stats.totalPosts||0}}</div><p class="muted">Forum Posts</p></div><div class="card card-pad" style="text-align:center;color:#ea580c"><div class="stat-value" style="color:var(--gray-900)">{{stats.totalCorrectAnswers||0}}</div><p class="muted">Correct Answers</p></div></div><div class="card card-pad"><h3>Earned Badges</h3><div class="grid badge-grid"><div class="badge-card"><div class="benefit-icon">🎯</div><b>First Steps</b><p class="muted" style="font-size:12px">Completed first quiz</p></div><div class="badge-card"><div class="benefit-icon">🔥</div><b>Streak</b><p class="muted" style="font-size:12px">Keep learning</p></div></div></div></div>
+<div class="page">
+  <div class="card card-pad">
+    <div class="page-head">
+      <div style="display:flex;gap:18px;align-items:center">
+        <div class="avatar avatar-xl">{{initials}}</div>
+        <div>
+          <h1 style="margin:0">{{auth.currentUser()?.fullName || profile.fullName || 'User'}}</h1>
+          <p class="muted">{{auth.currentUser()?.email}}</p>
+          <p class="muted">Member of Dev-Learning Hub</p>
+        </div>
+      </div>
+      <button class="btn btn-primary" type="button" (click)="editing=!editing">Edit Profile</button>
+    </div>
+
+    <div class="grid grid-3" style="margin:16px 0">
+      <div class="example" style="text-align:center"><div class="stat-value" style="color:var(--blue)">Level {{level}}</div><span class="muted">Current Level</span></div>
+      <div class="example" style="text-align:center"><div class="stat-value" style="color:#ca8a04">{{stats.reputation || 0}}</div><span class="muted">Total XP</span></div>
+      <div class="example" style="text-align:center"><div class="stat-value" style="color:#ea580c">{{stats.streakDays || 0}} days</div><span class="muted">Current Streak</span></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:14px"><span>Progress to Level {{level + 1}}</span><b>{{stats.reputation || 0}} / {{nextLevelXp}} XP</b></div>
+    <div class="progress"><span [style.width.%]="xpPercent"></span></div>
+  </div>
+
+  <form class="card card-pad" *ngIf="editing" (ngSubmit)="save()">
+    <h3>Update Profile</h3>
+    <div class="grid grid-2">
+      <div class="form-group"><label>Full name</label><input class="input" name="fullName" [(ngModel)]="profile.fullName"></div>
+      <div class="form-group"><label>Headline</label><input class="input" name="headline" [(ngModel)]="profile.headline"></div>
+    </div>
+    <div class="form-group"><label>Bio</label><textarea class="textarea" name="bio" [(ngModel)]="profile.bio"></textarea></div>
+    <div class="alert alert-ok" *ngIf="message">{{message}}</div>
+    <div class="alert alert-error" *ngIf="error" style="white-space:pre-line">{{error}}</div>
+    <button class="btn btn-primary">Save Profile</button>
+  </form>
+
+  <form class="card card-pad" (ngSubmit)="changePassword()">
+    <h3>Đổi mật khẩu</h3>
+    <div class="grid grid-3">
+      <div class="form-group"><label>Mật khẩu hiện tại</label><input class="input" type="password" name="currentPassword" [(ngModel)]="passwordForm.currentPassword" required></div>
+      <div class="form-group"><label>Mật khẩu mới</label><input class="input" type="password" name="newPassword" [(ngModel)]="passwordForm.newPassword" required></div>
+      <div class="form-group"><label>Xác nhận mật khẩu</label><input class="input" type="password" name="confirmPassword" [(ngModel)]="passwordForm.confirmPassword" required></div>
+    </div>
+    <div class="alert alert-ok" *ngIf="passwordMessage">{{passwordMessage}}</div>
+    <div class="alert alert-error" *ngIf="passwordError" style="white-space:pre-line">{{passwordError}}</div>
+    <button class="btn btn-primary" type="submit">Đổi mật khẩu</button>
+  </form>
+
+  <div class="grid grid-4">
+    <div class="card card-pad" style="text-align:center;color:#2563eb"><div class="stat-value" style="color:var(--gray-900)">{{stats.totalQuizAttempts || 0}}</div><p class="muted">Quizzes Completed</p></div>
+    <div class="card card-pad" style="text-align:center;color:#16a34a"><div class="stat-value" style="color:var(--gray-900)">{{stats.acceptedCodeSubmissions || 0}}</div><p class="muted">Problems Solved</p></div>
+    <div class="card card-pad" style="text-align:center;color:#7c3aed"><div class="stat-value" style="color:var(--gray-900)">{{stats.totalPosts || 0}}</div><p class="muted">Forum Posts</p></div>
+    <div class="card card-pad" style="text-align:center;color:#ea580c"><div class="stat-value" style="color:var(--gray-900)">{{stats.totalCorrectAnswers || 0}}</div><p class="muted">Correct Answers</p></div>
+  </div>
+
+  <div class="card card-pad">
+    <h3>Earned Badges</h3>
+    <div class="grid badge-grid">
+      <div class="badge-card"><div class="benefit-icon">✓</div><b>First Steps</b><p class="muted" style="font-size:12px">Completed first quiz</p></div>
+      <div class="badge-card"><div class="benefit-icon">★</div><b>Streak</b><p class="muted" style="font-size:12px">Keep learning</p></div>
+    </div>
+  </div>
+</div>

@@ -1,9 +1,233 @@
-<div class="admin-shell">
-<header class="admin-top"><a class="logo" routerLink="/dashboard"><span class="logo-mark">&lt;/&gt;</span><span>Admin Panel</span></a><div class="action-row"><a class="btn btn-outline" routerLink="/dashboard">Quiz Admin</a><a class="btn btn-outline" href="http://localhost:4200/learner/forum">Open User Forum</a><button class="btn btn-ghost" (click)="auth.logout()">Logout</button></div></header>
-<main class="admin-wrap"><div class="page-title"><h1>Forum Management</h1><p>Admin quản lý toàn bộ Forum. Moderator chỉ xử lý Posts, Comments và Reports.</p></div><div class="alert success" *ngIf="message">{{message}}</div><div class="alert" *ngIf="error">{{error}}</div>
-<div class="card"><div class="admin-tabs"><button class="admin-tab" [class.active]="tab==='posts'" (click)="tab='posts'">Posts</button><button class="admin-tab" [class.active]="tab==='comments'" (click)="tab='comments'">Comments</button><button class="admin-tab" [class.active]="tab==='reports'" (click)="tab='reports'">Reports</button><button class="admin-tab" *ngIf="isAdmin" [class.active]="tab==='tags'" (click)="tab='tags'">Tags</button></div>
-<section class="admin-panel" [class.active]="tab==='posts'"><div class="filters"><input class="input" [(ngModel)]="keyword" (keyup.enter)="loadPosts()" placeholder="Search posts"><select class="select" [(ngModel)]="postStatus" (change)="loadPosts()"><option value="">All status</option><option [ngValue]="1">Visible</option><option [ngValue]="0">Hidden</option></select><button class="btn btn-outline" (click)="loadPosts()">Search</button></div><table class="table"><thead><tr><th>ID</th><th>Title</th><th>Author</th><th>Votes</th><th>Comments</th><th>Status</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let p of posts"><td>{{p.id}}</td><td><b>{{p.title}}</b><div class="muted">{{p.createdAt | date:'short'}}</div></td><td>{{p.authorName}}</td><td>{{p.voteScore}}</td><td>{{p.commentCount}}</td><td>{{statusText(p.status)}}</td><td class="action-row"><button class="btn btn-outline" *ngIf="p.status!==0" (click)="hidePost(p)">Hide</button><button class="btn btn-outline" *ngIf="p.status===0" (click)="restorePost(p)">Restore</button><button class="btn btn-ghost" *ngIf="isAdmin" (click)="deletePost(p)">Delete</button></td></tr></tbody></table></section>
-<section class="admin-panel" [class.active]="tab==='comments'"><div class="filters"><input class="input" [(ngModel)]="keyword" (keyup.enter)="loadComments()" placeholder="Search comments"><select class="select" [(ngModel)]="commentStatus" (change)="loadComments()"><option value="">All status</option><option [ngValue]="1">Visible</option><option [ngValue]="0">Hidden</option></select></div><table class="table"><thead><tr><th>ID</th><th>Content</th><th>Author</th><th>Votes</th><th>Status</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let c of comments"><td>{{c.id}}</td><td>{{c.content}}</td><td>{{c.authorName}}</td><td>{{c.voteScore}}</td><td>{{statusText(c.status)}}</td><td class="action-row"><button class="btn btn-outline" (click)="hideComment(c)">Hide</button><button class="btn btn-ghost" *ngIf="isAdmin" (click)="deleteComment(c)">Delete</button></td></tr></tbody></table></section>
-<section class="admin-panel" [class.active]="tab==='reports'"><div class="filters"><select class="select" [(ngModel)]="reportStatus" (change)="loadReports()"><option value="">All reports</option><option [ngValue]="1">Pending</option><option [ngValue]="2">Resolved</option><option [ngValue]="3">Rejected</option></select></div><table class="table"><thead><tr><th>ID</th><th>Target</th><th>Reason</th><th>Reporter</th><th>Status</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let r of reports"><td>{{r.id}}</td><td>{{r.targetType}} #{{r.targetId}}</td><td><b>{{r.reason}}</b><div class="muted">{{r.description}}</div></td><td>{{r.reporterName}}</td><td>{{r.status}}</td><td class="action-row"><button class="btn btn-primary" *ngIf="r.status===1" (click)="resolveReport(r,true,2)">Resolve + Hide</button><button class="btn btn-outline" *ngIf="r.status===1" (click)="resolveReport(r,false,2)">Resolve</button><button class="btn btn-ghost" *ngIf="r.status===1" (click)="resolveReport(r,false,3)">Reject</button></td></tr></tbody></table></section>
-<section class="admin-panel" *ngIf="isAdmin" [class.active]="tab==='tags'"><form class="admin-form card card-pad" (ngSubmit)="saveTag()"><h3>{{editingTagId?'Edit Tag':'Add Tag'}}</h3><div class="grid grid-3"><div class="form-group"><label>Name</label><input class="input" name="name" [(ngModel)]="tagForm.name" (input)="autoSlug()"></div><div class="form-group"><label>Slug</label><input class="input" name="slug" [(ngModel)]="tagForm.slug"></div><div class="form-group"><label>Description</label><input class="input" name="description" [(ngModel)]="tagForm.description"></div></div><div class="action-row"><button class="btn btn-primary">Save Tag</button><button class="btn btn-outline" type="button" (click)="cancelTag()">Cancel</button></div></form><table class="table"><thead><tr><th>ID</th><th>Name</th><th>Slug</th><th>Description</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let t of tags"><td>{{t.id}}</td><td>{{t.name}}</td><td>{{t.slug}}</td><td>{{t.description}}</td><td class="action-row"><button class="btn btn-outline" (click)="editTag(t)">Edit</button><button class="btn btn-ghost" (click)="deleteTag(t)">Delete</button></td></tr></tbody></table></section>
-</div></main></div>
+﻿<div class="forum-admin-shell">
+  <header class="forum-admin-topbar">
+    <a routerLink="/dashboard" class="forum-admin-brand" aria-label="Admin Dashboard">
+      <span class="brand-icon">&lt;/&gt;</span>
+      <span>
+        <strong>Admin Panel</strong>
+        <small>DevLearningHub</small>
+      </span>
+    </a>
+
+    <nav class="forum-admin-nav">
+      <a routerLink="/dashboard">Dashboard</a>
+      <a routerLink="/code">Code Judge</a>
+      <a class="active" routerLink="/forum">Forum Management</a>
+      <button type="button" class="admin-sso-link" (click)="openUserForum()">User Forum</button>
+      <button type="button" class="admin-logout-btn" (click)="auth.logout()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
+        Logout
+      </button>
+    </nav>
+  </header>
+
+  <section class="forum-admin-hero">
+    <div>
+      <span class="eyebrow">Forum moderation</span>
+      <h1>Forum Management</h1>
+      <p>Quản lý bài viết, bình luận, báo cáo vi phạm và hệ thống tag trong Forum.</p>
+    </div>
+
+    <div class="forum-admin-quick-actions">
+      <button type="button" class="admin-icon-btn primary" (click)="loadAll()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+        Reload
+      </button>
+      <button type="button" class="admin-icon-btn" (click)="clearFilters()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
+        Clear filter
+      </button>
+    </div>
+  </section>
+
+  <section class="forum-admin-stats">
+    <article class="forum-stat-card">
+      <span class="stat-icon blue"><svg viewBox="0 0 24 24"><path d="M4 5h16v12H7l-3 3V5z"/></svg></span>
+      <div><p>Total posts</p><strong>{{posts.length}}</strong></div>
+    </article>
+    <article class="forum-stat-card">
+      <span class="stat-icon green"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H7l-4 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></span>
+      <div><p>Comments</p><strong>{{comments.length}}</strong></div>
+    </article>
+    <article class="forum-stat-card">
+      <span class="stat-icon amber"><svg viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V4s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22V15"/></svg></span>
+      <div><p>Pending reports</p><strong>{{pendingReports}}</strong></div>
+    </article>
+    <article class="forum-stat-card">
+      <span class="stat-icon violet"><svg viewBox="0 0 24 24"><path d="M20.59 13.41 11 3H4v7l9.59 9.59a2 2 0 0 0 2.82 0l4.18-4.18a2 2 0 0 0 0-2.82z"/><path d="M7 7h.01"/></svg></span>
+      <div><p>Tags</p><strong>{{tags.length}}</strong></div>
+    </article>
+  </section>
+
+  <div *ngIf="message" class="admin-alert admin-alert-ok">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+    {{message}}
+  </div>
+  <div *ngIf="error" class="admin-alert admin-alert-error">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+    {{error}}
+  </div>
+
+  <section class="forum-admin-card">
+    <div class="forum-admin-card-head">
+      <div>
+        <h2>Moderation Center</h2>
+        <p>Chọn nhóm dữ liệu cần quản lý và xử lý nhanh theo quyền hiện tại.</p>
+      </div>
+      <span class="role-badge">{{isAdmin ? 'Admin' : 'Moderator'}}</span>
+    </div>
+
+    <div class="forum-admin-tabs" role="tablist">
+      <button type="button" [class.active]="tab==='posts'" (click)="setTab('posts')">
+        <svg viewBox="0 0 24 24"><path d="M4 5h16v12H7l-3 3V5z"/></svg>
+        Posts <span>{{posts.length}}</span>
+      </button>
+      <button type="button" [class.active]="tab==='comments'" (click)="setTab('comments')">
+        <svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H7l-4 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
+        Comments <span>{{comments.length}}</span>
+      </button>
+      <button type="button" [class.active]="tab==='reports'" (click)="setTab('reports')">
+        <svg viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V4s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22V15"/></svg>
+        Reports <span>{{reports.length}}</span>
+      </button>
+      <button type="button" [class.active]="tab==='tags'" (click)="setTab('tags')" [disabled]="!isAdmin">
+        <svg viewBox="0 0 24 24"><path d="M20.59 13.41 11 3H4v7l9.59 9.59a2 2 0 0 0 2.82 0l4.18-4.18a2 2 0 0 0 0-2.82z"/><path d="M7 7h.01"/></svg>
+        Tags <span>{{tags.length}}</span>
+      </button>
+    </div>
+
+    <div class="forum-admin-toolbar" *ngIf="tab !== 'tags'">
+      <label class="admin-search-box">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input [(ngModel)]="keyword" (keyup.enter)="reloadCurrent()" placeholder="Tìm theo tiêu đề, nội dung, tác giả..." />
+      </label>
+
+      <select *ngIf="tab==='posts'" [(ngModel)]="postStatus" (change)="loadPosts()">
+        <option value="">All status</option>
+        <option value="1">Visible</option>
+        <option value="0">Hidden</option>
+      </select>
+
+      <select *ngIf="tab==='comments'" [(ngModel)]="commentStatus" (change)="loadComments()">
+        <option value="">All status</option>
+        <option value="1">Visible</option>
+        <option value="0">Hidden</option>
+      </select>
+
+      <select *ngIf="tab==='reports'" [(ngModel)]="reportStatus" (change)="loadReports()">
+        <option value="">All reports</option>
+        <option value="0">Pending</option>
+        <option value="1">Pending</option>
+        <option value="2">Resolved</option>
+        <option value="3">Rejected</option>
+      </select>
+
+      <button type="button" class="admin-icon-btn primary" (click)="reloadCurrent()">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        Search
+      </button>
+    </div>
+
+    <div class="forum-admin-panel" *ngIf="tab==='posts'">
+      <div class="table-wrap">
+        <table class="forum-admin-table">
+          <thead><tr><th>Post</th><th>Author</th><th>Engagement</th><th>Status</th><th>Created</th><th class="right">Actions</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let p of posts; trackBy: trackById">
+              <td>
+                <div class="content-title">{{p.title || 'Untitled post'}}</div>
+                <div class="content-sub">#{{p.id}} · {{truncate(stripHtml(p.content || p.excerpt), 92)}}</div>
+              </td>
+              <td><span class="user-chip">{{p.authorName || 'Unknown'}}</span></td>
+              <td>
+                <div class="metric-pills">
+                  <span><svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-1 7H5a2 2 0 0 0-2 2v1a2 2 0 0 0 .2.9l3 6A2 2 0 0 0 8 20h7.6a2 2 0 0 0 2-1.6l1.2-6A2 2 0 0 0 16.8 10H14z"/></svg>{{p.voteScore || 0}}</span>
+                  <span><svg viewBox="0 0 24 24"><path d="M4 5h16v12H7l-3 3V5z"/></svg>{{p.commentCount || 0}}</span>
+                </div>
+              </td>
+              <td><span class="status-badge" [ngClass]="statusClass(p.status)">{{statusText(p.status)}}</span></td>
+              <td>{{date(p.createdAt)}}</td>
+              <td class="right">
+                <div class="row-actions">
+                  <button type="button" class="icon-only" title="Hide" *ngIf="Number(p.status)!==0" (click)="hidePost(p)"><svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C7 20 2.73 16.89 1 12a17.86 17.86 0 0 1 5.06-6.06"/><path d="M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58"/><path d="M9.9 4.24A10.8 10.8 0 0 1 12 4c5 0 9.27 3.11 11 8a18.2 18.2 0 0 1-2.16 3.19"/><path d="M1 1l22 22"/></svg></button>
+                  <button type="button" class="icon-only success" title="Restore" *ngIf="Number(p.status)===0" (click)="restorePost(p)"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></button>
+                  <button type="button" class="icon-only danger" title="Delete" (click)="deletePost(p)"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="empty-state-card" *ngIf="!posts.length">Chưa có bài viết phù hợp bộ lọc.</div>
+    </div>
+
+    <div class="forum-admin-panel" *ngIf="tab==='comments'">
+      <div class="table-wrap">
+        <table class="forum-admin-table">
+          <thead><tr><th>Comment</th><th>Author</th><th>Votes</th><th>Status</th><th class="right">Actions</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let c of comments; trackBy: trackById">
+              <td><div class="content-title small-title">{{truncate(stripHtml(c.content), 120)}}</div><div class="content-sub">#{{c.id}} · Post #{{c.postId || c.forumPostId || '-'}}</div></td>
+              <td><span class="user-chip">{{c.authorName || 'Unknown'}}</span></td>
+              <td><span class="score-pill">{{c.voteScore || 0}}</span></td>
+              <td><span class="status-badge" [ngClass]="statusClass(c.status)">{{statusText(c.status)}}</span></td>
+              <td class="right">
+                <div class="row-actions">
+                  <button type="button" class="icon-only" title="Hide" *ngIf="Number(c.status)!==0" (click)="hideComment(c)"><svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C7 20 2.73 16.89 1 12a17.86 17.86 0 0 1 5.06-6.06"/><path d="M1 1l22 22"/></svg></button>
+                  <button type="button" class="icon-only danger" title="Delete" (click)="deleteComment(c)"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="empty-state-card" *ngIf="!comments.length">Chưa có bình luận phù hợp bộ lọc.</div>
+    </div>
+
+    <div class="forum-admin-panel" *ngIf="tab==='reports'">
+      <div class="report-grid">
+        <article class="report-card" *ngFor="let r of reports; trackBy: trackById">
+          <div class="report-head">
+            <div>
+              <strong>{{r.targetType || 'Target'}} #{{r.targetId}}</strong>
+              <p>Reporter: {{r.reporterName || 'Unknown'}}</p>
+            </div>
+            <span class="status-badge" [ngClass]="reportStatusClass(r.status)">{{reportStatusText(r.status)}}</span>
+          </div>
+          <h3>{{r.reason || 'No reason'}}</h3>
+          <p class="report-desc">{{r.description || 'Không có mô tả chi tiết.'}}</p>
+          <div class="report-actions">
+            <button type="button" class="admin-icon-btn danger" (click)="resolveReport(r,true,2)"><svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C7 20 2.73 16.89 1 12a17.86 17.86 0 0 1 5.06-6.06"/><path d="M1 1l22 22"/></svg>Resolve + Hide</button>
+            <button type="button" class="admin-icon-btn success" (click)="resolveReport(r,false,2)"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Resolve</button>
+            <button type="button" class="admin-icon-btn" (click)="resolveReport(r,false,3)"><svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>Reject</button>
+          </div>
+        </article>
+      </div>
+      <div class="empty-state-card" *ngIf="!reports.length">Chưa có report phù hợp bộ lọc.</div>
+    </div>
+
+    <div class="forum-admin-panel tag-layout" *ngIf="tab==='tags'">
+      <form class="tag-form" (ngSubmit)="saveTag()" *ngIf="isAdmin; else tagPermission">
+        <h3>{{editingTagId ? 'Edit Tag' : 'Add Tag'}}</h3>
+        <label>Name<input name="tagName" [(ngModel)]="tagForm.name" (blur)="autoSlug()" placeholder="Ví dụ: Angular" /></label>
+        <label>Slug<input name="tagSlug" [(ngModel)]="tagForm.slug" placeholder="angular" /></label>
+        <label>Description<textarea name="tagDesc" [(ngModel)]="tagForm.description" rows="4" placeholder="Mô tả ngắn cho tag"></textarea></label>
+        <div class="form-actions">
+          <button type="submit" class="admin-icon-btn primary"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Save Tag</button>
+          <button type="button" class="admin-icon-btn" (click)="cancelTag()">Cancel</button>
+        </div>
+      </form>
+      <ng-template #tagPermission><div class="empty-state-card">Moderator không có quyền quản lý tag.</div></ng-template>
+
+      <div class="tag-list">
+        <article class="tag-item" *ngFor="let t of tags; trackBy: trackById">
+          <div><strong>{{t.name}}</strong><p>{{t.description || 'Không có mô tả'}}</p><small>#{{t.id}} · {{t.slug}}</small></div>
+          <div class="row-actions" *ngIf="isAdmin">
+            <button type="button" class="icon-only" title="Edit" (click)="editTag(t)"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+            <button type="button" class="icon-only danger" title="Delete" (click)="deleteTag(t)"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+</div>
+

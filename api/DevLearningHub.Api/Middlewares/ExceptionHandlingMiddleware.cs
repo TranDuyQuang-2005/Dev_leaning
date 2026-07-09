@@ -18,9 +18,14 @@ public sealed class ExceptionHandlingMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
         try { await _next(context); }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            _logger.LogDebug("Request was canceled by the client. TraceId: {TraceId}", context.TraceIdentifier);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled exception");
+            if (context.Response.HasStarted) throw;
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             context.Response.ContentType = "application/json";
             var message = _env.IsDevelopment() ? ex.InnerException?.Message ?? ex.Message : "An unexpected error occurred";

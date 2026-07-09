@@ -5,6 +5,7 @@ using DevLearningHub.Api.DTOs;
 using DevLearningHub.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace DevLearningHub.Api.Controllers;
@@ -26,6 +27,7 @@ public sealed class FilesController : BaseApiController
 
     [HttpPost("upload")]
     [Authorize]
+    [EnableRateLimiting("file-upload")]
     public async Task<ActionResult<ApiResponse<FileUploadResponse>>> Upload(IFormFile file, string fileType = "general", CancellationToken ct = default)
     {
         if (CurrentUserId is null) return Unauthorized();

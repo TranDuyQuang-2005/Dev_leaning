@@ -20,6 +20,7 @@ public sealed class DevLearningHubDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<EmailVerificationToken> EmailVerificationTokens => Set<EmailVerificationToken>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
     public DbSet<UserLearningProfile> UserLearningProfiles => Set<UserLearningProfile>();
@@ -36,6 +37,11 @@ public sealed class DevLearningHubDbContext : DbContext
     public DbSet<QuizAttemptAnswer> QuizAttemptAnswers => Set<QuizAttemptAnswer>();
     public DbSet<QuizAttemptAnswerOption> QuizAttemptAnswerOptions => Set<QuizAttemptAnswerOption>();
     public DbSet<Roadmap> Roadmaps => Set<Roadmap>();
+    public DbSet<LearningTrack> LearningTracks => Set<LearningTrack>();
+    public DbSet<RoadmapCourse> RoadmapCourses => Set<RoadmapCourse>();
+    public DbSet<RoadmapModule> RoadmapModules => Set<RoadmapModule>();
+    public DbSet<RoadmapLesson> RoadmapLessons => Set<RoadmapLesson>();
+    public DbSet<UserLessonProgress> UserLessonProgresses => Set<UserLessonProgress>();
 
     public DbSet<AppFile> Files => Set<AppFile>();
     public DbSet<FileReference> FileReferences => Set<FileReference>();
@@ -153,6 +159,19 @@ public sealed class DevLearningHubDbContext : DbContext
             e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
         });
 
+        b.Entity<Notification>(e => {
+            e.ToTable("Notifications"); e.HasKey(x => x.Id);
+            e.Property(x => x.Type).HasMaxLength(100).IsRequired();
+            e.Property(x => x.Title).HasMaxLength(255).IsRequired();
+            e.Property(x => x.Message).HasMaxLength(1000).IsRequired();
+            e.Property(x => x.LinkUrl).HasMaxLength(500);
+            e.HasIndex(x => x.UserId);
+            e.HasIndex(x => x.IsRead);
+            e.HasIndex(x => x.CreatedAt);
+            e.HasIndex(x => new { x.UserId, x.IsRead, x.CreatedAt });
+            e.HasOne(x => x.User).WithMany(x => x.Notifications).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.NoAction);
+        });
+
         b.Entity<UserProfile>(e => { e.ToTable("UserProfiles"); e.HasKey(x => x.UserId); });
         b.Entity<UserLearningProfile>(e => { e.ToTable("UserLearningProfiles"); e.HasKey(x => x.UserId); });
         b.Entity<UserStat>(e => { e.ToTable("UserStats"); e.HasKey(x => x.UserId); e.Property(x => x.AverageQuizScore).HasColumnType("decimal(5,2)"); });
@@ -213,6 +232,57 @@ public sealed class DevLearningHubDbContext : DbContext
         });
 
         b.Entity<Roadmap>(e => { e.ToTable("Roadmaps"); e.HasKey(x => x.Id); });
+
+        b.Entity<LearningTrack>(e => {
+            e.ToTable("LearningTracks"); e.HasKey(x => x.Id);
+            e.Property(x => x.Title).HasMaxLength(255).IsRequired();
+            e.Property(x => x.Slug).HasMaxLength(255).IsRequired();
+            e.Property(x => x.Level).HasMaxLength(50).IsRequired();
+            e.Property(x => x.ThumbnailUrl).HasMaxLength(500);
+            e.HasIndex(x => x.Slug).IsUnique();
+            e.HasIndex(x => new { x.IsPublished, x.IsDeleted, x.SortOrder });
+        });
+
+        b.Entity<RoadmapCourse>(e => {
+            e.ToTable("RoadmapCourses"); e.HasKey(x => x.Id);
+            e.Property(x => x.Title).HasMaxLength(255).IsRequired();
+            e.Property(x => x.Slug).HasMaxLength(255).IsRequired();
+            e.Property(x => x.ShortDescription).HasMaxLength(500);
+            e.Property(x => x.Level).HasMaxLength(50).IsRequired();
+            e.Property(x => x.ThumbnailUrl).HasMaxLength(500);
+            e.HasIndex(x => x.Slug).IsUnique();
+            e.HasIndex(x => new { x.TrackId, x.IsPublished, x.IsDeleted, x.SortOrder });
+            e.HasOne(x => x.Track).WithMany(x => x.Courses).HasForeignKey(x => x.TrackId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        b.Entity<RoadmapModule>(e => {
+            e.ToTable("RoadmapModules"); e.HasKey(x => x.Id);
+            e.Property(x => x.Title).HasMaxLength(255).IsRequired();
+            e.HasIndex(x => new { x.CourseId, x.IsPublished, x.IsDeleted, x.SortOrder });
+            e.HasOne(x => x.Course).WithMany(x => x.Modules).HasForeignKey(x => x.CourseId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<RoadmapLesson>(e => {
+            e.ToTable("RoadmapLessons"); e.HasKey(x => x.Id);
+            e.Property(x => x.Title).HasMaxLength(255).IsRequired();
+            e.Property(x => x.Type).HasMaxLength(50).IsRequired();
+            e.Property(x => x.VideoUrl).HasMaxLength(500);
+            e.HasIndex(x => new { x.ModuleId, x.IsPublished, x.IsDeleted, x.SortOrder });
+            e.HasIndex(x => x.QuizSetId);
+            e.HasIndex(x => x.CodingProblemId);
+            e.HasOne(x => x.Module).WithMany(x => x.Lessons).HasForeignKey(x => x.ModuleId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<QuizSet>().WithMany().HasForeignKey(x => x.QuizSetId).OnDelete(DeleteBehavior.NoAction);
+            e.HasOne<CodingProblem>().WithMany().HasForeignKey(x => x.CodingProblemId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        b.Entity<UserLessonProgress>(e => {
+            e.ToTable("UserLessonProgresses"); e.HasKey(x => x.Id);
+            e.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            e.HasIndex(x => new { x.UserId, x.LessonId }).IsUnique();
+            e.HasIndex(x => x.Status);
+            e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Lesson).WithMany().HasForeignKey(x => x.LessonId).OnDelete(DeleteBehavior.Cascade);
+        });
 
         b.Entity<AppFile>(e => { e.ToTable("Files"); e.HasKey(x => x.Id); });
         b.Entity<FileReference>(e => { e.ToTable("FileReferences"); e.HasKey(x => x.Id); });

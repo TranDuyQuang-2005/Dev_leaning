@@ -118,7 +118,15 @@ public interface ILearningModuleService
 public sealed class LearningModuleService : ILearningModuleService
 {
     private readonly DevLearningHubDbContext _db;
-    public LearningModuleService(DevLearningHubDbContext db) => _db = db;
+    private readonly INotificationService _notifications;
+    private readonly IRoadmapService _roadmaps;
+
+    public LearningModuleService(DevLearningHubDbContext db, INotificationService notifications, IRoadmapService roadmaps)
+    {
+        _db = db;
+        _notifications = notifications;
+        _roadmaps = roadmaps;
+    }
 
     public async Task<ApiResponse<PagedResult<CategoryResponse>>> GetCategories(string? keyword, int pageIndex, int pageSize, CancellationToken ct)
     {
@@ -271,7 +279,6 @@ public sealed class LearningModuleService : ILearningModuleService
     public async Task<ApiResponse<PagedResult<QuizSetResponse>>> GetQuizSets(long? categoryId, int pageIndex, int pageSize, CancellationToken ct)
     {
         var query = _db.QuizSets.AsNoTracking()
-            .Include(x => x.QuizSetQuestions)
             .Where(x => !x.IsDeleted && x.Status != 0);
         if (categoryId.HasValue) query = query.Where(x => x.CategoryId == categoryId.Value);
         pageIndex = Math.Max(1, pageIndex);
@@ -280,8 +287,44 @@ public sealed class LearningModuleService : ILearningModuleService
         var quizSets = await query.OrderByDescending(x => x.CreatedAt)
             .Skip((pageIndex - 1) * pageSize)
             .Take(pageSize)
+            .Select(x => new
+            {
+                x.Id,
+                x.CategoryId,
+                x.Title,
+                x.Slug,
+                x.Description,
+                x.Difficulty,
+                x.QuizType,
+                x.TimeLimitMinutes,
+                x.PassingScore,
+                x.AllowReview,
+                x.ShuffleQuestions,
+                x.ShuffleOptions,
+                x.MaxAttempts,
+                x.Status,
+                QuestionCount = x.QuizSetQuestions.Count()
+            })
             .ToListAsync(ct);
-        var items = quizSets.Select(MapQuizSet).ToList();
+        var items = quizSets.Select(x => new QuizSetResponse
+        {
+            Id = x.Id,
+            CategoryId = x.CategoryId,
+            Title = x.Title,
+            Slug = x.Slug,
+            Description = x.Description,
+            Difficulty = x.Difficulty,
+            QuizType = x.QuizType,
+            TimeLimitMinutes = x.TimeLimitMinutes,
+            PassingScore = x.PassingScore,
+            AllowReview = x.AllowReview,
+            ShuffleQuestions = x.ShuffleQuestions,
+            ShuffleOptions = x.ShuffleOptions,
+            MaxAttempts = x.MaxAttempts,
+            Status = x.Status,
+            QuestionCount = x.QuestionCount,
+            Questions = new List<QuizSetQuestionRequest>()
+        }).ToList();
         return ApiResponse<PagedResult<QuizSetResponse>>.Ok(PagedResult<QuizSetResponse>.Create(items, pageIndex, pageSize, total));
     }
 
@@ -366,12 +409,21 @@ public sealed class LearningModuleService : ILearningModuleService
     public async Task<ApiResponse<QuizAttemptResponse>> StartAttempt(long userId, StartQuizAttemptRequest r, CancellationToken ct)
     {
         var quiz = await _db.QuizSets
+            .AsSplitQuery()
             .Include(x => x.QuizSetQuestions)
                 .ThenInclude(x => x.Question)
                     .ThenInclude(x => x.Options)
             .FirstOrDefaultAsync(x => x.Id == r.QuizSetId && !x.IsDeleted && x.Status != 0, ct);
         if (quiz == null) return ApiResponse<QuizAttemptResponse>.Fail("Không tìm thấy bộ đề hoặc bộ đề chưa được kích hoạt");
         if (!quiz.QuizSetQuestions.Any()) return ApiResponse<QuizAttemptResponse>.Fail("Bộ đề chưa có câu hỏi");
+
+        var lessonId = RoadmapContextLessonId(r.LessonId, r.RoadmapLessonId);
+        if (lessonId.HasValue)
+        {
+            var access = await _roadmaps.CanAccessQuizLessonAsync(userId, lessonId.Value, quiz.Id, ct);
+            if (!access.CanAccess)
+                return ApiResponse<QuizAttemptResponse>.Fail(access.Message ?? "Bài quiz đang bị khóa. Hãy hoàn thành bài học trước đó.");
+        }
 
         if (quiz.MaxAttempts.HasValue)
         {
@@ -426,10 +478,18 @@ public sealed class LearningModuleService : ILearningModuleService
 
     public async Task<ApiResponse<QuizAttemptDetailResultResponse>> SubmitAttempt(long userId, long attemptId, SubmitQuizAttemptRequest r, CancellationToken ct)
     {
-        var attempt = await _db.QuizAttempts.Include(x => x.QuizSet).ThenInclude(x => x.QuizSetQuestions).ThenInclude(x => x.Question).ThenInclude(x => x.Options)
+        var attempt = await _db.QuizAttempts.AsSplitQuery().Include(x => x.QuizSet).ThenInclude(x => x.QuizSetQuestions).ThenInclude(x => x.Question).ThenInclude(x => x.Options)
             .FirstOrDefaultAsync(x => x.Id == attemptId && x.UserId == userId, ct);
         if (attempt == null) return ApiResponse<QuizAttemptDetailResultResponse>.Fail("Không tìm thấy lần làm bài");
         if (attempt.Status == 2) return ApiResponse<QuizAttemptDetailResultResponse>.Fail("Bài đã được nộp");
+
+        var lessonId = RoadmapContextLessonId(r.LessonId, r.RoadmapLessonId);
+        if (lessonId.HasValue)
+        {
+            var access = await _roadmaps.CanAccessQuizLessonAsync(userId, lessonId.Value, attempt.QuizSetId, ct);
+            if (!access.CanAccess)
+                return ApiResponse<QuizAttemptDetailResultResponse>.Fail(access.Message ?? "Bài quiz đang bị khóa. Hãy hoàn thành bài học trước đó.");
+        }
 
         var answerMap = r.Answers.ToDictionary(x => x.QuestionId, x => x.SelectedOptionIds.Distinct().OrderBy(id => id).ToList());
         int correct = 0, wrong = 0, skipped = 0;
@@ -479,6 +539,22 @@ public sealed class LearningModuleService : ILearningModuleService
         }
 
         await _db.SaveChangesAsync(ct);
+        if (attempt.IsPassed)
+        {
+            if (lessonId.HasValue)
+                await _roadmaps.CompleteQuizLessonIfPassedAsync(userId, lessonId.Value, attempt.QuizSetId, attempt.Id, attempt.Score, ct);
+            else
+                await _roadmaps.CompleteQuizLessonIfPassedAsync(userId, attempt.QuizSetId, attempt.Id, attempt.Score, ct);
+            await _notifications.CreateAsync(
+                userId,
+                "quiz.passed",
+                "Hoàn thành bài quiz",
+                $"Bạn đã vượt qua bài quiz {attempt.QuizSet.Title} với điểm {attempt.Score}.",
+                "/learner/quiz-history",
+                new { eventKey = $"quiz.passed:{attempt.Id}", attemptId = attempt.Id, quizSetId = attempt.QuizSetId, score = attempt.Score },
+                ct);
+        }
+
         var detail = await BuildAttemptResult(userId, attempt.Id, ct);
         if (detail == null) return ApiResponse<QuizAttemptDetailResultResponse>.Fail("Không tải được kết quả chi tiết sau khi nộp bài");
         return ApiResponse<QuizAttemptDetailResultResponse>.Ok(detail, "Nộp bài thành công");
@@ -493,14 +569,36 @@ public sealed class LearningModuleService : ILearningModuleService
 
     public async Task<ApiResponse<List<QuizSubmitResultResponse>>> MyAttempts(long userId, CancellationToken ct)
     {
-        var items = await _db.QuizAttempts.AsNoTracking().Include(x => x.QuizSet).Where(x => x.UserId == userId).OrderByDescending(x => x.CreatedAt).Select(x => MapSubmit(x)).ToListAsync(ct);
+        var items = await _db.QuizAttempts.AsNoTracking()
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.CreatedAt)
+            .Select(x => new QuizSubmitResultResponse
+            {
+                AttemptId = x.Id,
+                QuizSetId = x.QuizSetId,
+                QuizTitle = x.QuizSet.Title,
+                TotalQuestions = x.TotalQuestions,
+                CorrectAnswers = x.CorrectAnswers,
+                WrongAnswers = x.WrongAnswers,
+                SkippedAnswers = x.SkippedAnswers,
+                Score = x.Score,
+                IsPassed = x.IsPassed,
+                DurationSeconds = x.DurationSeconds ?? 0,
+                StartedAt = x.StartedAt,
+                SubmittedAt = x.SubmittedAt
+            })
+            .ToListAsync(ct);
         return ApiResponse<List<QuizSubmitResultResponse>>.Ok(items, "Lấy lịch sử làm quiz thành công");
     }
+
+    private static long? RoadmapContextLessonId(long? lessonId, long? roadmapLessonId)
+        => lessonId ?? roadmapLessonId;
 
     private async Task<QuizAttemptDetailResultResponse?> BuildAttemptResult(long userId, long attemptId, CancellationToken ct)
     {
         var attempt = await _db.QuizAttempts
             .AsNoTracking()
+            .AsSplitQuery()
             .Include(x => x.QuizSet)
                 .ThenInclude(x => x.QuizSetQuestions)
                     .ThenInclude(x => x.Question)

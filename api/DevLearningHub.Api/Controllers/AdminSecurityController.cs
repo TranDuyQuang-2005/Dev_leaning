@@ -142,7 +142,13 @@ public sealed class AdminPermissionGroupsController : BaseApiController
 public sealed class AdminUsersSecurityController : BaseApiController
 {
     private readonly DevLearningHubDbContext _db;
-    public AdminUsersSecurityController(DevLearningHubDbContext db) => _db = db;
+    private readonly INotificationService _notifications;
+
+    public AdminUsersSecurityController(DevLearningHubDbContext db, INotificationService notifications)
+    {
+        _db = db;
+        _notifications = notifications;
+    }
 
     [HttpPost("users/{userId:long}/lock")]
     public async Task<ActionResult<ApiResponse<object>>> LockUser(long userId, LockUserRequest request, CancellationToken ct)
@@ -161,6 +167,14 @@ public sealed class AdminUsersSecurityController : BaseApiController
         user.UpdatedAt = DateTime.UtcNow;
         await WriteAudit("user.lock", "User", userId.ToString(), old, new { user.Status, user.LockoutEndAt, request.Reason }, ct);
         await _db.SaveChangesAsync(ct);
+        await _notifications.CreateAsync(
+            userId,
+            "account.locked",
+            "Tài khoản đã bị khóa",
+            "Tài khoản của bạn đã tạm thời bị khóa. Vui lòng liên hệ quản trị viên nếu bạn cần hỗ trợ.",
+            "/login",
+            new { eventKey = $"account.locked:{userId}:{user.LockoutEndAt:O}", targetUserId = userId, actorUserId = CurrentUserId },
+            ct);
         return Ok(ApiResponse<object>.Ok(new { userId }, "User locked"));
     }
 
@@ -176,6 +190,14 @@ public sealed class AdminUsersSecurityController : BaseApiController
         user.UpdatedAt = DateTime.UtcNow;
         await WriteAudit("user.unlock", "User", userId.ToString(), old, new { user.Status, user.LockoutEndAt }, ct);
         await _db.SaveChangesAsync(ct);
+        await _notifications.CreateAsync(
+            userId,
+            "account.unlocked",
+            "Tài khoản đã được mở khóa",
+            "Tài khoản của bạn đã được mở khóa. Bạn có thể đăng nhập và tiếp tục học tập.",
+            "/login",
+            new { eventKey = $"account.unlocked:{userId}:{DateTime.UtcNow:yyyyMMddHHmmss}", targetUserId = userId, actorUserId = CurrentUserId },
+            ct);
         return Ok(ApiResponse<object>.Ok(new { userId }, "User unlocked"));
     }
 

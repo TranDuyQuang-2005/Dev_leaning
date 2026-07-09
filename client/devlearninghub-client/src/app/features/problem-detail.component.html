@@ -37,13 +37,14 @@
     <div class="test-panel" *ngIf="runResult">
       <b>Run Result: {{runResult.verdict}}</b>
       <span class="muted"> · {{runResult.executionTimeMs}} ms</span>
-      <pre class="output-box">{{runResult.output || '(no output)'}}</pre>
-      <pre class="output-box" *ngIf="runResult.error">{{runResult.error}}</pre>
+      <pre class="output-box">{{runResult.output || runResult.stdout || '(no output)'}}</pre>
+      <pre class="output-box" *ngIf="runResult.error || runResult.stderr || runResult.compileOutput">{{runResult.error || runResult.stderr || runResult.compileOutput}}</pre>
     </div>
 
     <div class="test-panel" *ngIf="submitResult">
       <b>Submit Result: <span [class.status-ok]="submitResult.isAccepted">{{submitResult.verdict}}</span></b>
       <p>{{submitResult.passedTestCases}} / {{submitResult.totalTestCases}} test cases passed · {{submitResult.executionTimeMs}} ms</p>
+      <a class="btn btn-outline" *ngIf="submitResult.id || submitResult.submissionId" [routerLink]="['/learner/submissions', submitResult.id || submitResult.submissionId]">Xem chi tiết submission</a>
       <div class="example" *ngFor="let tc of submitResult.testCaseResults">
         <b>#{{tc.displayOrder}} {{tc.status}}</b>
         <span [class.status-ok]="tc.passed"> {{tc.passed ? 'Passed' : 'Failed'}}</span>

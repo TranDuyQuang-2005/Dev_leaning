@@ -23,6 +23,22 @@ public sealed class User
     public ICollection<UserPermission> UserPermissions { get; set; } = new List<UserPermission>();
     public ICollection<UserPermissionGroup> UserPermissionGroups { get; set; } = new List<UserPermissionGroup>();
     public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+    public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+}
+
+public sealed class Notification
+{
+    public long Id { get; set; }
+    public long UserId { get; set; }
+    public string Type { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public string? LinkUrl { get; set; }
+    public bool IsRead { get; set; }
+    public DateTime? ReadAt { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public string? MetadataJson { get; set; }
+    public User User { get; set; } = null!;
 }
 
 public sealed class Role

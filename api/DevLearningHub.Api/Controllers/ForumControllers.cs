@@ -3,6 +3,7 @@ using DevLearningHub.Api.DTOs;
 using DevLearningHub.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DevLearningHub.Api.Controllers;
 
@@ -21,6 +22,7 @@ public sealed class ForumController : BaseApiController
     [HttpPost("uploads")]
     [Consumes("multipart/form-data")]
     [Authorize]
+    [EnableRateLimiting("file-upload")]
     [RequestSizeLimit(15 * 1024 * 1024)]
     public async Task<ActionResult<ApiResponse<ForumAttachmentResponse>>> Upload(IFormFile file, CancellationToken ct)
     {
@@ -40,6 +42,7 @@ public sealed class ForumController : BaseApiController
 
     [HttpPost("posts")]
     [Authorize]
+    [EnableRateLimiting("forum-write")]
     public async Task<ActionResult<ApiResponse<ForumPostDetailResponse>>> CreatePost(ForumPostRequest request, CancellationToken ct)
     {
         if (CurrentUserId is null) return Unauthorized();
@@ -64,6 +67,7 @@ public sealed class ForumController : BaseApiController
 
     [HttpPost("posts/{id:long}/comments")]
     [Authorize]
+    [EnableRateLimiting("forum-write")]
     public async Task<ActionResult<ApiResponse<ForumCommentResponse>>> AddComment(long id, ForumCommentRequest request, CancellationToken ct)
     {
         if (CurrentUserId is null) return Unauthorized();
@@ -213,6 +217,7 @@ public sealed class AdminForumController : BaseApiController
     [HttpPost("uploads")]
     [Consumes("multipart/form-data")]
     [Authorize]
+    [EnableRateLimiting("file-upload")]
     [RequestSizeLimit(15 * 1024 * 1024)]
     public async Task<ActionResult<ApiResponse<ForumAttachmentResponse>>> Upload(IFormFile file, CancellationToken ct)
     {
@@ -289,6 +294,7 @@ public sealed class ModeratorForumController : BaseApiController
     [HttpPost("uploads")]
     [Consumes("multipart/form-data")]
     [Authorize]
+    [EnableRateLimiting("file-upload")]
     [RequestSizeLimit(15 * 1024 * 1024)]
     public async Task<ActionResult<ApiResponse<ForumAttachmentResponse>>> Upload(IFormFile file, CancellationToken ct)
     {

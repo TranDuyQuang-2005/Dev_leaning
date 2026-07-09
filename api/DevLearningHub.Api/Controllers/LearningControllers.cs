@@ -127,17 +127,23 @@ public sealed class QuizAttemptsController : BaseApiController
     public QuizAttemptsController(ILearningModuleService service) => _service = service;
 
     [HttpPost]
-    public async Task<ActionResult<ApiResponse<QuizAttemptResponse>>> Start(StartQuizAttemptRequest request, CancellationToken ct)
+    public async Task<ActionResult<ApiResponse<QuizAttemptResponse>>> Start(StartQuizAttemptRequest request, [FromQuery] long? lessonId, [FromQuery] long? roadmapLessonId, CancellationToken ct)
     {
         if (CurrentUserId is null) return Unauthorized();
-        return Ok(await _service.StartAttempt(CurrentUserId.Value, request, ct));
+        request.LessonId ??= lessonId;
+        request.RoadmapLessonId ??= roadmapLessonId;
+        var response = await _service.StartAttempt(CurrentUserId.Value, request, ct);
+        return response.Success ? Ok(response) : BadRequest(response);
     }
 
     [HttpPost("{id:long}/submit")]
-    public async Task<ActionResult<ApiResponse<QuizAttemptDetailResultResponse>>> Submit(long id, SubmitQuizAttemptRequest request, CancellationToken ct)
+    public async Task<ActionResult<ApiResponse<QuizAttemptDetailResultResponse>>> Submit(long id, SubmitQuizAttemptRequest request, [FromQuery] long? lessonId, [FromQuery] long? roadmapLessonId, CancellationToken ct)
     {
         if (CurrentUserId is null) return Unauthorized();
-        return Ok(await _service.SubmitAttempt(CurrentUserId.Value, id, request, ct));
+        request.LessonId ??= lessonId;
+        request.RoadmapLessonId ??= roadmapLessonId;
+        var response = await _service.SubmitAttempt(CurrentUserId.Value, id, request, ct);
+        return response.Success ? Ok(response) : BadRequest(response);
     }
 
     [HttpGet("{id:long}/result")]

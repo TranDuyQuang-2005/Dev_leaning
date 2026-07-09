@@ -3,6 +3,7 @@ using DevLearningHub.Api.DTOs;
 using DevLearningHub.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DevLearningHub.Api.Controllers;
 
@@ -15,6 +16,7 @@ public sealed class PersonalPracticeBanksController : BaseApiController
     public PersonalPracticeBanksController(IPersonalPracticeService service) => _service = service;
 
     [HttpPost("upload")]
+    [EnableRateLimiting("file-upload")]
     public async Task<ActionResult<ApiResponse<PersonalQuestionBankUploadResponse>>> Upload(
         IFormFile file,
         [FromForm] string title,

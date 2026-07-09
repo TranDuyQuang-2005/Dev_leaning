@@ -1,0 +1,72 @@
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Tự luyện từ file câu hỏi</h1>
+      <p class="muted">Upload CSV/JSON riêng của bạn, tạo ngân hàng câu hỏi và luyện tập ngay trong workspace.</p>
+    </div>
+    <a class="btn btn-outline" routerLink="/learner/practice-attempts">Lịch sử tự luyện</a>
+  </div>
+
+  <div class="alert alert-ok" *ngIf="message">{{message}}</div>
+  <div class="alert alert-error" *ngIf="error" style="white-space:pre-line">{{error}}</div>
+
+  <section class="card card-pad">
+    <h3>Upload ngân hàng câu hỏi cá nhân</h3>
+    <form (ngSubmit)="upload()">
+      <div class="grid grid-2">
+        <div class="form-group">
+          <label>Tiêu đề</label>
+          <input class="input" name="title" [(ngModel)]="form.title" required>
+        </div>
+        <div class="form-group">
+          <label>File CSV/JSON</label>
+          <input class="input" type="file" accept=".csv,.json,application/json,text/csv" (change)="pick($event)">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Mô tả</label>
+        <textarea class="textarea" name="description" [(ngModel)]="form.description"></textarea>
+      </div>
+
+      <div class="alert">
+        Định dạng CSV: question_text,question_type,option_a,option_b,option_c,option_d,correct_answer,explanation,difficulty,tags
+      </div>
+
+      <div class="action-row">
+        <button class="btn btn-primary" type="submit" [disabled]="uploading">{{uploading ? 'Đang upload...' : 'Upload file'}}</button>
+        <button class="btn btn-outline" type="button" (click)="downloadTemplate()">Tải file mẫu CSV</button>
+      </div>
+    </form>
+
+    <div class="alert alert-error" *ngIf="importErrors.length">
+      <b>Lỗi import theo dòng</b>
+      <ul>
+        <li *ngFor="let item of importErrors">{{item.row || item.line || item.field || 'Dòng'}}: {{item.message || item}}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card card-pad" style="margin-top:18px">
+    <h3>Ngân hàng câu hỏi cá nhân</h3>
+    <table class="table" *ngIf="banks.length">
+      <thead>
+        <tr><th>Tiêu đề</th><th>Mô tả</th><th>Số câu</th><th>Ngày tạo</th><th>Thao tác</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let bank of banks">
+          <td><b>{{bank.title}}</b></td>
+          <td>{{bank.description || 'Không có mô tả'}}</td>
+          <td>{{bank.questionCount || bank.questions?.length || 0}}</td>
+          <td>{{bank.createdAt | date:'short'}}</td>
+          <td class="action-row">
+            <a class="btn btn-outline" [routerLink]="['/learner/practice-banks', bank.id]">Xem</a>
+            <button class="btn btn-primary" type="button" (click)="startQuick(bank)">Bắt đầu luyện tập</button>
+            <button class="btn btn-ghost" type="button" (click)="deleteBank(bank)">Xóa</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty-state" *ngIf="!banks.length && !loading">Bạn chưa có ngân hàng câu hỏi cá nhân.</div>
+    <div class="empty-state" *ngIf="loading">Đang tải dữ liệu...</div>
+  </section>
+</div>

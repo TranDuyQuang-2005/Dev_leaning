@@ -18,6 +18,7 @@ export class QuizComponent implements OnInit, OnDestroy {
   warning = '';
   isSubmitting = false;
   secondsLeft = 0;
+  lessonId?: number;
   private timer?: any;
 
   constructor(
@@ -27,14 +28,18 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const quizSetId = Number(this.route.snapshot.paramMap.get('id'));
-    this.api.post<any>('/api/v1/quiz-attempts', { quizSetId }).subscribe({
-      next: r => {
+    const queryLessonId = Number(this.route.snapshot.queryParamMap.get('lessonId') || this.route.snapshot.queryParamMap.get('roadmapLessonId') || 0);
+    this.lessonId = queryLessonId > 0 ? queryLessonId : undefined;
+    const body: any = { quizSetId };
+    if (this.lessonId) body.lessonId = this.lessonId;
+    this.api.post<any>('/api/v1/quiz-attempts', body).subscribe({
+      next: (r: any) => {
         this.attempt = r.data;
         this.result = null;
         this.secondsLeft = (this.attempt?.timeLimitMinutes || 0) * 60;
         if (this.secondsLeft > 0) this.startTimer();
       },
-      error: e => {
+      error: (e: any) => {
         this.error = e?.error?.message || 'Không bắt đầu được quiz. Kiểm tra quiz set có câu hỏi chưa hoặc bạn đã hết lượt làm bài.';
       }
     });
@@ -95,17 +100,18 @@ export class QuizComponent implements OnInit, OnDestroy {
         questionId: Number(k),
         selectedOptionIds: [this.answers[Number(k)]]
       }))
-    };
+    } as any;
+    if (this.lessonId) body.lessonId = this.lessonId;
 
     this.api.post<any>(`/api/v1/quiz-attempts/${this.attempt.attemptId}/submit`, body).subscribe({
-      next: r => {
+      next: (r: any) => {
         this.result = r.data;
         this.isSubmitting = false;
         if (this.timer) clearInterval(this.timer);
         localStorage.setItem('quiz-progress-' + this.attempt.quizSetId, '100');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       },
-      error: e => {
+      error: (e: any) => {
         this.isSubmitting = false;
         this.error = e?.error?.message || 'Không nộp được bài.';
       }
@@ -131,3 +137,4 @@ export class QuizComponent implements OnInit, OnDestroy {
     return correct.length ? correct.join(', ') : 'Chưa có đáp án đúng';
   }
 }
+

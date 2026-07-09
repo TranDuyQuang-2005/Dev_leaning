@@ -1,0 +1,33 @@
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Kết quả tự luyện</h1>
+      <p class="muted">{{attempt?.bankTitle || attempt?.practiceBank?.title}}</p>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-primary" type="button" (click)="retry()">Luyện lại từ bank này</button>
+      <a class="btn btn-outline" routerLink="/learner/practice-attempts">Lịch sử</a>
+    </div>
+  </div>
+
+  <div class="alert alert-error" *ngIf="error" style="white-space:pre-line">{{error}}</div>
+
+  <section class="grid grid-3" *ngIf="attempt">
+    <div class="card card-pad" style="text-align:center"><div class="stat-value">{{attempt.score ?? 0}}</div><p class="muted">Điểm</p></div>
+    <div class="card card-pad" style="text-align:center"><div class="stat-value">{{attempt.correctCount ?? 0}}</div><p class="muted">Câu đúng</p></div>
+    <div class="card card-pad" style="text-align:center"><div class="stat-value">{{attempt.totalQuestions ?? questions.length}}</div><p class="muted">Tổng câu</p></div>
+  </section>
+
+  <section class="card card-pad" *ngFor="let q of questions; let i=index" style="margin-top:14px">
+    <h3 style="margin-top:0">Câu {{i + 1}}</h3>
+    <p>{{q.questionText || q.content || q.title}}</p>
+    <div class="result-option" [ngClass]="q.isCorrect ? 'result-option-correct' : 'result-option-wrong'">
+      <b>{{q.isCorrect ? 'Đúng' : 'Sai'}}</b>
+      <span>Đáp án đã chọn: {{q.selectedOptionLabel || q.selectedAnswer || 'Chưa chọn'}}</span>
+      <span>Đáp án đúng: {{q.correctOptionLabel || q.correctAnswer || q.correctOption || '-'}}</span>
+      <p class="muted" *ngIf="q.explanation">{{q.explanation}}</p>
+    </div>
+  </section>
+
+  <div class="empty-state" *ngIf="loading">Đang tải kết quả...</div>
+</div>

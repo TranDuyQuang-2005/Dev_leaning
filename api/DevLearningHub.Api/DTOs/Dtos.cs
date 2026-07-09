@@ -68,6 +68,43 @@ public sealed class CurrentUserResponse
     public List<string> Permissions { get; set; } = new();
 }
 
+public sealed class NotificationDto
+{
+    public long Id { get; set; }
+    public long UserId { get; set; }
+    public string Type { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public string? LinkUrl { get; set; }
+    public bool IsRead { get; set; }
+    public DateTime? ReadAt { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public string? MetadataJson { get; set; }
+}
+
+public sealed class NotificationListQuery
+{
+    public bool? IsRead { get; set; }
+    public string? Type { get; set; }
+    public int PageIndex { get; set; } = 1;
+    public int PageSize { get; set; } = 20;
+}
+
+public sealed class NotificationUnreadCountDto
+{
+    public int UnreadCount { get; set; }
+}
+
+public sealed class CreateNotificationRequest
+{
+    public long UserId { get; set; }
+    public string Type { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public string? LinkUrl { get; set; }
+    public object? Metadata { get; set; }
+}
+
 public sealed class AuthResponse
 {
     public string AccessToken { get; set; } = string.Empty;
@@ -193,9 +230,19 @@ public sealed class QuizSetResponse
     public List<QuizSetQuestionRequest> Questions { get; set; } = new();
 }
 
-public sealed class StartQuizAttemptRequest { public long QuizSetId { get; set; } }
+public sealed class StartQuizAttemptRequest
+{
+    public long QuizSetId { get; set; }
+    public long? LessonId { get; set; }
+    public long? RoadmapLessonId { get; set; }
+}
 public sealed class SubmitQuizAnswerRequest { public long QuestionId { get; set; } public List<long> SelectedOptionIds { get; set; } = new(); }
-public sealed class SubmitQuizAttemptRequest { public List<SubmitQuizAnswerRequest> Answers { get; set; } = new(); }
+public sealed class SubmitQuizAttemptRequest
+{
+    public List<SubmitQuizAnswerRequest> Answers { get; set; } = new();
+    public long? LessonId { get; set; }
+    public long? RoadmapLessonId { get; set; }
+}
 
 public sealed class QuizOptionForTakeResponse { public long Id { get; set; } public string Content { get; set; } = string.Empty; }
 public sealed class QuizQuestionForTakeResponse { public long Id { get; set; } public string Content { get; set; } = string.Empty; public byte QuestionType { get; set; } public List<QuizOptionForTakeResponse> Options { get; set; } = new(); }
@@ -621,6 +668,19 @@ public sealed class SupportedLanguageResponse
     public string Label { get; set; } = string.Empty;
     public string Runtime { get; set; } = string.Empty;
     public bool Enabled { get; set; } = true;
+    public string LanguageCode { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
+    public string Version { get; set; } = string.Empty;
+    public string FileExtension { get; set; } = string.Empty;
+    public string DefaultTemplate { get; set; } = string.Empty;
+    public string? CompileCommand { get; set; }
+    public string RunCommand { get; set; } = string.Empty;
+    public bool IsCompiled { get; set; }
+    public bool IsActive { get; set; } = true;
+    public int TimeLimitMs { get; set; }
+    public int MemoryLimitKb { get; set; }
+    public int SortOrder { get; set; }
+    public string RequiredRuntime { get; set; } = string.Empty;
 }
 
 public sealed class CodeRunRequest
@@ -629,6 +689,9 @@ public sealed class CodeRunRequest
     public string SourceCode { get; set; } = string.Empty;
     public string? Stdin { get; set; }
     public int? TimeLimitMs { get; set; }
+    public long? LessonId { get; set; }
+    public long? RoadmapLessonId { get; set; }
+    public long? CodingProblemId { get; set; }
 }
 
 public sealed class CodeRunResponse
@@ -637,8 +700,13 @@ public sealed class CodeRunResponse
     public string Verdict { get; set; } = string.Empty;
     public string Output { get; set; } = string.Empty;
     public string Error { get; set; } = string.Empty;
+    public string Stdout { get; set; } = string.Empty;
+    public string Stderr { get; set; } = string.Empty;
+    public string CompileOutput { get; set; } = string.Empty;
     public int ExecutionTimeMs { get; set; }
     public int MemoryUsedKb { get; set; }
+    public string Language { get; set; } = string.Empty;
+    public long? SubmissionId { get; set; }
 }
 
 public sealed class CodingTestCaseRequest
@@ -662,8 +730,12 @@ public sealed class CodingProblemRequest
     public string? Tags { get; set; }
     public string? StarterCodeJavaScript { get; set; }
     public string? StarterCodePython { get; set; }
+    public string? StarterCodeTypeScript { get; set; }
     public string? StarterCodeJava { get; set; }
+    public string? StarterCodeC { get; set; }
     public string? StarterCodeCpp { get; set; }
+    public string? StarterCodeCsharp { get; set; }
+    public string? StarterCodeGo { get; set; }
     public byte Difficulty { get; set; } = 1;
     public byte Status { get; set; } = 1;
     public int TimeLimitMs { get; set; } = 2000;
@@ -706,15 +778,242 @@ public sealed class CodingProblemDetailResponse : CodingProblemSummaryResponse
     public string? ExamplesJson { get; set; }
     public string? StarterCodeJavaScript { get; set; }
     public string? StarterCodePython { get; set; }
+    public string? StarterCodeTypeScript { get; set; }
     public string? StarterCodeJava { get; set; }
+    public string? StarterCodeC { get; set; }
     public string? StarterCodeCpp { get; set; }
+    public string? StarterCodeCsharp { get; set; }
+    public string? StarterCodeGo { get; set; }
     public List<CodingTestCaseResponse> TestCases { get; set; } = new();
+}
+
+public sealed class LearningTrackRequest
+{
+    public string Title { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string Level { get; set; } = "Beginner";
+    public int EstimatedHours { get; set; }
+    public string? ThumbnailUrl { get; set; }
+    public int SortOrder { get; set; }
+    public bool IsPublished { get; set; } = true;
+}
+
+public sealed class RoadmapCourseRequest
+{
+    public long TrackId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
+    public string? ShortDescription { get; set; }
+    public string? Description { get; set; }
+    public string Level { get; set; } = "Beginner";
+    public int EstimatedHours { get; set; }
+    public List<string> Requirements { get; set; } = new();
+    public List<string> LearningOutcomes { get; set; } = new();
+    public List<long> RelatedCourseIds { get; set; } = new();
+    public List<long> PrerequisiteCourseIds { get; set; } = new();
+    public string? ThumbnailUrl { get; set; }
+    public int SortOrder { get; set; }
+    public bool IsPublished { get; set; } = true;
+    public bool RequiresSequentialCompletion { get; set; } = true;
+    public long? UnlockAfterCourseId { get; set; }
+}
+
+public sealed class RoadmapModuleRequest
+{
+    public string Title { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public int SortOrder { get; set; }
+    public int EstimatedMinutes { get; set; }
+    public bool RequiresPreviousModuleCompletion { get; set; } = true;
+    public bool IsLockedByDefault { get; set; }
+    public bool IsPublished { get; set; } = true;
+}
+
+public sealed class RoadmapLessonRequest
+{
+    public string Title { get; set; } = string.Empty;
+    public string Type { get; set; } = "Reading";
+    public string? Content { get; set; }
+    public string? VideoUrl { get; set; }
+    public long? QuizSetId { get; set; }
+    public long? CodingProblemId { get; set; }
+    public int EstimatedMinutes { get; set; }
+    public int SortOrder { get; set; }
+    public bool IsPreview { get; set; }
+    public bool IsPublished { get; set; } = true;
+    public bool RequiresPreviousLessonCompletion { get; set; } = true;
+    public bool IsRequired { get; set; } = true;
+    public long? UnlockAfterLessonId { get; set; }
+}
+
+public sealed class RoadmapLockStateResponse
+{
+    public bool IsLocked { get; set; }
+    public string? LockReason { get; set; }
+    public List<string> UnlockRequirements { get; set; } = new();
+    public decimal ProgressPercent { get; set; }
+    public bool IsCompleted { get; set; }
+}
+
+public sealed class RoadmapLessonResponse
+{
+    public long Id { get; set; }
+    public long ModuleId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    public string? Content { get; set; }
+    public string? VideoUrl { get; set; }
+    public long? QuizSetId { get; set; }
+    public long? CodingProblemId { get; set; }
+    public int EstimatedMinutes { get; set; }
+    public int SortOrder { get; set; }
+    public bool IsPreview { get; set; }
+    public bool IsRequired { get; set; }
+    public bool IsPublished { get; set; }
+    public bool RequiresPreviousLessonCompletion { get; set; }
+    public long? UnlockAfterLessonId { get; set; }
+    public bool IsLocked { get; set; }
+    public string? LockReason { get; set; }
+    public List<string> UnlockRequirements { get; set; } = new();
+    public string Status { get; set; } = "NotStarted";
+    public bool CanStart { get; set; }
+    public bool CanComplete { get; set; }
+}
+
+public sealed class LessonAccessResult
+{
+    public bool CanAccess { get; set; }
+    public bool IsLocked { get; set; }
+    public string? Message { get; set; }
+    public long? LessonId { get; set; }
+    public long? CourseId { get; set; }
+}
+
+public sealed class RoadmapModuleResponse
+{
+    public long Id { get; set; }
+    public long CourseId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public int SortOrder { get; set; }
+    public int EstimatedMinutes { get; set; }
+    public bool RequiresPreviousModuleCompletion { get; set; }
+    public bool IsLockedByDefault { get; set; }
+    public bool IsPublished { get; set; }
+    public bool IsLocked { get; set; }
+    public string? LockReason { get; set; }
+    public List<string> UnlockRequirements { get; set; } = new();
+    public decimal ProgressPercent { get; set; }
+    public bool IsCompleted { get; set; }
+    public List<RoadmapLessonResponse> Lessons { get; set; } = new();
+}
+
+public class RoadmapCourseSummaryResponse
+{
+    public long Id { get; set; }
+    public long TrackId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
+    public string? ShortDescription { get; set; }
+    public string? Description { get; set; }
+    public string Level { get; set; } = string.Empty;
+    public int EstimatedHours { get; set; }
+    public int TotalModules { get; set; }
+    public int TotalLessons { get; set; }
+    public string? ThumbnailUrl { get; set; }
+    public int SortOrder { get; set; }
+    public bool IsPublished { get; set; }
+    public bool RequiresSequentialCompletion { get; set; }
+    public List<long> RelatedCourseIds { get; set; } = new();
+    public List<long> PrerequisiteCourseIds { get; set; } = new();
+    public long? UnlockAfterCourseId { get; set; }
+    public bool IsLocked { get; set; }
+    public string? LockReason { get; set; }
+    public List<string> UnlockRequirements { get; set; } = new();
+    public decimal ProgressPercent { get; set; }
+    public bool IsCompleted { get; set; }
+    public string Status { get; set; } = "Not started";
+}
+
+public sealed class RoadmapCourseDetailResponse : RoadmapCourseSummaryResponse
+{
+    public string TrackTitle { get; set; } = string.Empty;
+    public string TrackSlug { get; set; } = string.Empty;
+    public List<string> Requirements { get; set; } = new();
+    public List<string> LearningOutcomes { get; set; } = new();
+    public List<RoadmapModuleResponse> Modules { get; set; } = new();
+    public List<RoadmapCourseSummaryResponse> RelatedCourses { get; set; } = new();
+    public RoadmapLessonResponse? NextUnlockedLesson { get; set; }
+    public int LockedLessonCount { get; set; }
+    public int CompletedLessons { get; set; }
+}
+
+public class LearningTrackResponse
+{
+    public long Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string Level { get; set; } = string.Empty;
+    public int EstimatedHours { get; set; }
+    public string? ThumbnailUrl { get; set; }
+    public int SortOrder { get; set; }
+    public bool IsPublished { get; set; }
+    public int CourseCount { get; set; }
+    public int TotalLessons { get; set; }
+    public decimal ProgressPercent { get; set; }
+}
+
+public sealed class LearningTrackDetailResponse : LearningTrackResponse
+{
+    public List<RoadmapCourseSummaryResponse> Courses { get; set; } = new();
+}
+
+public sealed class CourseProgressResponse
+{
+    public long CourseId { get; set; }
+    public int CompletedLessons { get; set; }
+    public int TotalLessons { get; set; }
+    public decimal ProgressPercent { get; set; }
+    public bool IsCompleted { get; set; }
+    public DateTime? LastAccessedAt { get; set; }
+}
+
+public sealed class ProgressOverviewResponse
+{
+    public int TotalCourses { get; set; }
+    public int CompletedCourses { get; set; }
+    public int CompletedLessons { get; set; }
+    public int TotalLessons { get; set; }
+    public decimal AverageQuizScore { get; set; }
+    public int AcceptedCodeSubmissions { get; set; }
+    public List<string> WeakTopics { get; set; } = new();
+    public List<RoadmapCourseSummaryResponse> RecommendedNextCourses { get; set; } = new();
+}
+
+public sealed class ProgressRoadmapActionResponse
+{
+    public string Type { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string LinkUrl { get; set; } = string.Empty;
+}
+
+public sealed class ProgressRoadmapResponse
+{
+    public string CurrentLevel { get; set; } = "Beginner";
+    public List<RoadmapCourseSummaryResponse> CurrentCourses { get; set; } = new();
+    public List<RoadmapCourseSummaryResponse> RecommendedCourses { get; set; } = new();
+    public List<string> WeakTopics { get; set; } = new();
+    public List<ProgressRoadmapActionResponse> NextActions { get; set; } = new();
 }
 
 public sealed class CodeSubmitRequest
 {
     public string Language { get; set; } = "javascript";
     public string SourceCode { get; set; } = string.Empty;
+    public long? LessonId { get; set; }
+    public long? RoadmapLessonId { get; set; }
 }
 
 public sealed class CodeTestCaseResultResponse

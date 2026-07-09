@@ -10,55 +10,135 @@
   </header>
 
   <main class="admin-wrap">
-    <div class="page-title"><h1>Online Code Playground & Judge</h1><p>Quản lý bài lập trình, test case, starter code và trạng thái chấm bài.</p></div>
+    <div class="page-title">
+      <h1>Online Code Playground & Judge</h1>
+      <p>Quản lý bài lập trình, test case, starter code, trạng thái chấm bài và submission detail.</p>
+    </div>
     <div class="alert success" *ngIf="message">{{message}}</div>
-    <div class="alert" *ngIf="error">{{error}}</div>
+    <div class="alert" *ngIf="error" style="white-space:pre-line">{{error}}</div>
 
-    <section class="card card-pad">
-      <h3>{{editingId ? 'Edit Problem' : 'Create Problem'}}</h3>
-      <form (ngSubmit)="save()">
-        <div class="grid grid-2">
-          <div class="form-group"><label>Title</label><input class="input" name="title" [(ngModel)]="form.title" (blur)="autoSlug()"></div>
-          <div class="form-group"><label>Slug</label><input class="input" name="slug" [(ngModel)]="form.slug"></div>
-        </div>
-        <div class="form-group"><label>Description</label><textarea class="textarea" name="description" [(ngModel)]="form.description" style="min-height:120px"></textarea></div>
-        <div class="grid grid-3">
-          <div class="form-group"><label>Difficulty</label><select class="select" name="difficulty" [(ngModel)]="form.difficulty"><option [ngValue]="1">Easy</option><option [ngValue]="2">Medium</option><option [ngValue]="3">Hard</option></select></div>
-          <div class="form-group"><label>Status</label><select class="select" name="status" [(ngModel)]="form.status"><option [ngValue]="1">Published</option><option [ngValue]="0">Draft</option></select></div>
-          <div class="form-group"><label>Tags</label><input class="input" name="tags" [(ngModel)]="form.tags" placeholder="array, math, beginner"></div>
-        </div>
-        <div class="grid grid-2">
-          <div class="form-group"><label>Input Format</label><textarea class="textarea" name="inputFormat" [(ngModel)]="form.inputFormat"></textarea></div>
-          <div class="form-group"><label>Output Format</label><textarea class="textarea" name="outputFormat" [(ngModel)]="form.outputFormat"></textarea></div>
-        </div>
-        <div class="grid grid-2">
-          <div class="form-group"><label>Time Limit (ms)</label><input class="input" type="number" name="timeLimitMs" [(ngModel)]="form.timeLimitMs"></div>
-          <div class="form-group"><label>Memory Limit (KB)</label><input class="input" type="number" name="memoryLimitKb" [(ngModel)]="form.memoryLimitKb"></div>
-        </div>
-        <div class="form-group"><label>Constraints</label><textarea class="textarea" name="constraints" [(ngModel)]="form.constraints"></textarea></div>
+    <div class="card card-pad">
+      <div class="admin-tabs">
+        <button class="admin-tab" [class.active]="tab==='problems'" (click)="tab='problems'">Problems</button>
+        <button class="admin-tab" [class.active]="tab==='languages'" (click)="tab='languages'">Languages</button>
+        <button class="admin-tab" [class.active]="tab==='submissions'" (click)="tab='submissions'">Submissions</button>
+      </div>
+    </div>
 
-        <h3>Starter Code</h3>
-        <div class="grid grid-2">
-          <div class="form-group"><label>JavaScript</label><textarea class="textarea code-editor" name="starterJs" [(ngModel)]="form.starterCodeJavaScript" style="min-height:180px"></textarea></div>
-          <div class="form-group"><label>Python</label><textarea class="textarea code-editor" name="starterPython" [(ngModel)]="form.starterCodePython" style="min-height:180px"></textarea></div>
-          <div class="form-group"><label>Java</label><textarea class="textarea code-editor" name="starterJava" [(ngModel)]="form.starterCodeJava" style="min-height:180px"></textarea></div>
-          <div class="form-group"><label>C++17</label><textarea class="textarea code-editor" name="starterCpp" [(ngModel)]="form.starterCodeCpp" style="min-height:180px"></textarea></div>
-        </div>
+    <ng-container *ngIf="tab==='problems'">
+      <section class="card card-pad" style="margin-top:18px">
+        <h3>{{editingId ? 'Edit Problem' : 'Create Problem'}}</h3>
+        <form (ngSubmit)="save()">
+          <div class="grid grid-2">
+            <div class="form-group"><label>Title</label><input class="input" name="title" [(ngModel)]="form.title" (blur)="autoSlug()"></div>
+            <div class="form-group"><label>Slug</label><input class="input" name="slug" [(ngModel)]="form.slug"></div>
+          </div>
+          <div class="form-group"><label>Description</label><textarea class="textarea" name="description" [(ngModel)]="form.description" style="min-height:120px"></textarea></div>
+          <div class="grid grid-3">
+            <div class="form-group"><label>Difficulty</label><select class="select" name="difficulty" [(ngModel)]="form.difficulty"><option [ngValue]="1">Easy</option><option [ngValue]="2">Medium</option><option [ngValue]="3">Hard</option></select></div>
+            <div class="form-group"><label>Status</label><select class="select" name="status" [(ngModel)]="form.status"><option [ngValue]="1">Published</option><option [ngValue]="0">Draft</option></select></div>
+            <div class="form-group"><label>Tags</label><input class="input" name="tags" [(ngModel)]="form.tags" placeholder="array, math, beginner"></div>
+          </div>
+          <div class="grid grid-2">
+            <div class="form-group"><label>Input Format</label><textarea class="textarea" name="inputFormat" [(ngModel)]="form.inputFormat"></textarea></div>
+            <div class="form-group"><label>Output Format</label><textarea class="textarea" name="outputFormat" [(ngModel)]="form.outputFormat"></textarea></div>
+          </div>
+          <div class="grid grid-2">
+            <div class="form-group"><label>Time Limit (ms)</label><input class="input" type="number" name="timeLimitMs" [(ngModel)]="form.timeLimitMs"></div>
+            <div class="form-group"><label>Memory Limit (KB)</label><input class="input" type="number" name="memoryLimitKb" [(ngModel)]="form.memoryLimitKb"></div>
+          </div>
+          <div class="form-group"><label>Constraints</label><textarea class="textarea" name="constraints" [(ngModel)]="form.constraints"></textarea></div>
 
-        <div class="filters" style="margin-top:14px"><h3 style="margin:0">Test Cases</h3><button class="btn btn-outline" type="button" (click)="addTestCase()">Add Test Case</button></div>
-        <div class="example" *ngFor="let tc of form.testCases; let i=index" style="margin-bottom:12px">
-          <div class="filters"><b>#{{i+1}}</b><label><input type="checkbox" [(ngModel)]="tc.isHidden" [name]="'hidden'+i"> Hidden test</label><button class="btn btn-ghost" type="button" (click)="removeTestCase(i)">Remove</button></div>
-          <div class="grid grid-2"><div class="form-group"><label>Input</label><textarea class="textarea" [(ngModel)]="tc.input" [name]="'input'+i"></textarea></div><div class="form-group"><label>Expected Output</label><textarea class="textarea" [(ngModel)]="tc.expectedOutput" [name]="'expected'+i"></textarea></div></div>
-          <div class="form-group"><label>Explanation</label><input class="input" [(ngModel)]="tc.explanation" [name]="'explain'+i"></div>
-        </div>
+          <h3>Starter Code</h3>
+          <div class="grid grid-2">
+            <div class="form-group"><label>JavaScript</label><textarea class="textarea code-editor" name="starterJs" [(ngModel)]="form.starterCodeJavaScript" style="min-height:180px"></textarea></div>
+            <div class="form-group"><label>Python</label><textarea class="textarea code-editor" name="starterPython" [(ngModel)]="form.starterCodePython" style="min-height:180px"></textarea></div>
+            <div class="form-group"><label>TypeScript</label><textarea class="textarea code-editor" name="starterTs" [(ngModel)]="form.starterCodeTypeScript" style="min-height:180px"></textarea></div>
+            <div class="form-group"><label>Java</label><textarea class="textarea code-editor" name="starterJava" [(ngModel)]="form.starterCodeJava" style="min-height:180px"></textarea></div>
+            <div class="form-group"><label>C</label><textarea class="textarea code-editor" name="starterC" [(ngModel)]="form.starterCodeC" style="min-height:180px"></textarea></div>
+            <div class="form-group"><label>C++17</label><textarea class="textarea code-editor" name="starterCpp" [(ngModel)]="form.starterCodeCpp" style="min-height:180px"></textarea></div>
+            <div class="form-group"><label>C#</label><textarea class="textarea code-editor" name="starterCsharp" [(ngModel)]="form.starterCodeCsharp" style="min-height:180px"></textarea></div>
+            <div class="form-group"><label>Go</label><textarea class="textarea code-editor" name="starterGo" [(ngModel)]="form.starterCodeGo" style="min-height:180px"></textarea></div>
+          </div>
 
-        <div class="action-row" style="margin-top:14px"><button class="btn btn-primary">{{editingId ? 'Update Problem' : 'Create Problem'}}</button><button class="btn btn-outline" type="button" (click)="cancel()">Cancel</button></div>
-      </form>
+          <div class="filters" style="margin-top:14px"><h3 style="margin:0">Test Cases</h3><button class="btn btn-outline" type="button" (click)="addTestCase()">Add Test Case</button></div>
+          <div class="example" *ngFor="let tc of form.testCases; let i=index" style="margin-bottom:12px">
+            <div class="filters"><b>#{{i + 1}}</b><label><input type="checkbox" [(ngModel)]="tc.isHidden" [name]="'hidden'+i"> Hidden test</label><button class="btn btn-ghost" type="button" (click)="removeTestCase(i)">Remove</button></div>
+            <div class="grid grid-2"><div class="form-group"><label>Input</label><textarea class="textarea" [(ngModel)]="tc.input" [name]="'input'+i"></textarea></div><div class="form-group"><label>Expected Output</label><textarea class="textarea" [(ngModel)]="tc.expectedOutput" [name]="'expected'+i"></textarea></div></div>
+            <div class="form-group"><label>Explanation</label><input class="input" [(ngModel)]="tc.explanation" [name]="'explain'+i"></div>
+          </div>
+
+          <div class="action-row" style="margin-top:14px"><button class="btn btn-primary">{{editingId ? 'Update Problem' : 'Create Problem'}}</button><button class="btn btn-outline" type="button" (click)="cancel()">Cancel</button></div>
+        </form>
+      </section>
+
+      <section class="card card-pad" style="margin-top:18px">
+        <h3>Problem Library</h3>
+        <table class="table"><thead><tr><th>ID</th><th>Title</th><th>Difficulty</th><th>Tests</th><th>Acceptance</th><th>Status</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let p of problems"><td>{{p.id}}</td><td><b>{{p.title}}</b><div class="muted">{{p.slug}}</div></td><td><span class="badge" [ngClass]="difficultyBadge(p.difficulty)">{{difficultyText(p.difficulty)}}</span></td><td>{{p.testCases?.length || 0}}</td><td>{{p.acceptanceRate || 0}}%</td><td>{{p.status===1?'Published':'Draft'}}</td><td class="action-row"><button class="btn btn-outline" type="button" (click)="edit(p)">Edit</button><button class="btn btn-ghost" type="button" (click)="delete(p)">Delete</button></td></tr></tbody></table>
+      </section>
+    </ng-container>
+
+    <section class="card card-pad" style="margin-top:18px" *ngIf="tab==='languages'">
+      <div class="filters">
+        <div>
+          <h3 style="margin:0">Programming Languages</h3>
+          <p class="muted" style="margin:6px 0 0">Runtime is checked when code runs; missing tools return a readable judge error.</p>
+        </div>
+        <button class="btn btn-outline" type="button" (click)="loadLanguages()">Refresh</button>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr><th>Code</th><th>Name</th><th>Extension</th><th>Compile</th><th>Run</th><th>Runtime</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let l of languages">
+            <td><b>{{l.value || l.languageCode}}</b></td>
+            <td>{{l.label || l.displayName}}</td>
+            <td>.{{l.fileExtension || '-'}}</td>
+            <td><code>{{l.compileCommand || '-'}}</code></td>
+            <td><code>{{l.runCommand || l.runtime || '-'}}</code></td>
+            <td>{{l.requiredRuntime || l.runtime || l.version || '-'}}</td>
+            <td><span class="badge" [ngClass]="(l.enabled === false || l.isActive === false) ? 'badge-red' : 'badge-green'">{{languageStatus(l)}}</span></td>
+          </tr>
+          <tr *ngIf="!languages.length"><td colspan="7" class="muted">No languages returned by API.</td></tr>
+        </tbody>
+      </table>
     </section>
 
-    <section class="card card-pad" style="margin-top:18px">
-      <h3>Problem Library</h3>
-      <table class="table"><thead><tr><th>ID</th><th>Title</th><th>Difficulty</th><th>Tests</th><th>Acceptance</th><th>Status</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let p of problems"><td>{{p.id}}</td><td><b>{{p.title}}</b><div class="muted">{{p.slug}}</div></td><td><span class="badge" [ngClass]="difficultyBadge(p.difficulty)">{{difficultyText(p.difficulty)}}</span></td><td>{{p.testCases?.length || 0}}</td><td>{{p.acceptanceRate || 0}}%</td><td>{{p.status===1?'Published':'Draft'}}</td><td class="action-row"><button class="btn btn-outline" type="button" (click)="edit(p)">Edit</button><button class="btn btn-ghost" type="button" (click)="delete(p)">Delete</button></td></tr></tbody></table>
+    <section class="card card-pad" style="margin-top:18px" *ngIf="tab==='submissions'">
+      <h3>Submission Detail</h3>
+      <p class="muted">Nếu backend chưa có API list submissions, nhập submissionId để xem chi tiết.</p>
+      <div class="action-row">
+        <input class="input" style="max-width:260px" name="submissionId" [(ngModel)]="submissionId" placeholder="submissionId">
+        <button class="btn btn-primary" type="button" (click)="loadSubmission()">Xem detail</button>
+      </div>
+
+      <div *ngIf="submissionDetail" style="margin-top:18px">
+        <div class="grid grid-4">
+          <div><b>Problem</b><p class="muted">{{submissionDetail.problemTitle || submissionDetail.problemId}}</p></div>
+          <div><b>Language</b><p class="muted">{{submissionDetail.language}}</p></div>
+          <div><b>Status</b><p class="muted">{{submissionDetail.status || submissionDetail.verdict}}</p></div>
+          <div><b>Score</b><p class="muted">{{submissionDetail.score ?? '-'}}</p></div>
+          <div><b>Runtime</b><p class="muted">{{submissionDetail.runtimeMs || submissionDetail.executionTimeMs || '-'}} ms</p></div>
+          <div><b>Memory</b><p class="muted">{{submissionDetail.memoryKb || '-'}} KB</p></div>
+          <div><b>Submitted At</b><p class="muted">{{submissionDetail.submittedAt | date:'short'}}</p></div>
+        </div>
+        <h4>Source Code</h4>
+        <pre class="output-box">{{submissionDetail.sourceCode}}</pre>
+        <h4>Testcase Results</h4>
+        <div class="example" *ngFor="let tc of submissionTests; let i=index" style="margin-bottom:12px">
+          <b>#{{tc.displayOrder || i + 1}} {{tc.status || tc.verdict}}</b>
+          <span class="badge" [ngClass]="tc.passed ? 'badge-green' : 'badge-red'">{{tc.passed ? 'Passed' : 'Failed'}}</span>
+          <div class="grid grid-3" *ngIf="tc.input || tc.expectedOutput; else hiddenCase">
+            <div><small class="muted">Input</small><pre class="output-box">{{tc.input}}</pre></div>
+            <div><small class="muted">Expected</small><pre class="output-box">{{tc.expectedOutput}}</pre></div>
+            <div><small class="muted">Actual</small><pre class="output-box">{{tc.actualOutput || '(no output)'}}</pre></div>
+          </div>
+          <ng-template #hiddenCase><p class="muted">Hidden testcase</p></ng-template>
+          <pre class="output-box" *ngIf="tc.error">{{tc.error}}</pre>
+        </div>
+      </div>
     </section>
   </main>
 </div>

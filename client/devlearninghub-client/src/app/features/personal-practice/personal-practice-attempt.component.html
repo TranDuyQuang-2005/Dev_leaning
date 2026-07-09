@@ -1,0 +1,33 @@
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Làm bài tự luyện</h1>
+      <p class="muted">{{attempt?.bankTitle || attempt?.practiceBank?.title || 'Ngân hàng câu hỏi cá nhân'}}</p>
+    </div>
+    <a class="btn btn-outline" routerLink="/learner/practice-attempts">Lịch sử</a>
+  </div>
+
+  <div class="alert alert-error" *ngIf="error" style="white-space:pre-line">{{error}}</div>
+  <div class="card card-pad" *ngIf="attempt">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+      <b>Tiến độ: {{answeredCount}} / {{questions.length}} câu</b>
+      <span class="badge badge-gray">{{attempt.status || 'InProgress'}}</span>
+    </div>
+    <div class="progress" style="margin-top:10px"><span [style.width.%]="questions.length ? answeredCount * 100 / questions.length : 0"></span></div>
+  </div>
+
+  <section class="card card-pad" *ngFor="let q of questions; let i=index" style="margin-top:14px">
+    <h3 style="margin-top:0">Câu {{i + 1}}</h3>
+    <p style="white-space:pre-line">{{q.questionText || q.content || q.title}}</p>
+    <label class="quiz-option" *ngFor="let option of q.options || q.answers || []; let oi=index" style="display:block;margin:10px 0">
+      <input type="radio" [name]="'q' + questionId(q)" [value]="optionLabel(option, oi)" [(ngModel)]="selected[questionId(q)]">
+      <b>{{optionLabel(option, oi)}}.</b> {{optionText(option)}}
+    </label>
+  </section>
+
+  <div class="action-row" style="margin-top:18px" *ngIf="attempt">
+    <button class="btn btn-primary" type="button" [disabled]="submitting" (click)="submit()">{{submitting ? 'Đang nộp...' : 'Nộp bài'}}</button>
+  </div>
+
+  <div class="empty-state" *ngIf="loading">Đang tải lượt luyện tập...</div>
+</div>

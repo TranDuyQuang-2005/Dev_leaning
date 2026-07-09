@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -19,9 +19,9 @@ export class LearningComponent implements OnInit {
   ngOnInit(): void { this.load(); }
 
   load(): void {
-    this.api.get<any>('/api/v1/categories?pageSize=100').subscribe({ next: r => this.categories = r.data?.items || [] });
-    this.api.get<any>('/api/v1/quiz-sets?pageSize=100').subscribe({ next: r => this.quizSets = r.data?.items || [], error: e => this.error = e?.error?.message || 'Không tải được dữ liệu quiz set từ API.' });
-    this.api.get<any>('/api/v1/quiz-attempts/me').subscribe({ next: r => this.attempts = r.data || [], error: () => this.attempts = [] });
+    this.api.get<any>('/api/v1/categories?pageSize=100').subscribe({ next: (r: any) => this.categories = r.data?.items || [] });
+    this.api.get<any>('/api/v1/quiz-sets?pageSize=100').subscribe({ next: (r: any) => this.quizSets = r.data?.items || [], error: (e: any) => this.error = e?.error?.message || 'Không tải được dữ liệu quiz set từ API.' });
+    this.api.get<any>('/api/v1/quiz-attempts/me').subscribe({ next: (r: any) => this.attempts = r.data || [], error: () => this.attempts = [] });
   }
 
   get filteredQuizSets(): any[] {
@@ -51,3 +51,4 @@ export class LearningComponent implements OnInit {
     return Math.max(...list.map(a => Number(a.score || 0)));
   }
 }
+

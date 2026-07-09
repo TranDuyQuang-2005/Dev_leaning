@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../core/services/api.service';
@@ -26,8 +26,8 @@ export class QuizResultComponent implements OnInit {
     }
 
     this.api.get<any>(`/api/v1/quiz-attempts/${attemptId}/result`).subscribe({
-      next: r => this.result = r.data,
-      error: e => this.error = e?.error?.message || 'Không tải được kết quả bài làm.'
+      next: (r: any) => this.result = r.data,
+      error: (e: any) => this.error = e?.error?.message || 'Không tải được kết quả bài làm.'
     });
   }
 
@@ -41,3 +41,4 @@ export class QuizResultComponent implements OnInit {
     return correct.length ? correct.join(', ') : 'Chưa có đáp án đúng';
   }
 }
+

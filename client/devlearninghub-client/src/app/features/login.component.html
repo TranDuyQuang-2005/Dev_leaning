@@ -1,1 +1,40 @@
-<div class="auth-page"><div class="auth-card"><div><a class="logo" routerLink="/"><span class="logo-mark"><svg aria-hidden="true" class="icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline><line x1="14" x2="10" y1="4" y2="20"></line></svg></span><span><span class="dev">Dev</span>-Learning Hub</span></a></div><div class="card card-pad"><h1 style="text-align:center;margin-bottom:6px">Welcome Back</h1><p class="muted" style="text-align:center">Login to continue your learning journey</p><div class="alert alert-error" *ngIf="errorMessage">{{errorMessage}}</div><form (ngSubmit)="onSubmit()"><div class="form-group"><label>Email</label><input class="input" name="emailOrUserName" [(ngModel)]="model.emailOrUserName" type="text" placeholder="admin@example.com" required></div><div class="form-group"><label>Password</label><input class="input" name="password" [(ngModel)]="model.password" type="password" placeholder="••••••••" required></div><button class="btn btn-primary" style="width:100%;margin-top:6px" type="submit" [disabled]="loading">{{loading?'Logging in...':'Login'}}</button></form><div style="position:relative;text-align:center;margin:22px 0"><hr style="border:0;border-top:1px solid var(--gray-200)"><span style="background:white;padding:0 12px;position:relative;top:-13px;color:var(--gray-500)">Or continue with</span></div><button class="btn btn-outline" style="width:100%" type="button">Google</button><p style="text-align:center" class="muted">Don't have an account? <a routerLink="/register" style="color:var(--blue);font-weight:800">Register</a></p><p class="muted" style="text-align:center">Demo: admin@example.com / 123456Aa</p></div></div></div>
+<div class="auth-page">
+  <div class="auth-card">
+    <div>
+      <a class="logo" routerLink="/">
+        <span class="logo-mark">
+          <svg aria-hidden="true" class="icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline><line x1="14" x2="10" y1="4" y2="20"></line></svg>
+        </span>
+        <span><span class="dev">Dev</span>-Learning Hub</span>
+      </a>
+    </div>
+    <div class="card card-pad">
+      <h1 style="text-align:center;margin-bottom:6px">Welcome Back</h1>
+      <p class="muted" style="text-align:center">Login to continue your learning journey</p>
+      <div class="alert alert-ok" *ngIf="infoMessage">{{infoMessage}}</div>
+      <div class="alert alert-error" *ngIf="errorMessage">{{errorMessage}}</div>
+      <form (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label>Email</label>
+          <input class="input" name="emailOrUserName" [(ngModel)]="model.emailOrUserName" type="text" placeholder="admin@example.com" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input class="input" name="password" [(ngModel)]="model.password" type="password" placeholder="••••••••" required>
+        </div>
+        <div style="text-align:right;margin-top:-6px;margin-bottom:10px">
+          <a routerLink="/forgot-password" style="color:var(--blue);font-weight:800">Quên mật khẩu?</a>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:6px" type="submit" [disabled]="loading">{{loading ? 'Logging in...' : 'Login'}}</button>
+      </form>
+      <div style="position:relative;text-align:center;margin:22px 0">
+        <hr style="border:0;border-top:1px solid var(--gray-200)">
+        <span style="background:white;padding:0 12px;position:relative;top:-13px;color:var(--gray-500)">Or continue with</span>
+      </div>
+      <button class="btn btn-outline" style="width:100%" type="button">Google</button>
+      <p style="text-align:center" class="muted">Don't have an account? <a routerLink="/register" style="color:var(--blue);font-weight:800">Register</a></p>
+      <p class="muted" style="text-align:center"><a routerLink="/resend-verification">Gửi lại email xác minh</a></p>
+      <p class="muted" style="text-align:center">Demo: admin@example.com / 123456Aa</p>
+    </div>
+  </div>
+</div>

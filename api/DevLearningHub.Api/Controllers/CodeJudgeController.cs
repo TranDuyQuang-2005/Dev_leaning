@@ -22,9 +22,11 @@ public sealed class CodeJudgeController : BaseApiController
     [HttpPost("run")]
     [Authorize]
     [EnableRateLimiting("code-run")]
-    public async Task<ActionResult<ApiResponse<CodeRunResponse>>> Run(CodeRunRequest request, CancellationToken ct)
+    public async Task<ActionResult<ApiResponse<CodeRunResponse>>> Run(CodeRunRequest request, [FromQuery] long? lessonId, [FromQuery] long? roadmapLessonId, CancellationToken ct)
     {
         if (CurrentUserId is null) return Unauthorized();
+        request.LessonId ??= lessonId;
+        request.RoadmapLessonId ??= roadmapLessonId;
         var res = await _service.Run(CurrentUserId.Value, request, ct);
         return res.Success ? Ok(res) : BadRequest(res);
     }
@@ -44,18 +46,21 @@ public sealed class CodeJudgeController : BaseApiController
 
     [HttpGet("problems/{id:long}")]
     [Authorize]
-    public async Task<ActionResult<ApiResponse<CodingProblemDetailResponse>>> Problem(long id, CancellationToken ct)
+    public async Task<ActionResult<ApiResponse<CodingProblemDetailResponse>>> Problem(long id, [FromQuery] long? lessonId, [FromQuery] long? roadmapLessonId, CancellationToken ct)
     {
-        var res = await _service.Problem(CurrentUserId, id, false, ct);
-        return res.Success ? Ok(res) : NotFound(res);
+        var contextLessonId = lessonId ?? roadmapLessonId;
+        var res = await _service.Problem(CurrentUserId, id, false, ct, contextLessonId);
+        return res.Success ? Ok(res) : contextLessonId.HasValue ? BadRequest(res) : NotFound(res);
     }
 
     [HttpPost("problems/{id:long}/submit")]
     [Authorize]
     [EnableRateLimiting("code-submit")]
-    public async Task<ActionResult<ApiResponse<CodeSubmissionResponse>>> Submit(long id, CodeSubmitRequest request, CancellationToken ct)
+    public async Task<ActionResult<ApiResponse<CodeSubmissionResponse>>> Submit(long id, CodeSubmitRequest request, [FromQuery] long? lessonId, [FromQuery] long? roadmapLessonId, CancellationToken ct)
     {
         if (CurrentUserId is null) return Unauthorized();
+        request.LessonId ??= lessonId;
+        request.RoadmapLessonId ??= roadmapLessonId;
         var res = await _service.Submit(CurrentUserId.Value, id, request, ct);
         return res.Success ? Ok(res) : BadRequest(res);
     }

@@ -41,11 +41,13 @@ public sealed class ForumModuleService : IForumModuleService
 {
     private readonly DevLearningHubDbContext _db;
     private readonly IObjectStorageService _storage;
+    private readonly INotificationService _notifications;
 
-    public ForumModuleService(DevLearningHubDbContext db, IObjectStorageService storage)
+    public ForumModuleService(DevLearningHubDbContext db, IObjectStorageService storage, INotificationService notifications)
     {
         _db = db;
         _storage = storage;
+        _notifications = notifications;
     }
 
     public async Task<ApiResponse<ForumAttachmentResponse>> UploadAttachment(long userId, IFormFile file, CancellationToken ct)
@@ -226,6 +228,22 @@ public sealed class ForumModuleService : IForumModuleService
         post.LastActivityAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
         await UpdateUserForumStats(userId, postsDelta: 0, commentsDelta: 1, ct);
+        if (post.AuthorId != userId)
+        {
+            var actorName = await _db.Users.AsNoTracking()
+                .Where(x => x.Id == userId)
+                .Select(x => x.FullName == string.Empty ? x.UserName : x.FullName)
+                .FirstOrDefaultAsync(ct) ?? "Một người học";
+            await _notifications.CreateAsync(
+                post.AuthorId,
+                "forum.reply",
+                "Có phản hồi mới",
+                $"{actorName} đã phản hồi bài viết của bạn.",
+                $"/learner/forum-post/{postId}",
+                new { eventKey = $"forum.reply:{comment.Id}", postId, commentId = comment.Id, actorUserId = userId },
+                ct);
+        }
+
         var loaded = await _db.Comments.Include(x => x.Author).Include(x => x.Votes).FirstAsync(x => x.Id == comment.Id, ct);
         return ApiResponse<ForumCommentResponse>.Ok(MapComment(loaded, userId), "Bình luận thành công");
     }
@@ -298,6 +316,14 @@ public sealed class ForumModuleService : IForumModuleService
 
         await _db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await _notifications.CreateAsync(
+            comment.AuthorId,
+            "forum.accepted_answer",
+            "Câu trả lời được chấp nhận",
+            "Câu trả lời của bạn đã được đánh dấu là Accepted Answer.",
+            $"/learner/forum-post/{postId}",
+            new { eventKey = $"forum.accepted_answer:{postId}:{commentId}", postId, commentId, actorUserId = userId },
+            ct);
         return ApiResponse<object>.Ok(new { postId, acceptedCommentId = commentId }, "Đã đánh dấu câu trả lời đúng");
     }
 
@@ -662,7 +688,6 @@ public sealed class ForumModuleService : IForumModuleService
             .Select(x =>
             {
                 var reply = MapComment(x, currentUserId, canModerate);
-                reply.ParentCommentId = c.Id;
                 reply.Replies = new List<ForumCommentResponse>();
                 return reply;
             })
