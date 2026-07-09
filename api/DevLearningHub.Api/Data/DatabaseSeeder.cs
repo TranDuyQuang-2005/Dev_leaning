@@ -18,9 +18,9 @@ public static class DatabaseSeeder
     {
         var roles = new[]
         {
-            new Role { Name = "User", NormalizedName = "USER", Description = "Người dùng hệ thống", IsSystemRole = true, CreatedAt = DateTime.UtcNow },
-            new Role { Name = "Moderator", NormalizedName = "MODERATOR", Description = "Người kiểm duyệt", IsSystemRole = true, CreatedAt = DateTime.UtcNow },
-            new Role { Name = "Admin", NormalizedName = "ADMIN", Description = "Quản trị viên", IsSystemRole = true, CreatedAt = DateTime.UtcNow }
+            new Role { Name = "User", NormalizedName = "USER", Description = "Standard learner", IsSystemRole = true, CreatedAt = DateTime.UtcNow },
+            new Role { Name = "Moderator", NormalizedName = "MODERATOR", Description = "Forum moderator", IsSystemRole = true, CreatedAt = DateTime.UtcNow },
+            new Role { Name = "Admin", NormalizedName = "ADMIN", Description = "System administrator", IsSystemRole = true, CreatedAt = DateTime.UtcNow }
         };
         foreach (var role in roles)
             if (!await db.Roles.AnyAsync(x => x.NormalizedName == role.NormalizedName)) db.Roles.Add(role);
@@ -28,10 +28,21 @@ public static class DatabaseSeeder
 
         var permissions = new[]
         {
-            ("user.view", "Xem người dùng", "User"), ("user.manage", "Quản lý người dùng", "User"),
-            ("role.manage", "Quản lý vai trò", "Auth"), ("category.manage", "Quản lý chủ đề", "Learning"),
-            ("question.manage", "Quản lý câu hỏi", "Learning"), ("quiz.manage", "Quản lý bộ đề", "Learning"),
-            ("file.manage", "Quản lý file", "File"), ("code.run", "Chạy code playground", "Code"), ("code.submit", "Nộp bài lập trình", "Code"), ("code.manage", "Quản lý bài lập trình", "Code"), ("forum.moderate", "Kiểm duyệt diễn đàn", "Forum"), ("forum.answer.accept", "Đánh dấu câu trả lời đúng", "Forum"), ("audit.view", "Xem audit", "Audit")
+            ("user.view", "View users", "User"),
+            ("user.manage", "Manage users", "User"),
+            ("role.manage", "Manage roles", "Auth"),
+            ("permission.manage", "Manage permissions", "Auth"),
+            ("category.manage", "Manage categories", "Learning"),
+            ("question.manage", "Manage questions", "Learning"),
+            ("quiz.manage", "Manage quizzes", "Learning"),
+            ("forum.moderate", "Moderate forum", "Forum"),
+            ("forum.answer.accept", "Accept forum answers", "Forum"),
+            ("file.manage", "Manage files", "File"),
+            ("code.run", "Run code playground", "Code"),
+            ("code.submit", "Submit code", "Code"),
+            ("code.manage", "Manage code judge", "Code"),
+            ("audit.view", "View audit logs", "Audit"),
+            ("personal_practice.manage_own", "Manage own personal practice banks", "Learning")
         };
         foreach (var p in permissions)
             if (!await db.Permissions.AnyAsync(x => x.Code == p.Item1))
@@ -40,9 +51,66 @@ public static class DatabaseSeeder
 
         var adminRole = await db.Roles.FirstAsync(x => x.NormalizedName == "ADMIN");
         foreach (var permissionId in await db.Permissions.Select(x => x.Id).ToListAsync())
+        {
             if (!await db.RolePermissions.AnyAsync(x => x.RoleId == adminRole.Id && x.PermissionId == permissionId))
                 db.RolePermissions.Add(new RolePermission { RoleId = adminRole.Id, PermissionId = permissionId });
+        }
         await db.SaveChangesAsync();
+        await EnsurePermissionGroups(db);
+    }
+
+    private static async Task EnsurePermissionGroups(DevLearningHubDbContext db)
+    {
+        var allPermissionCodes = await db.Permissions.Select(x => x.Code).ToListAsync();
+        var groups = new (string Name, string Code, string Description, List<string> PermissionCodes)[]
+        {
+            ("System Admin Group", "system_admin_group", "All system permissions", allPermissionCodes),
+            ("Quiz Manager Group", "quiz_manager_group", "Quiz and question management", new List<string> { "category.manage", "question.manage", "quiz.manage" }),
+            ("Forum Moderator Group", "forum_moderator_group", "Forum moderation", new List<string> { "forum.moderate", "forum.answer.accept" }),
+            ("Code Judge Admin Group", "code_judge_admin_group", "Code judge management", new List<string> { "code.manage", "code.submit", "code.run" }),
+            ("Learner Personal Practice Group", "learner_personal_practice_group", "Own personal practice banks", new List<string> { "personal_practice.manage_own", "code.submit", "code.run" })
+        };
+
+        foreach (var groupInfo in groups)
+        {
+            var group = await db.PermissionGroups.Include(x => x.PermissionGroupPermissions).FirstOrDefaultAsync(x => x.Code == groupInfo.Code);
+            if (group == null)
+            {
+                group = new PermissionGroup
+                {
+                    Name = groupInfo.Name,
+                    Code = groupInfo.Code,
+                    Description = groupInfo.Description,
+                    IsSystem = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+                db.PermissionGroups.Add(group);
+                await db.SaveChangesAsync();
+            }
+
+            var permissionIds = await db.Permissions.Where(x => groupInfo.PermissionCodes.Contains(x.Code)).Select(x => x.Id).ToListAsync();
+            foreach (var permissionId in permissionIds)
+            {
+                if (!await db.PermissionGroupPermissions.AnyAsync(x => x.PermissionGroupId == group.Id && x.PermissionId == permissionId))
+                    db.PermissionGroupPermissions.Add(new PermissionGroupPermission { PermissionGroupId = group.Id, PermissionId = permissionId });
+            }
+        }
+        await db.SaveChangesAsync();
+
+        var adminRole = await db.Roles.FirstAsync(x => x.NormalizedName == "ADMIN");
+        var userRole = await db.Roles.FirstAsync(x => x.NormalizedName == "USER");
+        var moderatorRole = await db.Roles.FirstAsync(x => x.NormalizedName == "MODERATOR");
+        await AssignGroupToRole(db, adminRole.Id, "system_admin_group");
+        await AssignGroupToRole(db, userRole.Id, "learner_personal_practice_group");
+        await AssignGroupToRole(db, moderatorRole.Id, "forum_moderator_group");
+        await db.SaveChangesAsync();
+    }
+
+    private static async Task AssignGroupToRole(DevLearningHubDbContext db, long roleId, string groupCode)
+    {
+        var group = await db.PermissionGroups.FirstOrDefaultAsync(x => x.Code == groupCode);
+        if (group != null && !await db.RolePermissionGroups.AnyAsync(x => x.RoleId == roleId && x.PermissionGroupId == group.Id))
+            db.RolePermissionGroups.Add(new RolePermissionGroup { RoleId = roleId, PermissionGroupId = group.Id, AssignedAt = DateTime.UtcNow });
     }
 
     private static async Task EnsureAdminUser(DevLearningHubDbContext db)
@@ -63,10 +131,7 @@ public static class DatabaseSeeder
             };
             db.Users.Add(admin);
             await db.SaveChangesAsync();
-            db.UserProfiles.Add(new UserProfile { UserId = admin.Id, FullName = admin.FullName, UpdatedAt = DateTime.UtcNow });
-            db.UserLearningProfiles.Add(new UserLearningProfile { UserId = admin.Id, CurrentLevel = 1, DailyGoalMinutes = 30, UpdatedAt = DateTime.UtcNow });
-            db.UserStats.Add(new UserStat { UserId = admin.Id, UpdatedAt = DateTime.UtcNow });
-            db.UserSettings.Add(new UserSetting { UserId = admin.Id, Theme = "light", Language = "vi", CodeEditorTheme = "dark", CodeEditorFontSize = 14, EnableEmailNotification = true, EnablePushNotification = true, UpdatedAt = DateTime.UtcNow });
+            AddDefaultUserRows(db, admin);
             await db.SaveChangesAsync();
         }
         var role = await db.Roles.FirstAsync(x => x.NormalizedName == "ADMIN");
@@ -76,7 +141,6 @@ public static class DatabaseSeeder
             await db.SaveChangesAsync();
         }
     }
-
 
     private static async Task EnsureModeratorUser(DevLearningHubDbContext db)
     {
@@ -96,10 +160,7 @@ public static class DatabaseSeeder
             };
             db.Users.Add(moderator);
             await db.SaveChangesAsync();
-            db.UserProfiles.Add(new UserProfile { UserId = moderator.Id, FullName = moderator.FullName, UpdatedAt = DateTime.UtcNow });
-            db.UserLearningProfiles.Add(new UserLearningProfile { UserId = moderator.Id, CurrentLevel = 1, DailyGoalMinutes = 30, UpdatedAt = DateTime.UtcNow });
-            db.UserStats.Add(new UserStat { UserId = moderator.Id, UpdatedAt = DateTime.UtcNow });
-            db.UserSettings.Add(new UserSetting { UserId = moderator.Id, Theme = "light", Language = "vi", CodeEditorTheme = "dark", CodeEditorFontSize = 14, EnableEmailNotification = true, EnablePushNotification = true, UpdatedAt = DateTime.UtcNow });
+            AddDefaultUserRows(db, moderator);
             await db.SaveChangesAsync();
         }
 
@@ -115,11 +176,16 @@ public static class DatabaseSeeder
         foreach (var permission in moderatorPermissions)
         {
             if (!await db.RolePermissions.AnyAsync(x => x.RoleId == role.Id && x.PermissionId == permission.Id))
-            {
                 db.RolePermissions.Add(new RolePermission { RoleId = role.Id, PermissionId = permission.Id });
-            }
         }
         await db.SaveChangesAsync();
     }
 
+    private static void AddDefaultUserRows(DevLearningHubDbContext db, User user)
+    {
+        db.UserProfiles.Add(new UserProfile { UserId = user.Id, FullName = user.FullName, UpdatedAt = DateTime.UtcNow });
+        db.UserLearningProfiles.Add(new UserLearningProfile { UserId = user.Id, CurrentLevel = 1, DailyGoalMinutes = 30, UpdatedAt = DateTime.UtcNow });
+        db.UserStats.Add(new UserStat { UserId = user.Id, UpdatedAt = DateTime.UtcNow });
+        db.UserSettings.Add(new UserSetting { UserId = user.Id, Theme = "light", Language = "vi", CodeEditorTheme = "dark", CodeEditorFontSize = 14, EnableEmailNotification = true, EnablePushNotification = true, UpdatedAt = DateTime.UtcNow });
+    }
 }

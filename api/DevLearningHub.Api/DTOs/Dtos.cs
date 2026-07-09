@@ -26,6 +26,37 @@ public sealed class LogoutRequest
     public string RefreshToken { get; set; } = string.Empty;
 }
 
+public sealed class ChangePasswordRequest
+{
+    public string CurrentPassword { get; set; } = string.Empty;
+    public string NewPassword { get; set; } = string.Empty;
+    public string ConfirmPassword { get; set; } = string.Empty;
+}
+
+public sealed class ForgotPasswordRequest
+{
+    public string Email { get; set; } = string.Empty;
+}
+
+public sealed class ResetPasswordRequest
+{
+    public string Email { get; set; } = string.Empty;
+    public string Token { get; set; } = string.Empty;
+    public string NewPassword { get; set; } = string.Empty;
+    public string ConfirmPassword { get; set; } = string.Empty;
+}
+
+public sealed class ResendEmailVerificationRequest
+{
+    public string Email { get; set; } = string.Empty;
+}
+
+public sealed class VerifyEmailRequest
+{
+    public string Email { get; set; } = string.Empty;
+    public string Token { get; set; } = string.Empty;
+}
+
 public sealed class CurrentUserResponse
 {
     public long Id { get; set; }
@@ -272,8 +303,178 @@ public sealed class AdminUserPermissionsResponse
     public AdminUserResponse User { get; set; } = new();
     public List<AdminPermissionOptionResponse> Permissions { get; set; } = new();
 }
+
+public sealed class PermissionGroupRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public string Code { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public List<long> PermissionIds { get; set; } = new();
+}
+
+public sealed class PermissionGroupAssignRequest
+{
+    public List<long> PermissionGroupIds { get; set; } = new();
+}
+
+public sealed class PermissionIdsRequest
+{
+    public List<long> PermissionIds { get; set; } = new();
+}
+
+public sealed class PermissionGroupResponse
+{
+    public long Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Code { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public bool IsSystem { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public List<AdminPermissionOptionResponse> Permissions { get; set; } = new();
+}
+
+public sealed class EffectivePermissionsResponse
+{
+    public long UserId { get; set; }
+    public List<string> DirectPermissions { get; set; } = new();
+    public List<string> RolePermissions { get; set; } = new();
+    public List<PermissionGroupEffectiveResponse> RolePermissionGroups { get; set; } = new();
+    public List<PermissionGroupEffectiveResponse> UserPermissionGroups { get; set; } = new();
+    public List<string> EffectivePermissions { get; set; } = new();
+}
+
+public sealed class PermissionGroupEffectiveResponse
+{
+    public long Id { get; set; }
+    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public List<string> Permissions { get; set; } = new();
+}
+
+public sealed class LockUserRequest
+{
+    public string? Reason { get; set; }
+    public DateTime? LockUntil { get; set; }
+}
+
+public sealed class AuditLogResponse
+{
+    public long Id { get; set; }
+    public long? ActorUserId { get; set; }
+    public string Action { get; set; } = string.Empty;
+    public string? TargetType { get; set; }
+    public string? TargetId { get; set; }
+    public string? OldValueJson { get; set; }
+    public string? NewValueJson { get; set; }
+    public string? IpAddress { get; set; }
+    public string? UserAgent { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+public sealed class QuizStatisticsResponse
+{
+    public long? QuizSetId { get; set; }
+    public int TotalAttempts { get; set; }
+    public int UniqueUsers { get; set; }
+    public decimal AverageScore { get; set; }
+    public decimal HighestScore { get; set; }
+    public decimal LowestScore { get; set; }
+    public int PassCount { get; set; }
+    public int FailCount { get; set; }
+    public decimal PassRate { get; set; }
+    public double AverageDurationSeconds { get; set; }
+}
 public sealed class FileUploadResponse { public long FileId { get; set; } public string FileUrl { get; set; } = string.Empty; public string OriginalFileName { get; set; } = string.Empty; }
 public sealed class ImportQuestionResult { public long BatchId { get; set; } public int TotalRows { get; set; } public int SuccessRows { get; set; } public int FailedRows { get; set; } public List<string> Errors { get; set; } = new(); }
+
+public sealed class PersonalQuestionBankUploadResponse
+{
+    public long BankId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public int QuestionCount { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public List<string> ImportWarnings { get; set; } = new();
+    public List<string> ImportErrors { get; set; } = new();
+}
+
+public class PersonalQuestionBankSummaryResponse
+{
+    public long Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public int QuestionCount { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+public sealed class PersonalQuestionOptionTakeResponse
+{
+    public string Label { get; set; } = string.Empty;
+    public string Text { get; set; } = string.Empty;
+}
+
+public sealed class PersonalQuestionTakeResponse
+{
+    public long Id { get; set; }
+    public string QuestionText { get; set; } = string.Empty;
+    public string QuestionType { get; set; } = string.Empty;
+    public string Difficulty { get; set; } = string.Empty;
+    public string? Tags { get; set; }
+    public List<PersonalQuestionOptionTakeResponse> Options { get; set; } = new();
+}
+
+public sealed class PersonalQuestionBankDetailResponse : PersonalQuestionBankSummaryResponse
+{
+    public List<PersonalQuestionTakeResponse> Questions { get; set; } = new();
+}
+
+public sealed class StartPersonalPracticeAttemptRequest
+{
+    public int? NumberOfQuestions { get; set; }
+    public bool ShuffleQuestions { get; set; } = true;
+    public bool ShuffleOptions { get; set; } = true;
+}
+
+public sealed class PersonalPracticeAttemptResponse
+{
+    public long AttemptId { get; set; }
+    public long BankId { get; set; }
+    public DateTime StartedAt { get; set; }
+    public List<PersonalQuestionTakeResponse> Questions { get; set; } = new();
+}
+
+public sealed class PersonalPracticeAnswerRequest
+{
+    public long QuestionId { get; set; }
+    public string SelectedOptionLabel { get; set; } = string.Empty;
+}
+
+public sealed class SubmitPersonalPracticeAttemptRequest
+{
+    public List<PersonalPracticeAnswerRequest> Answers { get; set; } = new();
+}
+
+public sealed class PersonalPracticeAnswerResultResponse
+{
+    public long QuestionId { get; set; }
+    public string? SelectedOptionLabel { get; set; }
+    public string CorrectOptionLabel { get; set; } = string.Empty;
+    public bool IsCorrect { get; set; }
+    public string? Explanation { get; set; }
+}
+
+public sealed class PersonalPracticeAttemptResultResponse
+{
+    public long AttemptId { get; set; }
+    public long BankId { get; set; }
+    public string BankTitle { get; set; } = string.Empty;
+    public decimal Score { get; set; }
+    public int TotalQuestions { get; set; }
+    public int CorrectCount { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public DateTime StartedAt { get; set; }
+    public DateTime? SubmittedAt { get; set; }
+    public List<PersonalPracticeAnswerResultResponse> Details { get; set; } = new();
+}
 
 public sealed class ForumTagResponse
 {

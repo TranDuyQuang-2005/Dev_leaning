@@ -10,10 +10,16 @@ public sealed class DevLearningHubDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<Permission> Permissions => Set<Permission>();
+    public DbSet<PermissionGroup> PermissionGroups => Set<PermissionGroup>();
+    public DbSet<PermissionGroupPermission> PermissionGroupPermissions => Set<PermissionGroupPermission>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<UserPermission> UserPermissions => Set<UserPermission>();
+    public DbSet<UserPermissionGroup> UserPermissionGroups => Set<UserPermissionGroup>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+    public DbSet<RolePermissionGroup> RolePermissionGroups => Set<RolePermissionGroup>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+    public DbSet<EmailVerificationToken> EmailVerificationTokens => Set<EmailVerificationToken>();
 
     public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
     public DbSet<UserLearningProfile> UserLearningProfiles => Set<UserLearningProfile>();
@@ -35,6 +41,11 @@ public sealed class DevLearningHubDbContext : DbContext
     public DbSet<FileReference> FileReferences => Set<FileReference>();
     public DbSet<QuestionImportBatch> QuestionImportBatches => Set<QuestionImportBatch>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<PersonalQuestionBank> PersonalQuestionBanks => Set<PersonalQuestionBank>();
+    public DbSet<PersonalQuestion> PersonalQuestions => Set<PersonalQuestion>();
+    public DbSet<PersonalQuestionOption> PersonalQuestionOptions => Set<PersonalQuestionOption>();
+    public DbSet<PersonalPracticeAttempt> PersonalPracticeAttempts => Set<PersonalPracticeAttempt>();
+    public DbSet<PersonalPracticeAttemptAnswer> PersonalPracticeAttemptAnswers => Set<PersonalPracticeAttemptAnswer>();
 
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<Post> Posts => Set<Post>();
@@ -59,18 +70,49 @@ public sealed class DevLearningHubDbContext : DbContext
             e.Property(x => x.UserName).HasMaxLength(100).IsRequired();
             e.Property(x => x.Email).HasMaxLength(255).IsRequired();
             e.Property(x => x.PasswordHash).HasMaxLength(500);
+            e.HasIndex(x => x.Email).IsUnique();
+            e.HasIndex(x => x.UserName).IsUnique();
         });
 
         b.Entity<Role>(e => {
             e.ToTable("Roles"); e.HasKey(x => x.Id);
             e.Property(x => x.Name).HasMaxLength(50).IsRequired();
             e.Property(x => x.NormalizedName).HasMaxLength(50).IsRequired();
+            e.HasIndex(x => x.Name).IsUnique();
+            e.HasIndex(x => x.NormalizedName).IsUnique();
         });
 
         b.Entity<Permission>(e => {
             e.ToTable("Permissions"); e.HasKey(x => x.Id);
             e.Property(x => x.Code).HasMaxLength(100).IsRequired();
             e.Property(x => x.Module).HasMaxLength(100).IsRequired();
+            e.HasIndex(x => x.Code).IsUnique();
+        });
+
+        b.Entity<PermissionGroup>(e => {
+            e.ToTable("PermissionGroups"); e.HasKey(x => x.Id);
+            e.Property(x => x.Name).HasMaxLength(150).IsRequired();
+            e.Property(x => x.Code).HasMaxLength(100).IsRequired();
+            e.Property(x => x.Description).HasMaxLength(500);
+            e.HasIndex(x => x.Code).IsUnique();
+        });
+
+        b.Entity<PermissionGroupPermission>(e => {
+            e.ToTable("PermissionGroupPermissions"); e.HasKey(x => new { x.PermissionGroupId, x.PermissionId });
+            e.HasOne(x => x.PermissionGroup).WithMany(x => x.PermissionGroupPermissions).HasForeignKey(x => x.PermissionGroupId);
+            e.HasOne(x => x.Permission).WithMany(x => x.PermissionGroupPermissions).HasForeignKey(x => x.PermissionId);
+        });
+
+        b.Entity<RolePermissionGroup>(e => {
+            e.ToTable("RolePermissionGroups"); e.HasKey(x => new { x.RoleId, x.PermissionGroupId });
+            e.HasOne(x => x.Role).WithMany(x => x.RolePermissionGroups).HasForeignKey(x => x.RoleId);
+            e.HasOne(x => x.PermissionGroup).WithMany(x => x.RolePermissionGroups).HasForeignKey(x => x.PermissionGroupId);
+        });
+
+        b.Entity<UserPermissionGroup>(e => {
+            e.ToTable("UserPermissionGroups"); e.HasKey(x => new { x.UserId, x.PermissionGroupId });
+            e.HasOne(x => x.User).WithMany(x => x.UserPermissionGroups).HasForeignKey(x => x.UserId);
+            e.HasOne(x => x.PermissionGroup).WithMany(x => x.UserPermissionGroups).HasForeignKey(x => x.PermissionGroupId);
         });
 
         b.Entity<UserRole>(e => {
@@ -95,6 +137,20 @@ public sealed class DevLearningHubDbContext : DbContext
             e.ToTable("RefreshTokens"); e.HasKey(x => x.Id);
             e.Property(x => x.TokenHash).HasMaxLength(500).IsRequired();
             e.HasOne(x => x.User).WithMany(x => x.RefreshTokens).HasForeignKey(x => x.UserId);
+        });
+
+        b.Entity<PasswordResetToken>(e => {
+            e.ToTable("PasswordResetTokens"); e.HasKey(x => x.Id);
+            e.Property(x => x.TokenHash).HasMaxLength(500).IsRequired();
+            e.HasIndex(x => new { x.UserId, x.TokenHash }).IsUnique();
+            e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
+        });
+
+        b.Entity<EmailVerificationToken>(e => {
+            e.ToTable("EmailVerificationTokens"); e.HasKey(x => x.Id);
+            e.Property(x => x.TokenHash).HasMaxLength(500).IsRequired();
+            e.HasIndex(x => new { x.UserId, x.TokenHash }).IsUnique();
+            e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
         });
 
         b.Entity<UserProfile>(e => { e.ToTable("UserProfiles"); e.HasKey(x => x.UserId); });
@@ -162,6 +218,48 @@ public sealed class DevLearningHubDbContext : DbContext
         b.Entity<FileReference>(e => { e.ToTable("FileReferences"); e.HasKey(x => x.Id); });
         b.Entity<QuestionImportBatch>(e => { e.ToTable("QuestionImportBatches"); e.HasKey(x => x.Id); });
         b.Entity<AuditLog>(e => { e.ToTable("AuditLogs"); e.HasKey(x => x.Id); });
+
+        b.Entity<PersonalQuestionBank>(e => {
+            e.ToTable("PersonalQuestionBanks"); e.HasKey(x => x.Id);
+            e.Property(x => x.Title).HasMaxLength(255).IsRequired();
+            e.Property(x => x.OriginalFileName).HasMaxLength(255).IsRequired();
+            e.Property(x => x.FileStorageKey).HasMaxLength(500).IsRequired();
+            e.Property(x => x.Visibility).HasMaxLength(30).IsRequired();
+            e.HasIndex(x => new { x.UserId, x.IsDeleted });
+            e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        b.Entity<PersonalQuestion>(e => {
+            e.ToTable("PersonalQuestions"); e.HasKey(x => x.Id);
+            e.Property(x => x.QuestionText).IsRequired();
+            e.Property(x => x.QuestionType).HasMaxLength(50).IsRequired();
+            e.Property(x => x.Difficulty).HasMaxLength(30).IsRequired();
+            e.Property(x => x.Tags).HasMaxLength(500);
+            e.HasIndex(x => new { x.UserId, x.BankId, x.IsDeleted });
+            e.HasOne(x => x.Bank).WithMany(x => x.Questions).HasForeignKey(x => x.BankId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<PersonalQuestionOption>(e => {
+            e.ToTable("PersonalQuestionOptions"); e.HasKey(x => x.Id);
+            e.Property(x => x.Label).HasMaxLength(5).IsRequired();
+            e.Property(x => x.Text).IsRequired();
+            e.HasOne(x => x.Question).WithMany(x => x.Options).HasForeignKey(x => x.QuestionId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<PersonalPracticeAttempt>(e => {
+            e.ToTable("PersonalPracticeAttempts"); e.HasKey(x => x.Id);
+            e.Property(x => x.Score).HasColumnType("decimal(6,2)");
+            e.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            e.HasIndex(x => new { x.UserId, x.BankId });
+            e.HasOne(x => x.Bank).WithMany(x => x.Attempts).HasForeignKey(x => x.BankId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        b.Entity<PersonalPracticeAttemptAnswer>(e => {
+            e.ToTable("PersonalPracticeAttemptAnswers"); e.HasKey(x => x.Id);
+            e.Property(x => x.SelectedOptionLabel).HasMaxLength(5);
+            e.HasOne(x => x.Attempt).WithMany(x => x.Answers).HasForeignKey(x => x.AttemptId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Question).WithMany().HasForeignKey(x => x.QuestionId).OnDelete(DeleteBehavior.Restrict);
+        });
 
 
         b.Entity<Tag>(e => {

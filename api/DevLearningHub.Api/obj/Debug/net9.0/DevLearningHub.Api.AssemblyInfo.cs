@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DevLearningHub.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+be20d7bd0ce59103f292a6785e65f2de6d24406b")]
 [assembly: System.Reflection.AssemblyProductAttribute("DevLearningHub.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DevLearningHub.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

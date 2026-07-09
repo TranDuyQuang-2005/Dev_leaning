@@ -15,6 +15,7 @@ public interface ICodeJudgeService
     Task<ApiResponse<CodingProblemDetailResponse>> Problem(long? userId, long id, bool includeHidden, CancellationToken ct);
     Task<ApiResponse<CodeSubmissionResponse>> Submit(long userId, long problemId, CodeSubmitRequest request, CancellationToken ct);
     Task<ApiResponse<List<CodeSubmissionResponse>>> MySubmissions(long userId, long? problemId, CancellationToken ct);
+    Task<ApiResponse<CodeSubmissionResponse>> SubmissionDetail(long userId, long submissionId, bool includeHiddenResults, CancellationToken ct);
     Task<ApiResponse<List<CodingProblemDetailResponse>>> AdminProblems(CancellationToken ct);
     Task<ApiResponse<CodingProblemDetailResponse>> AdminSaveProblem(long adminId, long? id, CodingProblemRequest request, CancellationToken ct);
     Task<ApiResponse<object>> AdminDeleteProblem(long id, CancellationToken ct);
@@ -182,6 +183,17 @@ public sealed class CodeJudgeService : ICodeJudgeService
         if (problemId.HasValue) query = query.Where(x => x.ProblemId == problemId.Value);
         var rows = await query.OrderByDescending(x => x.CreatedAt).Take(50).ToListAsync(ct);
         return ApiResponse<List<CodeSubmissionResponse>>.Ok(rows.Select(x => MapSubmission(x, false)).ToList());
+    }
+
+    public async Task<ApiResponse<CodeSubmissionResponse>> SubmissionDetail(long userId, long submissionId, bool includeHiddenResults, CancellationToken ct)
+    {
+        var submission = await _db.CodeSubmissions.AsNoTracking()
+            .Include(x => x.Problem)
+            .Include(x => x.TestCaseResults).ThenInclude(x => x.TestCase)
+            .FirstOrDefaultAsync(x => x.Id == submissionId, ct);
+        if (submission == null) return ApiResponse<CodeSubmissionResponse>.Fail("Submission not found");
+        if (!includeHiddenResults && submission.UserId != userId) return ApiResponse<CodeSubmissionResponse>.Fail("Submission not found");
+        return ApiResponse<CodeSubmissionResponse>.Ok(MapSubmission(submission, includeHiddenResults));
     }
 
     public async Task<ApiResponse<List<CodingProblemDetailResponse>>> AdminProblems(CancellationToken ct)
@@ -460,8 +472,8 @@ public sealed class CodeJudgeService : ICodeJudgeService
             Id = x.Id,
             TestCaseId = x.TestCaseId,
             DisplayOrder = x.DisplayOrder,
-            Input = includeHiddenResults ? x.Input : x.Input,
-            ExpectedOutput = includeHiddenResults ? x.ExpectedOutput : x.ExpectedOutput,
+            Input = includeHiddenResults && x.TestCase != null ? x.TestCase.Input : x.Input,
+            ExpectedOutput = includeHiddenResults && x.TestCase != null ? x.TestCase.ExpectedOutput : x.ExpectedOutput,
             ActualOutput = x.ActualOutput,
             Error = x.Error,
             Status = x.Status,

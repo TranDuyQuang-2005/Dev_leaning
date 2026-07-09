@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\DevLearningHub\\api\\DevLearningHub.Api\\DevLearningHub.Api.csproj": {}
+    "D:\\Dev_leaning\\api\\DevLearningHub.Api\\DevLearningHub.Api.csproj": {}
   },
   "projects": {
-    "D:\\DevLearningHub\\api\\DevLearningHub.Api\\DevLearningHub.Api.csproj": {
+    "D:\\Dev_leaning\\api\\DevLearningHub.Api\\DevLearningHub.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\DevLearningHub\\api\\DevLearningHub.Api\\DevLearningHub.Api.csproj",
+        "projectUniqueName": "D:\\Dev_leaning\\api\\DevLearningHub.Api\\DevLearningHub.Api.csproj",
         "projectName": "DevLearningHub.Api",
-        "projectPath": "D:\\DevLearningHub\\api\\DevLearningHub.Api\\DevLearningHub.Api.csproj",
+        "projectPath": "D:\\Dev_leaning\\api\\DevLearningHub.Api\\DevLearningHub.Api.csproj",
         "packagesPath": "C:\\Users\\Lenovo\\.nuget\\packages\\",
-        "outputPath": "D:\\DevLearningHub\\api\\DevLearningHub.Api\\obj\\",
+        "outputPath": "D:\\Dev_leaning\\api\\DevLearningHub.Api\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

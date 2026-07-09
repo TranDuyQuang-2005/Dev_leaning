@@ -3,6 +3,7 @@ using DevLearningHub.Api.DTOs;
 using DevLearningHub.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DevLearningHub.Api.Controllers;
 
@@ -20,6 +21,7 @@ public sealed class CodeJudgeController : BaseApiController
 
     [HttpPost("run")]
     [Authorize]
+    [EnableRateLimiting("code-run")]
     public async Task<ActionResult<ApiResponse<CodeRunResponse>>> Run(CodeRunRequest request, CancellationToken ct)
     {
         if (CurrentUserId is null) return Unauthorized();
@@ -50,6 +52,7 @@ public sealed class CodeJudgeController : BaseApiController
 
     [HttpPost("problems/{id:long}/submit")]
     [Authorize]
+    [EnableRateLimiting("code-submit")]
     public async Task<ActionResult<ApiResponse<CodeSubmissionResponse>>> Submit(long id, CodeSubmitRequest request, CancellationToken ct)
     {
         if (CurrentUserId is null) return Unauthorized();
@@ -63,5 +66,14 @@ public sealed class CodeJudgeController : BaseApiController
     {
         if (CurrentUserId is null) return Unauthorized();
         return Ok(await _service.MySubmissions(CurrentUserId.Value, problemId, ct));
+    }
+
+    [HttpGet("submissions/{submissionId:long}")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse<CodeSubmissionResponse>>> Submission(long submissionId, CancellationToken ct)
+    {
+        if (CurrentUserId is null) return Unauthorized();
+        var res = await _service.SubmissionDetail(CurrentUserId.Value, submissionId, false, ct);
+        return res.Success ? Ok(res) : NotFound(res);
     }
 }

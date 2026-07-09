@@ -47,4 +47,12 @@ public sealed class AdminCodeJudgeController : BaseApiController
         var res = await _service.AdminDeleteProblem(id, ct);
         return res.Success ? Ok(res) : BadRequest(res);
     }
+
+    [HttpGet("submissions/{submissionId:long}")]
+    public async Task<ActionResult<ApiResponse<CodeSubmissionResponse>>> Submission(long submissionId, CancellationToken ct)
+    {
+        if (CurrentUserId is null) return Unauthorized();
+        var res = await _service.SubmissionDetail(CurrentUserId.Value, submissionId, true, ct);
+        return res.Success ? Ok(res) : NotFound(res);
+    }
 }
