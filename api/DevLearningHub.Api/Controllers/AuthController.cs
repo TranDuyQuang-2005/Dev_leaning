@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using DevLearningHub.Api.Common;
 using DevLearningHub.Api.DTOs;
 using DevLearningHub.Api.Services;
@@ -40,13 +40,14 @@ public sealed class AuthController : BaseApiController
 
     [HttpPost("logout")]
     [Authorize]
-    public async Task<ActionResult<ApiResponse<object>>> Logout(LogoutRequest request, CancellationToken ct) => Ok(await _service.Logout(request, ct));
+    public async Task<ActionResult<ApiResponse<object>>> Logout(LogoutRequest request, CancellationToken ct) => Ok(await _service.Logout(CurrentUserId ?? 0, request, ct));
 
     [HttpGet("me")]
     [Authorize]
     public async Task<ActionResult<ApiResponse<CurrentUserResponse>>> Me(CancellationToken ct)
     {
-        if (CurrentUserId is null) return Unauthorized(ApiResponse<CurrentUserResponse>.Fail("Token không hợp lệ"));
+        if (CurrentUserId is null) return Unauthorized(ApiResponse<CurrentUserResponse>.Fail("Token khÃ´ng há»£p lá»‡"));
         return Ok(await _service.Me(CurrentUserId.Value, ct));
     }
 }
+

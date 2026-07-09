@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -19,9 +19,9 @@ export class LearningComponent implements OnInit {
   ngOnInit(): void { this.load(); }
 
   load(): void {
-    this.api.get<any>('/api/v1/categories?pageSize=100').subscribe({ next: r => this.categories = r.data?.items || [] });
-    this.api.get<any>('/api/v1/quiz-sets?pageSize=100').subscribe({ next: r => this.quizSets = r.data?.items || [], error: e => this.error = e?.error?.message || 'Không tải được dữ liệu quiz set từ API.' });
-    this.api.get<any>('/api/v1/quiz-attempts/me').subscribe({ next: r => this.attempts = r.data || [], error: () => this.attempts = [] });
+    this.api.get<any>('/api/v1/categories?pageSize=100').subscribe({ next: (r: any) => this.categories = r.data?.items || [] });
+    this.api.get<any>('/api/v1/quiz-sets?pageSize=100').subscribe({ next: (r: any) => this.quizSets = r.data?.items || [], error: (e: any) => this.error = e?.error?.message || 'KhÃ´ng táº£i Ä‘Æ°á»£c dá»¯ liá»‡u quiz set tá»« API.' });
+    this.api.get<any>('/api/v1/quiz-attempts/me').subscribe({ next: (r: any) => this.attempts = r.data || [], error: () => this.attempts = [] });
   }
 
   get filteredQuizSets(): any[] {
@@ -41,7 +41,7 @@ export class LearningComponent implements OnInit {
   progress(id: number): number { return Number(localStorage.getItem('quiz-progress-' + id) || 0); }
   attemptsFor(q: any): any[] { return this.attempts.filter(a => Number(a.quizSetId) === Number(q.id)); }
   remainingAttempts(q: any): string {
-    if (!q.maxAttempts) return 'Không giới hạn';
+    if (!q.maxAttempts) return 'KhÃ´ng giá»›i háº¡n';
     const done = this.attemptsFor(q).filter(a => a.submittedAt).length;
     return Math.max(0, q.maxAttempts - done) + ' / ' + q.maxAttempts;
   }
@@ -51,3 +51,4 @@ export class LearningComponent implements OnInit {
     return Math.max(...list.map(a => Number(a.score || 0)));
   }
 }
+

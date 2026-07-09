@@ -5,3 +5,37 @@
 .admin-note{font-size:13px;color:#6b7280}.role-pill{display:inline-flex;align-items:center;border-radius:999px;background:#eff6ff;color:#1d4ed8;padding:4px 10px;font-weight:700;font-size:12px}
 .active-row{background:#f0f9ff}
 .role-check-list{max-height:520px;overflow:auto;padding-right:6px}
+
+/* LOGOUT_LOGIC_FIX_START */
+.topbar-user-menu {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logout-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line, #e2e8f0);
+  background: var(--card, #ffffff);
+  color: var(--text, #162033);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, .06);
+}
+
+.logout-btn:hover {
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, .28);
+  background: rgba(220, 38, 38, .06);
+}
+
+@media (max-width: 768px) {
+  .topbar-user-menu { gap: 6px; }
+  .logout-btn { padding: 0 10px; font-size: 12px; }
+}
+/* LOGOUT_LOGIC_FIX_END */

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -21,8 +21,8 @@ export class ProblemsComponent implements OnInit {
     this.error = '';
     const q = `?pageSize=100&keyword=${encodeURIComponent(this.keyword || '')}&difficulty=${encodeURIComponent(this.difficulty || 'all')}`;
     this.api.get<any>(`/api/v1/code/problems${q}`).subscribe({
-      next: r => { this.problems = r.data?.items || []; this.loading = false; },
-      error: e => { this.error = e?.error?.message || 'Không tải được danh sách bài lập trình. Kiểm tra API và script DB v12.'; this.loading = false; }
+      next: (r: any) => { this.problems = r.data?.items || []; this.loading = false; },
+      error: (e: any) => { this.error = e?.error?.message || 'KhÃ´ng táº£i Ä‘Æ°á»£c danh sÃ¡ch bÃ i láº­p trÃ¬nh. Kiá»ƒm tra API vÃ  script DB v12.'; this.loading = false; }
     });
   }
 
@@ -30,3 +30,4 @@ export class ProblemsComponent implements OnInit {
   difficultyBadge(d: any): string { return Number(d) === 3 ? 'badge-red' : Number(d) === 2 ? 'badge-yellow' : 'badge-green'; }
   tagList(p: any): string[] { return (p.tags || '').split(',').map((x: string) => x.trim()).filter(Boolean); }
 }
+
