@@ -1,6 +1,6 @@
 USE [master]
 GO
-/****** Object:  Database [DevLearningHubDb]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Database [DevLearningHubDb]    Script Date: 09/07/2026 5:41:25 PM ******/
 CREATE DATABASE [DevLearningHubDb]
  CONTAINMENT = NONE
  ON  PRIMARY 
@@ -82,7 +82,21 @@ ALTER DATABASE [DevLearningHubDb] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, 
 GO
 USE [DevLearningHubDb]
 GO
-/****** Object:  Table [dbo].[Achievements]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[__EFMigrationsHistory]    Script Date: 09/07/2026 5:41:25 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[__EFMigrationsHistory](
+	[MigrationId] [nvarchar](150) NOT NULL,
+	[ProductVersion] [nvarchar](32) NOT NULL,
+ CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY CLUSTERED 
+(
+	[MigrationId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Achievements]    Script Date: 09/07/2026 5:41:25 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -104,7 +118,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ApiRequestLogs]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[ApiRequestLogs]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -126,7 +140,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AuditLogs]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[AuditLogs]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -148,7 +162,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Categories]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[Categories]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -171,7 +185,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[CodeRunHistories]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[CodeRunHistories]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -195,7 +209,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[CodeSubmissions]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[CodeSubmissions]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -203,8 +217,8 @@ GO
 CREATE TABLE [dbo].[CodeSubmissions](
 	[Id] [bigint] IDENTITY(1,1) NOT NULL,
 	[UserId] [bigint] NOT NULL,
-	[CodingProblemId] [bigint] NOT NULL,
-	[ProgrammingLanguageId] [bigint] NOT NULL,
+	[CodingProblemId] [bigint] NULL,
+	[ProgrammingLanguageId] [bigint] NULL,
 	[SourceCode] [nvarchar](max) NOT NULL,
 	[Status] [nvarchar](50) NOT NULL,
 	[TotalTestCases] [int] NOT NULL,
@@ -216,13 +230,21 @@ CREATE TABLE [dbo].[CodeSubmissions](
 	[JudgeToken] [nvarchar](255) NULL,
 	[SubmittedAt] [datetime2](7) NOT NULL,
 	[JudgedAt] [datetime2](7) NULL,
+	[ProblemId] [bigint] NULL,
+	[Language] [nvarchar](50) NOT NULL,
+	[Stdin] [nvarchar](max) NULL,
+	[Output] [nvarchar](max) NULL,
+	[Error] [nvarchar](max) NULL,
+	[Verdict] [nvarchar](100) NOT NULL,
+	[IsAccepted] [bit] NOT NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[CodeSubmissionTestCaseResults]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[CodeSubmissionTestCaseResults]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -245,7 +267,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[CodingProblems]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[CodingProblems]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -278,7 +300,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[CodingProblemTags]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[CodingProblemTags]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -293,7 +315,7 @@ CREATE TABLE [dbo].[CodingProblemTags](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[CodingTestCases]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[CodingTestCases]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -313,7 +335,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Comments]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[Comments]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -337,7 +359,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[CommentVotes]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[CommentVotes]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -354,7 +376,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[EmailVerificationTokens]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[EmailVerificationTokens]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -372,7 +394,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ExternalLogins]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[ExternalLogins]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -390,7 +412,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[FileReferences]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[FileReferences]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -408,7 +430,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Files]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[Files]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -431,7 +453,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Leaderboards]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[Leaderboards]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -452,7 +474,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ModerationActions]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[ModerationActions]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -471,7 +493,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Notifications]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[Notifications]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -493,7 +515,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[NotificationTemplates]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[NotificationTemplates]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -512,7 +534,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PasswordResetTokens]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[PasswordResetTokens]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -531,7 +553,42 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Permissions]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[PermissionGroupPermissions]    Script Date: 09/07/2026 5:41:26 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[PermissionGroupPermissions](
+	[PermissionGroupId] [bigint] NOT NULL,
+	[PermissionId] [bigint] NOT NULL,
+ CONSTRAINT [PK_PermissionGroupPermissions] PRIMARY KEY CLUSTERED 
+(
+	[PermissionGroupId] ASC,
+	[PermissionId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[PermissionGroups]    Script Date: 09/07/2026 5:41:26 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[PermissionGroups](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[Name] [nvarchar](150) NOT NULL,
+	[Code] [nvarchar](100) NOT NULL,
+	[Description] [nvarchar](500) NULL,
+	[IsSystem] [bit] NOT NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+	[UpdatedAt] [datetime2](7) NULL,
+	[IsDeleted] [bit] NOT NULL,
+ CONSTRAINT [PK_PermissionGroups] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Permissions]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -549,7 +606,108 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PostBookmarks]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[PersonalPracticeAttemptAnswers]    Script Date: 09/07/2026 5:41:26 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[PersonalPracticeAttemptAnswers](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[AttemptId] [bigint] NOT NULL,
+	[QuestionId] [bigint] NOT NULL,
+	[SelectedOptionLabel] [nvarchar](5) NULL,
+	[IsCorrect] [bit] NOT NULL,
+ CONSTRAINT [PK_PersonalPracticeAttemptAnswers] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[PersonalPracticeAttempts]    Script Date: 09/07/2026 5:41:26 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[PersonalPracticeAttempts](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[UserId] [bigint] NOT NULL,
+	[BankId] [bigint] NOT NULL,
+	[StartedAt] [datetime2](7) NOT NULL,
+	[SubmittedAt] [datetime2](7) NULL,
+	[Score] [decimal](6, 2) NOT NULL,
+	[TotalQuestions] [int] NOT NULL,
+	[CorrectCount] [int] NOT NULL,
+	[Status] [nvarchar](30) NOT NULL,
+ CONSTRAINT [PK_PersonalPracticeAttempts] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[PersonalQuestionBanks]    Script Date: 09/07/2026 5:41:26 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[PersonalQuestionBanks](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[UserId] [bigint] NOT NULL,
+	[Title] [nvarchar](255) NOT NULL,
+	[Description] [nvarchar](max) NULL,
+	[OriginalFileName] [nvarchar](255) NOT NULL,
+	[FileStorageKey] [nvarchar](500) NOT NULL,
+	[QuestionCount] [int] NOT NULL,
+	[Visibility] [nvarchar](30) NOT NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+	[UpdatedAt] [datetime2](7) NULL,
+	[IsDeleted] [bit] NOT NULL,
+ CONSTRAINT [PK_PersonalQuestionBanks] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[PersonalQuestionOptions]    Script Date: 09/07/2026 5:41:26 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[PersonalQuestionOptions](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[QuestionId] [bigint] NOT NULL,
+	[Label] [nvarchar](5) NOT NULL,
+	[Text] [nvarchar](max) NOT NULL,
+	[IsCorrect] [bit] NOT NULL,
+ CONSTRAINT [PK_PersonalQuestionOptions] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[PersonalQuestions]    Script Date: 09/07/2026 5:41:26 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[PersonalQuestions](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[BankId] [bigint] NOT NULL,
+	[UserId] [bigint] NOT NULL,
+	[QuestionText] [nvarchar](max) NOT NULL,
+	[QuestionType] [nvarchar](50) NOT NULL,
+	[Difficulty] [nvarchar](30) NOT NULL,
+	[Explanation] [nvarchar](max) NULL,
+	[Tags] [nvarchar](500) NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+	[UpdatedAt] [datetime2](7) NULL,
+	[IsDeleted] [bit] NOT NULL,
+ CONSTRAINT [PK_PersonalQuestions] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[PostBookmarks]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -565,7 +723,7 @@ CREATE TABLE [dbo].[PostBookmarks](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Posts]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[Posts]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -592,7 +750,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PostTags]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[PostTags]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -607,7 +765,7 @@ CREATE TABLE [dbo].[PostTags](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PostVotes]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[PostVotes]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -624,7 +782,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ProblemSupportedLanguages]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[ProblemSupportedLanguages]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -639,7 +797,7 @@ CREATE TABLE [dbo].[ProblemSupportedLanguages](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ProblemTags]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[ProblemTags]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -655,7 +813,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ProblemTestCases]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[ProblemTestCases]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -675,7 +833,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ProgrammingLanguages]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[ProgrammingLanguages]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -695,7 +853,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[QuestionImportBatches]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[QuestionImportBatches]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -717,7 +875,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[QuestionOptions]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[QuestionOptions]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -738,7 +896,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Questions]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[Questions]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -764,7 +922,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[QuizAttemptAnswerOptions]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[QuizAttemptAnswerOptions]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -779,7 +937,7 @@ CREATE TABLE [dbo].[QuizAttemptAnswerOptions](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[QuizAttemptAnswers]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[QuizAttemptAnswers]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -797,7 +955,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[QuizAttempts]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[QuizAttempts]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -823,7 +981,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[QuizSetQuestions]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[QuizSetQuestions]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -840,7 +998,7 @@ CREATE TABLE [dbo].[QuizSetQuestions](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[QuizSets]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[QuizSets]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -870,7 +1028,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[RefreshTokens]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[RefreshTokens]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -893,7 +1051,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Reports]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[Reports]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -915,7 +1073,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[RoadmapItems]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[RoadmapItems]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -941,7 +1099,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Roadmaps]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[Roadmaps]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -965,7 +1123,24 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[RolePermissions]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[RolePermissionGroups]    Script Date: 09/07/2026 5:41:26 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[RolePermissionGroups](
+	[RoleId] [bigint] NOT NULL,
+	[PermissionGroupId] [bigint] NOT NULL,
+	[AssignedAt] [datetime2](7) NOT NULL,
+	[AssignedBy] [bigint] NULL,
+ CONSTRAINT [PK_RolePermissionGroups] PRIMARY KEY CLUSTERED 
+(
+	[RoleId] ASC,
+	[PermissionGroupId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[RolePermissions]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -980,7 +1155,7 @@ CREATE TABLE [dbo].[RolePermissions](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Roles]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[Roles]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -998,7 +1173,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[SubmissionTestResults]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[SubmissionTestResults]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1020,7 +1195,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[SystemEvents]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[SystemEvents]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1040,7 +1215,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Tags]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[Tags]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1057,7 +1232,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserAchievements]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[UserAchievements]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1073,7 +1248,7 @@ CREATE TABLE [dbo].[UserAchievements](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserDailyActivities]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[UserDailyActivities]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1097,7 +1272,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserDevices]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[UserDevices]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1119,7 +1294,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserGamificationProfiles]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[UserGamificationProfiles]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1138,7 +1313,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserLearningProfiles]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[UserLearningProfiles]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1156,7 +1331,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserNotificationSettings]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[UserNotificationSettings]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1175,7 +1350,24 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserPermissions]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[UserPermissionGroups]    Script Date: 09/07/2026 5:41:26 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[UserPermissionGroups](
+	[UserId] [bigint] NOT NULL,
+	[PermissionGroupId] [bigint] NOT NULL,
+	[AssignedAt] [datetime2](7) NOT NULL,
+	[AssignedBy] [bigint] NULL,
+ CONSTRAINT [PK_UserPermissionGroups] PRIMARY KEY CLUSTERED 
+(
+	[UserId] ASC,
+	[PermissionGroupId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[UserPermissions]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1192,7 +1384,7 @@ CREATE TABLE [dbo].[UserPermissions](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserProfiles]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[UserProfiles]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1216,7 +1408,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserRoadmapProgress]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[UserRoadmapProgress]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1236,7 +1428,7 @@ CREATE TABLE [dbo].[UserRoadmapProgress](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserRoles]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[UserRoles]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1253,7 +1445,7 @@ CREATE TABLE [dbo].[UserRoles](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Users]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[Users]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1282,7 +1474,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserSettings]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[UserSettings]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1303,7 +1495,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserStats]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[UserStats]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1327,7 +1519,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserTopicProgress]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[UserTopicProgress]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1348,7 +1540,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[XpRules]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[XpRules]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1366,7 +1558,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[XpTransactions]    Script Date: 09/07/2026 10:21:13 AM ******/
+/****** Object:  Table [dbo].[XpTransactions]    Script Date: 09/07/2026 5:41:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1386,6 +1578,8 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+INSERT [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES (N'20260709070000_ExistingDatabase_AddPermissionGroupsAndPersonalPractice', N'9.0.0')
+GO
 SET IDENTITY_INSERT [dbo].[Achievements] ON 
 
 INSERT [dbo].[Achievements] ([Id], [Code], [Name], [Description], [IconUrl], [RequiredActionType], [RequiredValue], [XpReward], [IsActive], [CreatedAt]) VALUES (1, N'FIRST_QUIZ', N'Bài quiz đầu tiên', N'Hoàn thành bài quiz đầu tiên', NULL, N'CompleteQuiz', 1, 10, 1, CAST(N'2026-06-09T15:57:52.1821701' AS DateTime2))
@@ -1401,21 +1595,38 @@ INSERT [dbo].[Categories] ([Id], [ParentId], [Name], [Slug], [Description], [Ico
 INSERT [dbo].[Categories] ([Id], [ParentId], [Name], [Slug], [Description], [IconUrl], [DisplayOrder], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (3, NULL, N'Angular Cơ Bản', N'angular', N'Chủ đề học Angular cơ bản', NULL, 3, 1, CAST(N'2026-06-09T15:57:52.1699857' AS DateTime2), CAST(N'2026-06-18T14:46:31.7018324' AS DateTime2), 0)
 SET IDENTITY_INSERT [dbo].[Categories] OFF
 GO
+SET IDENTITY_INSERT [dbo].[CodeSubmissions] ON 
+
+INSERT [dbo].[CodeSubmissions] ([Id], [UserId], [CodingProblemId], [ProgrammingLanguageId], [SourceCode], [Status], [TotalTestCases], [PassedTestCases], [Score], [ExecutionTimeMs], [MemoryUsedKb], [ErrorMessage], [JudgeToken], [SubmittedAt], [JudgedAt], [ProblemId], [Language], [Stdin], [Output], [Error], [Verdict], [IsAccepted], [CreatedAt]) VALUES (3, 6, NULL, NULL, N'import sys
+
+name = sys.stdin.read().strip() or ''World''
+print(f''Hello, {name}!'')', N'Completed', 0, 0, CAST(0.00 AS Decimal(6, 2)), 79, 0, NULL, NULL, CAST(N'2026-07-09T09:57:47.8449551' AS DateTime2), NULL, NULL, N'python', N'DevLearningHub', N'Hello, DevLearningHub!
+', N'', N'Accepted', 1, CAST(N'2026-07-09T09:57:47.6953970' AS DateTime2))
+SET IDENTITY_INSERT [dbo].[CodeSubmissions] OFF
+GO
 SET IDENTITY_INSERT [dbo].[Comments] ON 
 
-INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (1, 1, 5, NULL, N'mô phật gì dẫy', NULL, 2, 1, 1, CAST(N'2026-06-18T16:20:29.2503956' AS DateTime2), CAST(N'2026-07-03T07:05:45.6862711' AS DateTime2), 0)
-INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (2, 1, 5, 1, N'gì là gì', NULL, 0, 0, 1, CAST(N'2026-06-18T16:20:41.4507275' AS DateTime2), NULL, 0)
-INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (3, 1, 5, 2, N'hả', NULL, 0, 0, 1, CAST(N'2026-06-18T16:21:04.7402525' AS DateTime2), NULL, 0)
-INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (4, 1, 5, 3, N'hả', NULL, 0, 0, 1, CAST(N'2026-06-18T16:21:24.0988402' AS DateTime2), NULL, 0)
-INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (5, 1, 5, 4, N'hả', NULL, 0, 0, 1, CAST(N'2026-06-18T16:21:36.3320841' AS DateTime2), NULL, 0)
+INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (1, 1, 5, NULL, N'mô phật gì dẫy', NULL, 2, 0, 1, CAST(N'2026-06-18T16:20:29.2503956' AS DateTime2), CAST(N'2026-07-09T09:43:34.4613035' AS DateTime2), 0)
+INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (2, 1, 5, 1, N'gì là gì', NULL, 0, 0, 1, CAST(N'2026-06-18T16:20:41.4507275' AS DateTime2), CAST(N'2026-07-09T09:50:04.0369254' AS DateTime2), 0)
+INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (3, 1, 5, 2, N'hả', NULL, 0, 0, 1, CAST(N'2026-06-18T16:21:04.7402525' AS DateTime2), CAST(N'2026-07-09T09:50:06.1757633' AS DateTime2), 0)
+INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (4, 1, 5, 3, N'hả', NULL, 0, 0, 1, CAST(N'2026-06-18T16:21:24.0988402' AS DateTime2), CAST(N'2026-07-09T09:49:58.5218332' AS DateTime2), 0)
+INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (5, 1, 5, 4, N'hả', NULL, 0, 0, 1, CAST(N'2026-06-18T16:21:36.3320841' AS DateTime2), CAST(N'2026-07-09T09:49:59.4123813' AS DateTime2), 0)
 INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (6, 1, 5, 5, N'hả', NULL, 0, 0, 0, CAST(N'2026-06-18T16:21:53.4566250' AS DateTime2), CAST(N'2026-06-19T08:17:56.6088724' AS DateTime2), 0)
 INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (7, 1, 5, 1, N'oke fen', NULL, 0, 0, 0, CAST(N'2026-06-18T16:22:01.6927769' AS DateTime2), CAST(N'2026-06-19T05:54:42.0916302' AS DateTime2), 0)
+INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (8, 1, 6, 5, N'alo', NULL, 0, 0, 1, CAST(N'2026-07-09T08:04:00.2836749' AS DateTime2), CAST(N'2026-07-09T09:49:56.8660266' AS DateTime2), 0)
+INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (9, 1, 6, 5, N'alo', NULL, 0, 0, 1, CAST(N'2026-07-09T08:04:09.2565339' AS DateTime2), NULL, 0)
+INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (10, 1, 6, NULL, N'alo', NULL, 0, 0, 1, CAST(N'2026-07-09T08:27:47.6980143' AS DateTime2), NULL, 0)
+INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (11, 1, 6, 10, N'gì', NULL, 0, 0, 0, CAST(N'2026-07-09T08:27:54.1213233' AS DateTime2), CAST(N'2026-07-09T09:49:10.8016279' AS DateTime2), 1)
+INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (12, 1, 6, 11, N'hả', NULL, 0, 0, 1, CAST(N'2026-07-09T08:27:58.9818707' AS DateTime2), NULL, 0)
+INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (13, 1, 6, 2, N'ok', NULL, 0, 0, 1, CAST(N'2026-07-09T09:43:40.5221536' AS DateTime2), NULL, 0)
+INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (14, 1, 6, 10, N'ok''', NULL, 0, 0, 1, CAST(N'2026-07-09T09:49:23.4318142' AS DateTime2), NULL, 0)
+INSERT [dbo].[Comments] ([Id], [PostId], [AuthorId], [ParentCommentId], [Content], [ContentHtml], [VoteScore], [IsAcceptedAnswer], [Status], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (15, 1, 6, 14, N'okw', NULL, 0, 0, 0, CAST(N'2026-07-09T09:49:29.8022048' AS DateTime2), CAST(N'2026-07-09T09:49:37.0574604' AS DateTime2), 1)
 SET IDENTITY_INSERT [dbo].[Comments] OFF
 GO
 SET IDENTITY_INSERT [dbo].[CommentVotes] ON 
 
-INSERT [dbo].[CommentVotes] ([Id], [CommentId], [UserId], [VoteType], [CreatedAt]) VALUES (2, 1, 6, 1, CAST(N'2026-06-19T08:16:59.7872607' AS DateTime2))
 INSERT [dbo].[CommentVotes] ([Id], [CommentId], [UserId], [VoteType], [CreatedAt]) VALUES (4, 1, 8, 1, CAST(N'2026-06-22T09:48:05.9008452' AS DateTime2))
+INSERT [dbo].[CommentVotes] ([Id], [CommentId], [UserId], [VoteType], [CreatedAt]) VALUES (6, 1, 6, 1, CAST(N'2026-07-09T08:04:21.1322082' AS DateTime2))
 SET IDENTITY_INSERT [dbo].[CommentVotes] OFF
 GO
 SET IDENTITY_INSERT [dbo].[FileReferences] ON 
@@ -1440,6 +1651,8 @@ SET IDENTITY_INSERT [dbo].[ModerationActions] ON
 INSERT [dbo].[ModerationActions] ([Id], [ModeratorId], [TargetType], [TargetId], [ActionType], [Reason], [CreatedAt]) VALUES (1, 7, N'Comment', 7, N'Hide', N'tế nhị', CAST(N'2026-06-19T05:53:23.4467184' AS DateTime2))
 INSERT [dbo].[ModerationActions] ([Id], [ModeratorId], [TargetType], [TargetId], [ActionType], [Reason], [CreatedAt]) VALUES (2, 7, N'Comment', 7, N'Hide', N'', CAST(N'2026-06-19T05:54:42.0916394' AS DateTime2))
 INSERT [dbo].[ModerationActions] ([Id], [ModeratorId], [TargetType], [TargetId], [ActionType], [Reason], [CreatedAt]) VALUES (3, 7, N'Comment', 6, N'Hide', N'', CAST(N'2026-06-19T08:17:56.6088823' AS DateTime2))
+INSERT [dbo].[ModerationActions] ([Id], [ModeratorId], [TargetType], [TargetId], [ActionType], [Reason], [CreatedAt]) VALUES (4, 2, N'Post', 1, N'Hide', N'', CAST(N'2026-07-09T08:52:38.3091545' AS DateTime2))
+INSERT [dbo].[ModerationActions] ([Id], [ModeratorId], [TargetType], [TargetId], [ActionType], [Reason], [CreatedAt]) VALUES (5, 2, N'Post', 1, N'Restore', N'', CAST(N'2026-07-09T08:52:44.0777341' AS DateTime2))
 SET IDENTITY_INSERT [dbo].[ModerationActions] OFF
 GO
 SET IDENTITY_INSERT [dbo].[NotificationTemplates] ON 
@@ -1449,6 +1662,44 @@ INSERT [dbo].[NotificationTemplates] ([Id], [Code], [TitleTemplate], [ContentTem
 INSERT [dbo].[NotificationTemplates] ([Id], [Code], [TitleTemplate], [ContentTemplate], [NotificationType], [IsActive], [CreatedAt]) VALUES (3, N'CODE_ACCEPTED', N'Bài code Accepted', N'Bài code của bạn đã được chấp nhận.', N'Code', 1, CAST(N'2026-06-09T15:57:52.1907948' AS DateTime2))
 INSERT [dbo].[NotificationTemplates] ([Id], [Code], [TitleTemplate], [ContentTemplate], [NotificationType], [IsActive], [CreatedAt]) VALUES (4, N'XP_MILESTONE', N'Cột mốc XP', N'Bạn vừa đạt một cột mốc XP mới.', N'XP', 1, CAST(N'2026-06-09T15:57:52.1907948' AS DateTime2))
 SET IDENTITY_INSERT [dbo].[NotificationTemplates] OFF
+GO
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (1, 1)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (1, 2)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (1, 3)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (1, 4)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (2, 4)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (1, 5)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (2, 5)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (1, 6)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (2, 6)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (1, 7)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (1, 8)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (4, 8)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (1, 9)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (1, 10)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (1, 11)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (1, 12)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (3, 12)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (1, 13)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (3, 13)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (1, 14)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (4, 14)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (5, 14)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (1, 15)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (4, 15)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (5, 15)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (1, 16)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (1, 17)
+INSERT [dbo].[PermissionGroupPermissions] ([PermissionGroupId], [PermissionId]) VALUES (5, 17)
+GO
+SET IDENTITY_INSERT [dbo].[PermissionGroups] ON 
+
+INSERT [dbo].[PermissionGroups] ([Id], [Name], [Code], [Description], [IsSystem], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (1, N'System Admin Group', N'system_admin_group', N'All system permissions', 1, CAST(N'2026-07-09T06:25:35.5024958' AS DateTime2), NULL, 0)
+INSERT [dbo].[PermissionGroups] ([Id], [Name], [Code], [Description], [IsSystem], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (2, N'Quiz Manager Group', N'quiz_manager_group', N'Quiz and question management', 1, CAST(N'2026-07-09T06:25:35.7008087' AS DateTime2), NULL, 0)
+INSERT [dbo].[PermissionGroups] ([Id], [Name], [Code], [Description], [IsSystem], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (3, N'Forum Moderator Group', N'forum_moderator_group', N'Forum moderation', 1, CAST(N'2026-07-09T06:25:35.7446297' AS DateTime2), NULL, 0)
+INSERT [dbo].[PermissionGroups] ([Id], [Name], [Code], [Description], [IsSystem], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (4, N'Code Judge Admin Group', N'code_judge_admin_group', N'Code judge management', 1, CAST(N'2026-07-09T06:25:35.7564375' AS DateTime2), NULL, 0)
+INSERT [dbo].[PermissionGroups] ([Id], [Name], [Code], [Description], [IsSystem], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (5, N'Learner Personal Practice Group', N'learner_personal_practice_group', N'Own personal practice banks', 1, CAST(N'2026-07-09T06:25:35.7687194' AS DateTime2), NULL, 0)
+SET IDENTITY_INSERT [dbo].[PermissionGroups] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Permissions] ON 
 
@@ -1467,11 +1718,13 @@ INSERT [dbo].[Permissions] ([Id], [Code], [Name], [Module], [Description], [Crea
 INSERT [dbo].[Permissions] ([Id], [Code], [Name], [Module], [Description], [CreatedAt]) VALUES (13, N'forum.answer.accept', N'Đánh dấu câu trả lời đúng', N'Forum', NULL, CAST(N'2026-07-03T03:30:50.4067247' AS DateTime2))
 INSERT [dbo].[Permissions] ([Id], [Code], [Name], [Module], [Description], [CreatedAt]) VALUES (14, N'code.run', N'Chạy code playground', N'Code', N'Cho phép chạy code trong playground', CAST(N'2026-07-03T08:03:52.2361910' AS DateTime2))
 INSERT [dbo].[Permissions] ([Id], [Code], [Name], [Module], [Description], [CreatedAt]) VALUES (15, N'code.submit', N'Nộp bài lập trình', N'Code', N'Cho phép submit bài vào judge', CAST(N'2026-07-03T08:03:52.2361910' AS DateTime2))
+INSERT [dbo].[Permissions] ([Id], [Code], [Name], [Module], [Description], [CreatedAt]) VALUES (16, N'permission.manage', N'Manage permissions', N'Auth', NULL, CAST(N'2026-07-09T06:13:39.8780554' AS DateTime2))
+INSERT [dbo].[Permissions] ([Id], [Code], [Name], [Module], [Description], [CreatedAt]) VALUES (17, N'personal_practice.manage_own', N'Manage own personal practice banks', N'Learning', NULL, CAST(N'2026-07-09T06:13:39.9377235' AS DateTime2))
 SET IDENTITY_INSERT [dbo].[Permissions] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Posts] ON 
 
-INSERT [dbo].[Posts] ([Id], [AuthorId], [Title], [Slug], [Content], [ContentHtml], [ViewCount], [VoteScore], [AnswerCount], [AcceptedCommentId], [Status], [LastActivityAt], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (1, 6, N'test anh load lên minio', N'test-anh-load-len-minio', N'test 11111111111111111111111111111111111111111111111111111111111111111111111111111111111 = nội dung', NULL, 53, 0, 7, 1, 1, CAST(N'2026-07-03T07:05:45.6863794' AS DateTime2), CAST(N'2026-06-18T16:14:11.4231593' AS DateTime2), CAST(N'2026-07-03T07:05:45.6863550' AS DateTime2), 0)
+INSERT [dbo].[Posts] ([Id], [AuthorId], [Title], [Slug], [Content], [ContentHtml], [ViewCount], [VoteScore], [AnswerCount], [AcceptedCommentId], [Status], [LastActivityAt], [CreatedAt], [UpdatedAt], [IsDeleted]) VALUES (1, 6, N'test anh load lên minio', N'test-anh-load-len-minio', N'test 11111111111111111111111111111111111111111111111111111111111111111111111111111111111 = nội dung', NULL, 98, 0, 15, NULL, 1, CAST(N'2026-07-09T09:50:04.8951591' AS DateTime2), CAST(N'2026-06-18T16:14:11.4231593' AS DateTime2), CAST(N'2026-07-09T09:50:06.1757637' AS DateTime2), 0)
 SET IDENTITY_INSERT [dbo].[Posts] OFF
 GO
 INSERT [dbo].[PostTags] ([PostId], [TagId]) VALUES (1, 1)
@@ -1680,7 +1933,26 @@ INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], 
 INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (45, 6, N'F322F82F10A36A44423FEBF42B9316DBEFCD5FA1BB5E479BAA5F393B7B9007E6', N'ccbbcf61b11243cebcc7ccaf6bf4c3b6', NULL, CAST(N'2026-07-10T08:13:45.9925470' AS DateTime2), NULL, NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', CAST(N'2026-07-03T08:13:45.9925480' AS DateTime2))
 INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (46, 2, N'89766DD1F7E82AF0B2E497759CC8CBCE6585DDFA9A51AA6E66E1A0DECCBFB7CE', N'14e415e81271482cadc1833fb0c93447', NULL, CAST(N'2026-07-10T08:28:34.8051674' AS DateTime2), NULL, NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', CAST(N'2026-07-03T08:28:34.8053556' AS DateTime2))
 INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (47, 6, N'F92C1C50999636C825818EDB3BFD536AC71A171B979E780CC2680518A0D5B18D', N'3cf3f47621a541959d398febbde718e8', NULL, CAST(N'2026-07-16T02:46:10.3234025' AS DateTime2), NULL, NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', CAST(N'2026-07-09T02:46:10.3235083' AS DateTime2))
+INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (48, 6, N'8A853CFBA1648B2A4E0EC3B3C6AD888A2C42AFBA5E3B0F5919D1E03922BDA647', N'34ed3014fcae458fbff746ccd6d6b26f', NULL, CAST(N'2026-07-16T08:00:56.0113995' AS DateTime2), NULL, NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', CAST(N'2026-07-09T08:00:56.0115415' AS DateTime2))
+INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (49, 2, N'6D5DE4163F88CA55CABA1FD2F6126B4BD7D9AE887FADFBF8DB7753248B926612', N'd778da198041480bb41aa16992eb040c', NULL, CAST(N'2026-07-16T08:04:38.3968504' AS DateTime2), NULL, NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', CAST(N'2026-07-09T08:04:38.3968516' AS DateTime2))
+INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (50, 6, N'82D7CF89F03B0D6E175CA17EC4445F08453B0C3AF84EC966163F9932854E6A14', N'dbaa2c30f065490bb380f1898b997f47', NULL, CAST(N'2026-07-16T08:18:12.7083222' AS DateTime2), NULL, NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', CAST(N'2026-07-09T08:18:12.7084149' AS DateTime2))
+INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (51, 7, N'BDEB74CF609DF0D405D39F7C9EDEC4480D0F0061E06B8E4DF7B4254665F795AD', N'd4a20e749a864b24a0f5c95166e16de5', NULL, CAST(N'2026-07-16T08:21:18.2438468' AS DateTime2), NULL, NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', CAST(N'2026-07-09T08:21:18.2438478' AS DateTime2))
+INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (52, 6, N'344825576B4FEC55934482809116124B7619B5CCEC5641D50957F4B51D46F017', N'42e2995e8c4548a68310d8c84b1af93e', NULL, CAST(N'2026-07-16T08:24:54.4142952' AS DateTime2), NULL, NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', CAST(N'2026-07-09T08:24:54.4144096' AS DateTime2))
+INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (53, 6, N'F0CB958521D39A48AC9EB3CBDAB35CC4D34458C6176E1D38076A3B4EAA309EE3', N'115adc9da5774af2817d3cd7bfc37305', NULL, CAST(N'2026-07-16T08:27:35.8108509' AS DateTime2), NULL, NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', CAST(N'2026-07-09T08:27:35.8109831' AS DateTime2))
+INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (54, 6, N'2CC700B7D8026C05EA8C783EE427E8FA9AE50D8CFA364A0CF6BA2BA692531A99', N'1edb617ca71f46d6a7f24b7a09dee3b5', NULL, CAST(N'2026-07-16T08:42:12.5364167' AS DateTime2), NULL, NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', CAST(N'2026-07-09T08:42:12.5365098' AS DateTime2))
+INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (55, 2, N'9BF2BC154223AE9A38911B6099DBAA4F1433680A1164DFDAEF0FA83FA909713C', N'bea65a2cb93940d69994b4a2ebfe5d37', NULL, CAST(N'2026-07-16T08:47:09.2459318' AS DateTime2), NULL, NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', CAST(N'2026-07-09T08:47:09.2460143' AS DateTime2))
+INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (56, 6, N'7F9E79761F144D4FBC1E8FA286D404FD8419EA2B75E59F10109916E1061DFDC7', N'156f59113ef1403880571cccf7e2ec3f', NULL, CAST(N'2026-07-16T08:47:58.4696708' AS DateTime2), NULL, NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', CAST(N'2026-07-09T08:47:58.4696716' AS DateTime2))
+INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (57, 2, N'C5A66ACE616660D65F3365E21B8634505C42B94C7FB19BE077776E3BB6401E14', N'53daa69a6f844333a2cf5fc7007d3cee', NULL, CAST(N'2026-07-16T08:49:43.4169638' AS DateTime2), CAST(N'2026-07-09T08:54:30.4920214' AS DateTime2), NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', CAST(N'2026-07-09T08:49:43.4169650' AS DateTime2))
+INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (58, 2, N'A6A6ACD74867A8483E6010554A6496EA8D23A19534D3E21CEEB0424526E9ACDB', N'29f2fe8efc5a4ef3b129d488242d892c', NULL, CAST(N'2026-07-16T08:58:57.8703064' AS DateTime2), NULL, NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', CAST(N'2026-07-09T08:58:57.8703074' AS DateTime2))
+INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (59, 2, N'B35AF557704D58AE432F22C922F50D2D309D840484BE8250EAB7117D0588E6B3', N'a893ea37713b43b6a336dc4fd271b632', NULL, CAST(N'2026-07-16T08:58:59.9048048' AS DateTime2), NULL, NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', CAST(N'2026-07-09T08:58:59.9048057' AS DateTime2))
+INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (60, 6, N'44336B4F6FAEB3038E0653B057CC5966F6120CA6974E7B93C5308279377A8E6D', N'4f21341d9ce74adfa930d22b8a40acb9', NULL, CAST(N'2026-07-16T09:34:00.1848502' AS DateTime2), NULL, NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', CAST(N'2026-07-09T09:34:00.1849683' AS DateTime2))
+INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (61, 7, N'E7AFF6A3104955A1BF6D33D8F9439D98FE0CDEB15740C6CAE3BF5E63DA89C66B', N'803cbf3881e84fd384e26e1f32eaa091', NULL, CAST(N'2026-07-16T09:40:58.4575556' AS DateTime2), NULL, NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', CAST(N'2026-07-09T09:40:58.4575563' AS DateTime2))
+INSERT [dbo].[RefreshTokens] ([Id], [UserId], [TokenHash], [JwtId], [DeviceId], [ExpiresAt], [RevokedAt], [ReplacedByTokenHash], [IpAddress], [UserAgent], [CreatedAt]) VALUES (62, 6, N'E3B0B4FB25B1DD4F71F7C62FFEC9793DB48C259EE4384C31C7A3DA3DA6F119A9', N'58dd958c2249406888b8569d583a8cbe', NULL, CAST(N'2026-07-16T09:43:08.2502896' AS DateTime2), NULL, NULL, N'::1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', CAST(N'2026-07-09T09:43:08.2502905' AS DateTime2))
 SET IDENTITY_INSERT [dbo].[RefreshTokens] OFF
+GO
+INSERT [dbo].[RolePermissionGroups] ([RoleId], [PermissionGroupId], [AssignedAt], [AssignedBy]) VALUES (1, 5, CAST(N'2026-07-09T06:25:35.8270655' AS DateTime2), NULL)
+INSERT [dbo].[RolePermissionGroups] ([RoleId], [PermissionGroupId], [AssignedAt], [AssignedBy]) VALUES (2, 3, CAST(N'2026-07-09T06:25:35.8282668' AS DateTime2), NULL)
+INSERT [dbo].[RolePermissionGroups] ([RoleId], [PermissionGroupId], [AssignedAt], [AssignedBy]) VALUES (3, 1, CAST(N'2026-07-09T06:25:35.8149525' AS DateTime2), NULL)
 GO
 INSERT [dbo].[RolePermissions] ([RoleId], [PermissionId]) VALUES (2, 9)
 INSERT [dbo].[RolePermissions] ([RoleId], [PermissionId]) VALUES (2, 12)
@@ -1700,6 +1972,8 @@ INSERT [dbo].[RolePermissions] ([RoleId], [PermissionId]) VALUES (3, 12)
 INSERT [dbo].[RolePermissions] ([RoleId], [PermissionId]) VALUES (3, 13)
 INSERT [dbo].[RolePermissions] ([RoleId], [PermissionId]) VALUES (3, 14)
 INSERT [dbo].[RolePermissions] ([RoleId], [PermissionId]) VALUES (3, 15)
+INSERT [dbo].[RolePermissions] ([RoleId], [PermissionId]) VALUES (3, 16)
+INSERT [dbo].[RolePermissions] ([RoleId], [PermissionId]) VALUES (3, 17)
 GO
 SET IDENTITY_INSERT [dbo].[Roles] ON 
 
@@ -1725,6 +1999,7 @@ INSERT [dbo].[UserLearningProfiles] ([UserId], [CurrentLevel], [TargetRole], [Pr
 INSERT [dbo].[UserLearningProfiles] ([UserId], [CurrentLevel], [TargetRole], [PreferredLanguage], [DailyGoalMinutes], [UpdatedAt]) VALUES (10, 1, NULL, NULL, 30, CAST(N'2026-07-08T09:43:55.8573645' AS DateTime2))
 INSERT [dbo].[UserLearningProfiles] ([UserId], [CurrentLevel], [TargetRole], [PreferredLanguage], [DailyGoalMinutes], [UpdatedAt]) VALUES (11, 1, NULL, NULL, 30, CAST(N'2026-07-09T01:09:28.5750618' AS DateTime2))
 INSERT [dbo].[UserLearningProfiles] ([UserId], [CurrentLevel], [TargetRole], [PreferredLanguage], [DailyGoalMinutes], [UpdatedAt]) VALUES (12, 1, NULL, NULL, 30, CAST(N'2026-07-09T01:10:11.8868414' AS DateTime2))
+INSERT [dbo].[UserLearningProfiles] ([UserId], [CurrentLevel], [TargetRole], [PreferredLanguage], [DailyGoalMinutes], [UpdatedAt]) VALUES (13, 1, NULL, NULL, 30, CAST(N'2026-07-09T08:55:53.7777239' AS DateTime2))
 GO
 INSERT [dbo].[UserProfiles] ([UserId], [FullName], [AvatarUrl], [Headline], [Bio], [Location], [WebsiteUrl], [GitHubUrl], [LinkedInUrl], [Education], [Company], [UpdatedAt]) VALUES (1, N'Nguyen Van A', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2026-06-09T16:07:05.5615102' AS DateTime2))
 INSERT [dbo].[UserProfiles] ([UserId], [FullName], [AvatarUrl], [Headline], [Bio], [Location], [WebsiteUrl], [GitHubUrl], [LinkedInUrl], [Education], [Company], [UpdatedAt]) VALUES (2, N'System Admin', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2026-06-10T17:10:23.2339842' AS DateTime2))
@@ -1738,6 +2013,7 @@ INSERT [dbo].[UserProfiles] ([UserId], [FullName], [AvatarUrl], [Headline], [Bio
 INSERT [dbo].[UserProfiles] ([UserId], [FullName], [AvatarUrl], [Headline], [Bio], [Location], [WebsiteUrl], [GitHubUrl], [LinkedInUrl], [Education], [Company], [UpdatedAt]) VALUES (10, N'hom nay', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2026-07-08T09:43:55.8572190' AS DateTime2))
 INSERT [dbo].[UserProfiles] ([UserId], [FullName], [AvatarUrl], [Headline], [Bio], [Location], [WebsiteUrl], [GitHubUrl], [LinkedInUrl], [Education], [Company], [UpdatedAt]) VALUES (11, N'string', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2026-07-09T01:09:28.5497904' AS DateTime2))
 INSERT [dbo].[UserProfiles] ([UserId], [FullName], [AvatarUrl], [Headline], [Bio], [Location], [WebsiteUrl], [GitHubUrl], [LinkedInUrl], [Education], [Company], [UpdatedAt]) VALUES (12, N'string', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2026-07-09T01:10:11.8867721' AS DateTime2))
+INSERT [dbo].[UserProfiles] ([UserId], [FullName], [AvatarUrl], [Headline], [Bio], [Location], [WebsiteUrl], [GitHubUrl], [LinkedInUrl], [Education], [Company], [UpdatedAt]) VALUES (13, N'a ba', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2026-07-09T08:55:53.7535782' AS DateTime2))
 GO
 INSERT [dbo].[UserRoles] ([UserId], [RoleId], [AssignedAt], [AssignedBy]) VALUES (1, 1, CAST(N'2026-06-09T16:07:05.5313455' AS DateTime2), NULL)
 INSERT [dbo].[UserRoles] ([UserId], [RoleId], [AssignedAt], [AssignedBy]) VALUES (2, 3, CAST(N'2026-06-10T17:10:23.3497774' AS DateTime2), NULL)
@@ -1751,21 +2027,23 @@ INSERT [dbo].[UserRoles] ([UserId], [RoleId], [AssignedAt], [AssignedBy]) VALUES
 INSERT [dbo].[UserRoles] ([UserId], [RoleId], [AssignedAt], [AssignedBy]) VALUES (10, 1, CAST(N'2026-07-08T09:43:55.8563477' AS DateTime2), NULL)
 INSERT [dbo].[UserRoles] ([UserId], [RoleId], [AssignedAt], [AssignedBy]) VALUES (11, 1, CAST(N'2026-07-09T01:09:28.5176376' AS DateTime2), NULL)
 INSERT [dbo].[UserRoles] ([UserId], [RoleId], [AssignedAt], [AssignedBy]) VALUES (12, 1, CAST(N'2026-07-09T01:10:11.8864538' AS DateTime2), NULL)
+INSERT [dbo].[UserRoles] ([UserId], [RoleId], [AssignedAt], [AssignedBy]) VALUES (13, 1, CAST(N'2026-07-09T08:55:53.7520020' AS DateTime2), NULL)
 GO
 SET IDENTITY_INSERT [dbo].[Users] ON 
 
 INSERT [dbo].[Users] ([Id], [FullName], [UserName], [Email], [PasswordHash], [AvatarUrl], [Status], [EmailConfirmed], [PhoneNumber], [PhoneConfirmed], [LastLoginAt], [FailedLoginCount], [LockoutEndAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt]) VALUES (1, N'Nguyen Van A', N'user1', N'user1@example.com', N'$2a$11$4setLkxF29cQAeId7tNLTeF5lVDCvtYCkITs802.x1OluCCob18Ru', NULL, 1, 0, NULL, 0, NULL, 0, NULL, CAST(N'2026-06-09T16:07:05.1792856' AS DateTime2), NULL, 0, NULL)
-INSERT [dbo].[Users] ([Id], [FullName], [UserName], [Email], [PasswordHash], [AvatarUrl], [Status], [EmailConfirmed], [PhoneNumber], [PhoneConfirmed], [LastLoginAt], [FailedLoginCount], [LockoutEndAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt]) VALUES (2, N'System Admin', N'admin', N'admin@example.com', N'$2a$11$0hN6Ms9BpTGKJWkr/iJ3heMRkKdga5m3KAmiU6yTFptnWMHVUydqW', NULL, 1, 1, NULL, 0, CAST(N'2026-07-03T08:28:34.7855723' AS DateTime2), 0, NULL, CAST(N'2026-06-10T17:10:23.1037780' AS DateTime2), NULL, 0, NULL)
+INSERT [dbo].[Users] ([Id], [FullName], [UserName], [Email], [PasswordHash], [AvatarUrl], [Status], [EmailConfirmed], [PhoneNumber], [PhoneConfirmed], [LastLoginAt], [FailedLoginCount], [LockoutEndAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt]) VALUES (2, N'System Admin', N'admin', N'admin@example.com', N'$2a$11$0hN6Ms9BpTGKJWkr/iJ3heMRkKdga5m3KAmiU6yTFptnWMHVUydqW', NULL, 1, 1, NULL, 0, CAST(N'2026-07-09T08:58:59.8709683' AS DateTime2), 0, NULL, CAST(N'2026-06-10T17:10:23.1037780' AS DateTime2), NULL, 0, NULL)
 INSERT [dbo].[Users] ([Id], [FullName], [UserName], [Email], [PasswordHash], [AvatarUrl], [Status], [EmailConfirmed], [PhoneNumber], [PhoneConfirmed], [LastLoginAt], [FailedLoginCount], [LockoutEndAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt]) VALUES (3, N'Nhân Chứng', N'nhanchung', N'nhanchung@gmail.com', N'$2a$11$XKdJn8GLSQBSvU5Rq33ZIO6HkAzIH3cSKsfmoxN9ohaljU8xXxDuS', NULL, 1, 0, NULL, 0, CAST(N'2026-06-18T14:53:54.1361372' AS DateTime2), 0, NULL, CAST(N'2026-06-10T17:18:14.3842977' AS DateTime2), NULL, 0, NULL)
 INSERT [dbo].[Users] ([Id], [FullName], [UserName], [Email], [PasswordHash], [AvatarUrl], [Status], [EmailConfirmed], [PhoneNumber], [PhoneConfirmed], [LastLoginAt], [FailedLoginCount], [LockoutEndAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt]) VALUES (4, N'Nhan Chung', N'nhanchung1', N'nhanchung1@gmail.com', N'$2a$11$4apVVk2JJbvnmiwn.OiD4.3GxpvAIdnGpHFVKqdvTsD0hGlO5rSG2', NULL, 1, 0, NULL, 0, CAST(N'2026-06-18T15:02:52.5375674' AS DateTime2), 0, NULL, CAST(N'2026-06-10T18:39:04.5376693' AS DateTime2), NULL, 0, NULL)
 INSERT [dbo].[Users] ([Id], [FullName], [UserName], [Email], [PasswordHash], [AvatarUrl], [Status], [EmailConfirmed], [PhoneNumber], [PhoneConfirmed], [LastLoginAt], [FailedLoginCount], [LockoutEndAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt]) VALUES (5, N'a b', N'abs', N'abs@gmail.com', N'$2a$11$FmdPS6AJbd2HTDZVtai9A.p3UcliA0qHbZNUB91NF9C.qlkuSpKqm', NULL, 1, 0, NULL, 0, CAST(N'2026-06-19T07:02:35.4755614' AS DateTime2), 0, NULL, CAST(N'2026-06-17T10:09:21.4402387' AS DateTime2), NULL, 0, NULL)
-INSERT [dbo].[Users] ([Id], [FullName], [UserName], [Email], [PasswordHash], [AvatarUrl], [Status], [EmailConfirmed], [PhoneNumber], [PhoneConfirmed], [LastLoginAt], [FailedLoginCount], [LockoutEndAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt]) VALUES (6, N'ro se', N'rose', N'rose@gmail.com', N'$2a$11$pF/wSXvI2Ty6D5INk5LyHO6Hca1B7YncSDBDEt493..lVFlzMnf0m', NULL, 1, 0, NULL, 0, CAST(N'2026-07-09T02:46:10.3070026' AS DateTime2), 0, NULL, CAST(N'2026-06-18T15:03:47.1580116' AS DateTime2), NULL, 0, NULL)
-INSERT [dbo].[Users] ([Id], [FullName], [UserName], [Email], [PasswordHash], [AvatarUrl], [Status], [EmailConfirmed], [PhoneNumber], [PhoneConfirmed], [LastLoginAt], [FailedLoginCount], [LockoutEndAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt]) VALUES (7, N'Forum Moderator', N'moderator', N'moderator@example.com', N'$2a$11$zTGBsnHQortEoVwRDJ2sgu8mllphTI//p/HGUhCam46Oh50wD.0E2', NULL, 1, 1, NULL, 0, CAST(N'2026-06-19T08:17:45.2032842' AS DateTime2), 0, NULL, CAST(N'2026-06-18T15:44:51.6205988' AS DateTime2), NULL, 0, NULL)
+INSERT [dbo].[Users] ([Id], [FullName], [UserName], [Email], [PasswordHash], [AvatarUrl], [Status], [EmailConfirmed], [PhoneNumber], [PhoneConfirmed], [LastLoginAt], [FailedLoginCount], [LockoutEndAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt]) VALUES (6, N'ro se', N'rose', N'rose@gmail.com', N'$2a$11$pF/wSXvI2Ty6D5INk5LyHO6Hca1B7YncSDBDEt493..lVFlzMnf0m', NULL, 1, 0, NULL, 0, CAST(N'2026-07-09T09:43:08.2226690' AS DateTime2), 0, NULL, CAST(N'2026-06-18T15:03:47.1580116' AS DateTime2), NULL, 0, NULL)
+INSERT [dbo].[Users] ([Id], [FullName], [UserName], [Email], [PasswordHash], [AvatarUrl], [Status], [EmailConfirmed], [PhoneNumber], [PhoneConfirmed], [LastLoginAt], [FailedLoginCount], [LockoutEndAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt]) VALUES (7, N'Forum Moderator', N'moderator', N'moderator@example.com', N'$2a$11$zTGBsnHQortEoVwRDJ2sgu8mllphTI//p/HGUhCam46Oh50wD.0E2', NULL, 1, 1, NULL, 0, CAST(N'2026-07-09T09:40:58.4251353' AS DateTime2), 0, NULL, CAST(N'2026-06-18T15:44:51.6205988' AS DateTime2), NULL, 0, NULL)
 INSERT [dbo].[Users] ([Id], [FullName], [UserName], [Email], [PasswordHash], [AvatarUrl], [Status], [EmailConfirmed], [PhoneNumber], [PhoneConfirmed], [LastLoginAt], [FailedLoginCount], [LockoutEndAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt]) VALUES (8, N'test test', N'test1', N'test1@gmail.com', N'$2a$11$KZmVEhrtJK.G2/92QF2DPO8EtH7cNR1toiY1/p2dJLaK1VXJoaiqG', NULL, 1, 0, NULL, 0, CAST(N'2026-06-22T09:47:20.6744531' AS DateTime2), 0, NULL, CAST(N'2026-06-22T09:47:10.9744133' AS DateTime2), NULL, 0, NULL)
 INSERT [dbo].[Users] ([Id], [FullName], [UserName], [Email], [PasswordHash], [AvatarUrl], [Status], [EmailConfirmed], [PhoneNumber], [PhoneConfirmed], [LastLoginAt], [FailedLoginCount], [LockoutEndAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt]) VALUES (9, N'hom nay', N'homnay', N'homnay@gmail.com', N'$2a$11$xvtDZIrLxG9WxwpFP9p/GeWvGb0Z3GqYsV7FHwM9BLjA0GCR6pq8C', NULL, 1, 0, NULL, 0, NULL, 0, NULL, CAST(N'2026-07-08T09:42:23.6729134' AS DateTime2), NULL, 0, NULL)
 INSERT [dbo].[Users] ([Id], [FullName], [UserName], [Email], [PasswordHash], [AvatarUrl], [Status], [EmailConfirmed], [PhoneNumber], [PhoneConfirmed], [LastLoginAt], [FailedLoginCount], [LockoutEndAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt]) VALUES (10, N'hom nay', N'homnay1', N'homnay1@gmail.com', N'$2a$11$3zJuBucxSyUygZJG9826XOxC7TjFEWqWJ0oDNEquOXlsXuucEb34.', NULL, 1, 0, NULL, 0, NULL, 0, NULL, CAST(N'2026-07-08T09:43:55.8434780' AS DateTime2), NULL, 0, NULL)
 INSERT [dbo].[Users] ([Id], [FullName], [UserName], [Email], [PasswordHash], [AvatarUrl], [Status], [EmailConfirmed], [PhoneNumber], [PhoneConfirmed], [LastLoginAt], [FailedLoginCount], [LockoutEndAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt]) VALUES (11, N'string', N'string', N'string@g.com', N'$2a$11$mGPTet./Yo7vxqF0k9nlAO2yLfRgRcMC1X5EkipZP3In6y9z4sYe6', NULL, 1, 0, NULL, 0, NULL, 0, NULL, CAST(N'2026-07-09T01:09:28.3598732' AS DateTime2), NULL, 0, NULL)
 INSERT [dbo].[Users] ([Id], [FullName], [UserName], [Email], [PasswordHash], [AvatarUrl], [Status], [EmailConfirmed], [PhoneNumber], [PhoneConfirmed], [LastLoginAt], [FailedLoginCount], [LockoutEndAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt]) VALUES (12, N'string', N'string1', N'stringg.com', N'$2a$11$53W6Kn.x9W1qjy5euotTqeEkSdgywQFNWrUgIYKrJ3exgTPNvLT9K', NULL, 1, 0, NULL, 0, NULL, 0, NULL, CAST(N'2026-07-09T01:10:11.8799576' AS DateTime2), NULL, 0, NULL)
+INSERT [dbo].[Users] ([Id], [FullName], [UserName], [Email], [PasswordHash], [AvatarUrl], [Status], [EmailConfirmed], [PhoneNumber], [PhoneConfirmed], [LastLoginAt], [FailedLoginCount], [LockoutEndAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt]) VALUES (13, N'a ba', N'adminex', N'a', N'$2a$11$xI3WoLCynnm8c61Q/9sbnOciHJDGdGTqUTmiPNJ9u0U8pLh.u3ppm', NULL, 1, 0, NULL, 0, NULL, 0, NULL, CAST(N'2026-07-09T08:55:53.7196125' AS DateTime2), NULL, 0, NULL)
 SET IDENTITY_INSERT [dbo].[Users] OFF
 GO
 INSERT [dbo].[UserSettings] ([UserId], [Theme], [Language], [CodeEditorTheme], [CodeEditorFontSize], [EnableEmailNotification], [EnablePushNotification], [HasCompletedOnboarding], [UpdatedAt]) VALUES (1, N'light', N'vi', N'dark', 14, 1, 1, 0, CAST(N'2026-06-09T16:07:05.6218274' AS DateTime2))
@@ -1780,19 +2058,21 @@ INSERT [dbo].[UserSettings] ([UserId], [Theme], [Language], [CodeEditorTheme], [
 INSERT [dbo].[UserSettings] ([UserId], [Theme], [Language], [CodeEditorTheme], [CodeEditorFontSize], [EnableEmailNotification], [EnablePushNotification], [HasCompletedOnboarding], [UpdatedAt]) VALUES (10, N'light', N'vi', N'dark', 14, 1, 1, 0, CAST(N'2026-07-08T09:43:55.8574737' AS DateTime2))
 INSERT [dbo].[UserSettings] ([UserId], [Theme], [Language], [CodeEditorTheme], [CodeEditorFontSize], [EnableEmailNotification], [EnablePushNotification], [HasCompletedOnboarding], [UpdatedAt]) VALUES (11, N'light', N'vi', N'dark', 14, 1, 1, 0, CAST(N'2026-07-09T01:09:28.6117528' AS DateTime2))
 INSERT [dbo].[UserSettings] ([UserId], [Theme], [Language], [CodeEditorTheme], [CodeEditorFontSize], [EnableEmailNotification], [EnablePushNotification], [HasCompletedOnboarding], [UpdatedAt]) VALUES (12, N'light', N'vi', N'dark', 14, 1, 1, 0, CAST(N'2026-07-09T01:10:11.8869317' AS DateTime2))
+INSERT [dbo].[UserSettings] ([UserId], [Theme], [Language], [CodeEditorTheme], [CodeEditorFontSize], [EnableEmailNotification], [EnablePushNotification], [HasCompletedOnboarding], [UpdatedAt]) VALUES (13, N'light', N'vi', N'dark', 14, 1, 1, 0, CAST(N'2026-07-09T08:55:53.7905945' AS DateTime2))
 GO
 INSERT [dbo].[UserStats] ([UserId], [TotalQuizAttempts], [TotalCorrectAnswers], [AverageQuizScore], [TotalCodeSubmissions], [AcceptedCodeSubmissions], [TotalPosts], [TotalComments], [Reputation], [StreakDays], [LastActivityAt], [UpdatedAt]) VALUES (1, 0, 0, CAST(0.00 AS Decimal(5, 2)), 0, 0, 0, 0, 0, 0, NULL, CAST(N'2026-06-09T16:07:05.5993548' AS DateTime2))
 INSERT [dbo].[UserStats] ([UserId], [TotalQuizAttempts], [TotalCorrectAnswers], [AverageQuizScore], [TotalCodeSubmissions], [AcceptedCodeSubmissions], [TotalPosts], [TotalComments], [Reputation], [StreakDays], [LastActivityAt], [UpdatedAt]) VALUES (2, 0, 0, CAST(0.00 AS Decimal(5, 2)), 0, 0, 0, 0, 0, 0, NULL, CAST(N'2026-06-10T17:10:23.2584871' AS DateTime2))
 INSERT [dbo].[UserStats] ([UserId], [TotalQuizAttempts], [TotalCorrectAnswers], [AverageQuizScore], [TotalCodeSubmissions], [AcceptedCodeSubmissions], [TotalPosts], [TotalComments], [Reputation], [StreakDays], [LastActivityAt], [UpdatedAt]) VALUES (3, 0, 0, CAST(0.00 AS Decimal(5, 2)), 0, 0, 0, 0, 0, 0, NULL, CAST(N'2026-06-10T17:18:14.4103768' AS DateTime2))
 INSERT [dbo].[UserStats] ([UserId], [TotalQuizAttempts], [TotalCorrectAnswers], [AverageQuizScore], [TotalCodeSubmissions], [AcceptedCodeSubmissions], [TotalPosts], [TotalComments], [Reputation], [StreakDays], [LastActivityAt], [UpdatedAt]) VALUES (4, 8, 4, CAST(2.86 AS Decimal(5, 2)), 0, 0, 0, 0, 0, 0, CAST(N'2026-06-18T15:00:43.4772304' AS DateTime2), CAST(N'2026-06-18T15:00:43.4772314' AS DateTime2))
 INSERT [dbo].[UserStats] ([UserId], [TotalQuizAttempts], [TotalCorrectAnswers], [AverageQuizScore], [TotalCodeSubmissions], [AcceptedCodeSubmissions], [TotalPosts], [TotalComments], [Reputation], [StreakDays], [LastActivityAt], [UpdatedAt]) VALUES (5, 3, 2, CAST(2.50 AS Decimal(5, 2)), 0, 0, 0, 7, 7, 0, CAST(N'2026-06-19T07:32:27.6083475' AS DateTime2), CAST(N'2026-06-19T07:32:27.6083479' AS DateTime2))
-INSERT [dbo].[UserStats] ([UserId], [TotalQuizAttempts], [TotalCorrectAnswers], [AverageQuizScore], [TotalCodeSubmissions], [AcceptedCodeSubmissions], [TotalPosts], [TotalComments], [Reputation], [StreakDays], [LastActivityAt], [UpdatedAt]) VALUES (6, 1, 0, CAST(0.00 AS Decimal(5, 2)), 0, 0, 1, 0, 2, 0, CAST(N'2026-06-19T08:16:21.1055661' AS DateTime2), CAST(N'2026-06-19T08:16:21.1055668' AS DateTime2))
+INSERT [dbo].[UserStats] ([UserId], [TotalQuizAttempts], [TotalCorrectAnswers], [AverageQuizScore], [TotalCodeSubmissions], [AcceptedCodeSubmissions], [TotalPosts], [TotalComments], [Reputation], [StreakDays], [LastActivityAt], [UpdatedAt]) VALUES (6, 1, 0, CAST(0.00 AS Decimal(5, 2)), 0, 0, 1, 8, 10, 0, CAST(N'2026-07-09T09:49:29.8100873' AS DateTime2), CAST(N'2026-07-09T09:49:29.8100877' AS DateTime2))
 INSERT [dbo].[UserStats] ([UserId], [TotalQuizAttempts], [TotalCorrectAnswers], [AverageQuizScore], [TotalCodeSubmissions], [AcceptedCodeSubmissions], [TotalPosts], [TotalComments], [Reputation], [StreakDays], [LastActivityAt], [UpdatedAt]) VALUES (7, 0, 0, CAST(0.00 AS Decimal(5, 2)), 0, 0, 0, 0, 0, 0, NULL, CAST(N'2026-06-18T15:44:51.6669314' AS DateTime2))
 INSERT [dbo].[UserStats] ([UserId], [TotalQuizAttempts], [TotalCorrectAnswers], [AverageQuizScore], [TotalCodeSubmissions], [AcceptedCodeSubmissions], [TotalPosts], [TotalComments], [Reputation], [StreakDays], [LastActivityAt], [UpdatedAt]) VALUES (8, 0, 0, CAST(0.00 AS Decimal(5, 2)), 0, 0, 0, 0, 0, 0, NULL, CAST(N'2026-06-22T09:47:11.0205162' AS DateTime2))
 INSERT [dbo].[UserStats] ([UserId], [TotalQuizAttempts], [TotalCorrectAnswers], [AverageQuizScore], [TotalCodeSubmissions], [AcceptedCodeSubmissions], [TotalPosts], [TotalComments], [Reputation], [StreakDays], [LastActivityAt], [UpdatedAt]) VALUES (9, 0, 0, CAST(0.00 AS Decimal(5, 2)), 0, 0, 0, 0, 0, 0, NULL, CAST(N'2026-07-08T09:42:23.9550389' AS DateTime2))
 INSERT [dbo].[UserStats] ([UserId], [TotalQuizAttempts], [TotalCorrectAnswers], [AverageQuizScore], [TotalCodeSubmissions], [AcceptedCodeSubmissions], [TotalPosts], [TotalComments], [Reputation], [StreakDays], [LastActivityAt], [UpdatedAt]) VALUES (10, 0, 0, CAST(0.00 AS Decimal(5, 2)), 0, 0, 0, 0, 0, 0, NULL, CAST(N'2026-07-08T09:43:55.8574193' AS DateTime2))
 INSERT [dbo].[UserStats] ([UserId], [TotalQuizAttempts], [TotalCorrectAnswers], [AverageQuizScore], [TotalCodeSubmissions], [AcceptedCodeSubmissions], [TotalPosts], [TotalComments], [Reputation], [StreakDays], [LastActivityAt], [UpdatedAt]) VALUES (11, 0, 0, CAST(0.00 AS Decimal(5, 2)), 0, 0, 0, 0, 0, 0, NULL, CAST(N'2026-07-09T01:09:28.5885468' AS DateTime2))
 INSERT [dbo].[UserStats] ([UserId], [TotalQuizAttempts], [TotalCorrectAnswers], [AverageQuizScore], [TotalCodeSubmissions], [AcceptedCodeSubmissions], [TotalPosts], [TotalComments], [Reputation], [StreakDays], [LastActivityAt], [UpdatedAt]) VALUES (12, 0, 0, CAST(0.00 AS Decimal(5, 2)), 0, 0, 0, 0, 0, 0, NULL, CAST(N'2026-07-09T01:10:11.8868862' AS DateTime2))
+INSERT [dbo].[UserStats] ([UserId], [TotalQuizAttempts], [TotalCorrectAnswers], [AverageQuizScore], [TotalCodeSubmissions], [AcceptedCodeSubmissions], [TotalPosts], [TotalComments], [Reputation], [StreakDays], [LastActivityAt], [UpdatedAt]) VALUES (13, 0, 0, CAST(0.00 AS Decimal(5, 2)), 0, 0, 0, 0, 0, 0, NULL, CAST(N'2026-07-09T08:55:53.7895590' AS DateTime2))
 GO
 SET IDENTITY_INSERT [dbo].[XpRules] ON 
 
@@ -1806,7 +2086,7 @@ SET IDENTITY_INSERT [dbo].[XpRules] OFF
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_Achievements_Code]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_Achievements_Code]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_Achievements_Code] ON [dbo].[Achievements]
 (
 	[Code] ASC
@@ -1814,21 +2094,45 @@ CREATE UNIQUE NONCLUSTERED INDEX [UX_Achievements_Code] ON [dbo].[Achievements]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_Categories_Slug]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_Categories_Slug]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_Categories_Slug] ON [dbo].[Categories]
 (
 	[Slug] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
+/****** Object:  Index [IX_CodeSubmissions_ProblemId]    Script Date: 09/07/2026 5:41:26 PM ******/
+CREATE NONCLUSTERED INDEX [IX_CodeSubmissions_ProblemId] ON [dbo].[CodeSubmissions]
+(
+	[ProblemId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_CodeSubmissions_UserId]    Script Date: 09/07/2026 5:41:26 PM ******/
+CREATE NONCLUSTERED INDEX [IX_CodeSubmissions_UserId] ON [dbo].[CodeSubmissions]
+(
+	[UserId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_CodeSubmissionTestCaseResults_SubmissionId]    Script Date: 09/07/2026 5:41:26 PM ******/
+CREATE NONCLUSTERED INDEX [IX_CodeSubmissionTestCaseResults_SubmissionId] ON [dbo].[CodeSubmissionTestCaseResults]
+(
+	[SubmissionId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_CodeSubmissionTestCaseResults_TestCaseId]    Script Date: 09/07/2026 5:41:26 PM ******/
+CREATE NONCLUSTERED INDEX [IX_CodeSubmissionTestCaseResults_TestCaseId] ON [dbo].[CodeSubmissionTestCaseResults]
+(
+	[TestCaseId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_CodingProblems_Slug]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_CodingProblems_Slug]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_CodingProblems_Slug] ON [dbo].[CodingProblems]
 (
 	[Slug] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [UX_CommentVotes_Comment_User]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_CommentVotes_Comment_User]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_CommentVotes_Comment_User] ON [dbo].[CommentVotes]
 (
 	[CommentId] ASC,
@@ -1837,7 +2141,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [UX_CommentVotes_Comment_User] ON [dbo].[Commen
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_ExternalLogins_Provider_UserId]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_ExternalLogins_Provider_UserId]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_ExternalLogins_Provider_UserId] ON [dbo].[ExternalLogins]
 (
 	[Provider] ASC,
@@ -1846,29 +2150,97 @@ CREATE UNIQUE NONCLUSTERED INDEX [UX_ExternalLogins_Provider_UserId] ON [dbo].[E
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_NotificationTemplates_Code]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_NotificationTemplates_Code]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_NotificationTemplates_Code] ON [dbo].[NotificationTemplates]
 (
 	[Code] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
+/****** Object:  Index [IX_PermissionGroupPermissions_PermissionId]    Script Date: 09/07/2026 5:41:26 PM ******/
+CREATE NONCLUSTERED INDEX [IX_PermissionGroupPermissions_PermissionId] ON [dbo].[PermissionGroupPermissions]
+(
+	[PermissionId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_Permissions_Code]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [IX_PermissionGroups_Code]    Script Date: 09/07/2026 5:41:26 PM ******/
+CREATE UNIQUE NONCLUSTERED INDEX [IX_PermissionGroups_Code] ON [dbo].[PermissionGroups]
+(
+	[Code] ASC
+)
+WHERE ([Code] IS NOT NULL)
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UX_Permissions_Code]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_Permissions_Code] ON [dbo].[Permissions]
 (
 	[Code] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
+/****** Object:  Index [IX_PersonalPracticeAttemptAnswers_AttemptId]    Script Date: 09/07/2026 5:41:26 PM ******/
+CREATE NONCLUSTERED INDEX [IX_PersonalPracticeAttemptAnswers_AttemptId] ON [dbo].[PersonalPracticeAttemptAnswers]
+(
+	[AttemptId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_PersonalPracticeAttemptAnswers_QuestionId]    Script Date: 09/07/2026 5:41:26 PM ******/
+CREATE NONCLUSTERED INDEX [IX_PersonalPracticeAttemptAnswers_QuestionId] ON [dbo].[PersonalPracticeAttemptAnswers]
+(
+	[QuestionId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_PersonalPracticeAttempts_BankId]    Script Date: 09/07/2026 5:41:26 PM ******/
+CREATE NONCLUSTERED INDEX [IX_PersonalPracticeAttempts_BankId] ON [dbo].[PersonalPracticeAttempts]
+(
+	[BankId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_PersonalPracticeAttempts_UserId_BankId]    Script Date: 09/07/2026 5:41:26 PM ******/
+CREATE NONCLUSTERED INDEX [IX_PersonalPracticeAttempts_UserId_BankId] ON [dbo].[PersonalPracticeAttempts]
+(
+	[UserId] ASC,
+	[BankId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_PersonalQuestionBanks_UserId_IsDeleted]    Script Date: 09/07/2026 5:41:26 PM ******/
+CREATE NONCLUSTERED INDEX [IX_PersonalQuestionBanks_UserId_IsDeleted] ON [dbo].[PersonalQuestionBanks]
+(
+	[UserId] ASC,
+	[IsDeleted] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_PersonalQuestionOptions_QuestionId]    Script Date: 09/07/2026 5:41:26 PM ******/
+CREATE NONCLUSTERED INDEX [IX_PersonalQuestionOptions_QuestionId] ON [dbo].[PersonalQuestionOptions]
+(
+	[QuestionId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_PersonalQuestions_BankId]    Script Date: 09/07/2026 5:41:26 PM ******/
+CREATE NONCLUSTERED INDEX [IX_PersonalQuestions_BankId] ON [dbo].[PersonalQuestions]
+(
+	[BankId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_PersonalQuestions_UserId_BankId_IsDeleted]    Script Date: 09/07/2026 5:41:26 PM ******/
+CREATE NONCLUSTERED INDEX [IX_PersonalQuestions_UserId_BankId_IsDeleted] ON [dbo].[PersonalQuestions]
+(
+	[UserId] ASC,
+	[BankId] ASC,
+	[IsDeleted] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_Posts_Slug]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_Posts_Slug]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_Posts_Slug] ON [dbo].[Posts]
 (
 	[Slug] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [UX_PostVotes_Post_User]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_PostVotes_Post_User]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_PostVotes_Post_User] ON [dbo].[PostVotes]
 (
 	[PostId] ASC,
@@ -1877,7 +2249,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [UX_PostVotes_Post_User] ON [dbo].[PostVotes]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_ProblemTags_Slug]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_ProblemTags_Slug]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_ProblemTags_Slug] ON [dbo].[ProblemTags]
 (
 	[Slug] ASC
@@ -1885,7 +2257,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [UX_ProblemTags_Slug] ON [dbo].[ProblemTags]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_ProgrammingLanguages_Code]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_ProgrammingLanguages_Code]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_ProgrammingLanguages_Code] ON [dbo].[ProgrammingLanguages]
 (
 	[Code] ASC
@@ -1893,7 +2265,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [UX_ProgrammingLanguages_Code] ON [dbo].[Progra
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_QuizSets_Slug]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_QuizSets_Slug]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_QuizSets_Slug] ON [dbo].[QuizSets]
 (
 	[Slug] ASC
@@ -1901,15 +2273,21 @@ CREATE UNIQUE NONCLUSTERED INDEX [UX_QuizSets_Slug] ON [dbo].[QuizSets]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_Roadmaps_Slug]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_Roadmaps_Slug]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_Roadmaps_Slug] ON [dbo].[Roadmaps]
 (
 	[Slug] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
+/****** Object:  Index [IX_RolePermissionGroups_PermissionGroupId]    Script Date: 09/07/2026 5:41:26 PM ******/
+CREATE NONCLUSTERED INDEX [IX_RolePermissionGroups_PermissionGroupId] ON [dbo].[RolePermissionGroups]
+(
+	[PermissionGroupId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_Roles_NormalizedName]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_Roles_NormalizedName]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_Roles_NormalizedName] ON [dbo].[Roles]
 (
 	[NormalizedName] ASC
@@ -1917,22 +2295,28 @@ CREATE UNIQUE NONCLUSTERED INDEX [UX_Roles_NormalizedName] ON [dbo].[Roles]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_Tags_Slug]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_Tags_Slug]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_Tags_Slug] ON [dbo].[Tags]
 (
 	[Slug] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [UX_UserDailyActivities_User_Date]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_UserDailyActivities_User_Date]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_UserDailyActivities_User_Date] ON [dbo].[UserDailyActivities]
 (
 	[UserId] ASC,
 	[ActivityDate] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
+/****** Object:  Index [IX_UserPermissionGroups_PermissionGroupId]    Script Date: 09/07/2026 5:41:26 PM ******/
+CREATE NONCLUSTERED INDEX [IX_UserPermissionGroups_PermissionGroupId] ON [dbo].[UserPermissionGroups]
+(
+	[PermissionGroupId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_Users_Email]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_Users_Email]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_Users_Email] ON [dbo].[Users]
 (
 	[Email] ASC
@@ -1940,13 +2324,13 @@ CREATE UNIQUE NONCLUSTERED INDEX [UX_Users_Email] ON [dbo].[Users]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_Users_UserName]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_Users_UserName]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_Users_UserName] ON [dbo].[Users]
 (
 	[UserName] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [UX_UserTopicProgress_User_Category]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_UserTopicProgress_User_Category]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_UserTopicProgress_User_Category] ON [dbo].[UserTopicProgress]
 (
 	[UserId] ASC,
@@ -1955,7 +2339,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [UX_UserTopicProgress_User_Category] ON [dbo].[
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_XpRules_ActionType]    Script Date: 09/07/2026 10:21:14 AM ******/
+/****** Object:  Index [UX_XpRules_ActionType]    Script Date: 09/07/2026 5:41:26 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_XpRules_ActionType] ON [dbo].[XpRules]
 (
 	[ActionType] ASC
@@ -1992,6 +2376,14 @@ GO
 ALTER TABLE [dbo].[CodeSubmissions] ADD  DEFAULT ((0)) FOR [Score]
 GO
 ALTER TABLE [dbo].[CodeSubmissions] ADD  DEFAULT (sysutcdatetime()) FOR [SubmittedAt]
+GO
+ALTER TABLE [dbo].[CodeSubmissions] ADD  CONSTRAINT [DF_CodeSubmissions_Language]  DEFAULT (N'python') FOR [Language]
+GO
+ALTER TABLE [dbo].[CodeSubmissions] ADD  CONSTRAINT [DF_CodeSubmissions_Verdict]  DEFAULT (N'Pending') FOR [Verdict]
+GO
+ALTER TABLE [dbo].[CodeSubmissions] ADD  CONSTRAINT [DF_CodeSubmissions_IsAccepted]  DEFAULT ((0)) FOR [IsAccepted]
+GO
+ALTER TABLE [dbo].[CodeSubmissions] ADD  CONSTRAINT [DF_CodeSubmissions_CreatedAt]  DEFAULT (sysutcdatetime()) FOR [CreatedAt]
 GO
 ALTER TABLE [dbo].[CodeSubmissionTestCaseResults] ADD  DEFAULT ((1)) FOR [DisplayOrder]
 GO
@@ -2341,15 +2733,20 @@ REFERENCES [dbo].[Users] ([Id])
 GO
 ALTER TABLE [dbo].[CodeRunHistories] CHECK CONSTRAINT [FK_CodeRunHistories_Users]
 GO
-ALTER TABLE [dbo].[CodeSubmissions]  WITH CHECK ADD  CONSTRAINT [FK_CodeSubmissions_Languages] FOREIGN KEY([ProgrammingLanguageId])
-REFERENCES [dbo].[ProgrammingLanguages] ([Id])
-GO
-ALTER TABLE [dbo].[CodeSubmissions] CHECK CONSTRAINT [FK_CodeSubmissions_Languages]
-GO
-ALTER TABLE [dbo].[CodeSubmissions]  WITH CHECK ADD  CONSTRAINT [FK_CodeSubmissions_Problems] FOREIGN KEY([CodingProblemId])
+ALTER TABLE [dbo].[CodeSubmissions]  WITH CHECK ADD  CONSTRAINT [FK_CodeSubmissions_CodingProblems_CodingProblemId] FOREIGN KEY([CodingProblemId])
 REFERENCES [dbo].[CodingProblems] ([Id])
 GO
-ALTER TABLE [dbo].[CodeSubmissions] CHECK CONSTRAINT [FK_CodeSubmissions_Problems]
+ALTER TABLE [dbo].[CodeSubmissions] CHECK CONSTRAINT [FK_CodeSubmissions_CodingProblems_CodingProblemId]
+GO
+ALTER TABLE [dbo].[CodeSubmissions]  WITH CHECK ADD  CONSTRAINT [FK_CodeSubmissions_CodingProblems_ProblemId] FOREIGN KEY([ProblemId])
+REFERENCES [dbo].[CodingProblems] ([Id])
+GO
+ALTER TABLE [dbo].[CodeSubmissions] CHECK CONSTRAINT [FK_CodeSubmissions_CodingProblems_ProblemId]
+GO
+ALTER TABLE [dbo].[CodeSubmissions]  WITH CHECK ADD  CONSTRAINT [FK_CodeSubmissions_ProgrammingLanguages_ProgrammingLanguageId] FOREIGN KEY([ProgrammingLanguageId])
+REFERENCES [dbo].[ProgrammingLanguages] ([Id])
+GO
+ALTER TABLE [dbo].[CodeSubmissions] CHECK CONSTRAINT [FK_CodeSubmissions_ProgrammingLanguages_ProgrammingLanguageId]
 GO
 ALTER TABLE [dbo].[CodeSubmissions]  WITH CHECK ADD  CONSTRAINT [FK_CodeSubmissions_Users] FOREIGN KEY([UserId])
 REFERENCES [dbo].[Users] ([Id])
@@ -2457,6 +2854,51 @@ ALTER TABLE [dbo].[PasswordResetTokens]  WITH CHECK ADD  CONSTRAINT [FK_Password
 REFERENCES [dbo].[Users] ([Id])
 GO
 ALTER TABLE [dbo].[PasswordResetTokens] CHECK CONSTRAINT [FK_PasswordResetTokens_Users]
+GO
+ALTER TABLE [dbo].[PermissionGroupPermissions]  WITH CHECK ADD  CONSTRAINT [FK_PermissionGroupPermissions_PermissionGroups_PermissionGroupId] FOREIGN KEY([PermissionGroupId])
+REFERENCES [dbo].[PermissionGroups] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[PermissionGroupPermissions] CHECK CONSTRAINT [FK_PermissionGroupPermissions_PermissionGroups_PermissionGroupId]
+GO
+ALTER TABLE [dbo].[PermissionGroupPermissions]  WITH CHECK ADD  CONSTRAINT [FK_PermissionGroupPermissions_Permissions_PermissionId] FOREIGN KEY([PermissionId])
+REFERENCES [dbo].[Permissions] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[PermissionGroupPermissions] CHECK CONSTRAINT [FK_PermissionGroupPermissions_Permissions_PermissionId]
+GO
+ALTER TABLE [dbo].[PersonalPracticeAttemptAnswers]  WITH CHECK ADD  CONSTRAINT [FK_PersonalPracticeAttemptAnswers_PersonalPracticeAttempts_AttemptId] FOREIGN KEY([AttemptId])
+REFERENCES [dbo].[PersonalPracticeAttempts] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[PersonalPracticeAttemptAnswers] CHECK CONSTRAINT [FK_PersonalPracticeAttemptAnswers_PersonalPracticeAttempts_AttemptId]
+GO
+ALTER TABLE [dbo].[PersonalPracticeAttemptAnswers]  WITH CHECK ADD  CONSTRAINT [FK_PersonalPracticeAttemptAnswers_PersonalQuestions_QuestionId] FOREIGN KEY([QuestionId])
+REFERENCES [dbo].[PersonalQuestions] ([Id])
+GO
+ALTER TABLE [dbo].[PersonalPracticeAttemptAnswers] CHECK CONSTRAINT [FK_PersonalPracticeAttemptAnswers_PersonalQuestions_QuestionId]
+GO
+ALTER TABLE [dbo].[PersonalPracticeAttempts]  WITH CHECK ADD  CONSTRAINT [FK_PersonalPracticeAttempts_PersonalQuestionBanks_BankId] FOREIGN KEY([BankId])
+REFERENCES [dbo].[PersonalQuestionBanks] ([Id])
+GO
+ALTER TABLE [dbo].[PersonalPracticeAttempts] CHECK CONSTRAINT [FK_PersonalPracticeAttempts_PersonalQuestionBanks_BankId]
+GO
+ALTER TABLE [dbo].[PersonalQuestionBanks]  WITH CHECK ADD  CONSTRAINT [FK_PersonalQuestionBanks_Users_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([Id])
+GO
+ALTER TABLE [dbo].[PersonalQuestionBanks] CHECK CONSTRAINT [FK_PersonalQuestionBanks_Users_UserId]
+GO
+ALTER TABLE [dbo].[PersonalQuestionOptions]  WITH CHECK ADD  CONSTRAINT [FK_PersonalQuestionOptions_PersonalQuestions_QuestionId] FOREIGN KEY([QuestionId])
+REFERENCES [dbo].[PersonalQuestions] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[PersonalQuestionOptions] CHECK CONSTRAINT [FK_PersonalQuestionOptions_PersonalQuestions_QuestionId]
+GO
+ALTER TABLE [dbo].[PersonalQuestions]  WITH CHECK ADD  CONSTRAINT [FK_PersonalQuestions_PersonalQuestionBanks_BankId] FOREIGN KEY([BankId])
+REFERENCES [dbo].[PersonalQuestionBanks] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[PersonalQuestions] CHECK CONSTRAINT [FK_PersonalQuestions_PersonalQuestionBanks_BankId]
 GO
 ALTER TABLE [dbo].[PostBookmarks]  WITH CHECK ADD  CONSTRAINT [FK_PostBookmarks_Posts] FOREIGN KEY([PostId])
 REFERENCES [dbo].[Posts] ([Id])
@@ -2628,6 +3070,18 @@ REFERENCES [dbo].[Users] ([Id])
 GO
 ALTER TABLE [dbo].[Roadmaps] CHECK CONSTRAINT [FK_Roadmaps_Users]
 GO
+ALTER TABLE [dbo].[RolePermissionGroups]  WITH CHECK ADD  CONSTRAINT [FK_RolePermissionGroups_PermissionGroups_PermissionGroupId] FOREIGN KEY([PermissionGroupId])
+REFERENCES [dbo].[PermissionGroups] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[RolePermissionGroups] CHECK CONSTRAINT [FK_RolePermissionGroups_PermissionGroups_PermissionGroupId]
+GO
+ALTER TABLE [dbo].[RolePermissionGroups]  WITH CHECK ADD  CONSTRAINT [FK_RolePermissionGroups_Roles_RoleId] FOREIGN KEY([RoleId])
+REFERENCES [dbo].[Roles] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[RolePermissionGroups] CHECK CONSTRAINT [FK_RolePermissionGroups_Roles_RoleId]
+GO
 ALTER TABLE [dbo].[RolePermissions]  WITH CHECK ADD  CONSTRAINT [FK_RolePermissions_Permissions] FOREIGN KEY([PermissionId])
 REFERENCES [dbo].[Permissions] ([Id])
 GO
@@ -2682,6 +3136,18 @@ ALTER TABLE [dbo].[UserNotificationSettings]  WITH CHECK ADD  CONSTRAINT [FK_Use
 REFERENCES [dbo].[Users] ([Id])
 GO
 ALTER TABLE [dbo].[UserNotificationSettings] CHECK CONSTRAINT [FK_UserNotificationSettings_Users]
+GO
+ALTER TABLE [dbo].[UserPermissionGroups]  WITH CHECK ADD  CONSTRAINT [FK_UserPermissionGroups_PermissionGroups_PermissionGroupId] FOREIGN KEY([PermissionGroupId])
+REFERENCES [dbo].[PermissionGroups] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[UserPermissionGroups] CHECK CONSTRAINT [FK_UserPermissionGroups_PermissionGroups_PermissionGroupId]
+GO
+ALTER TABLE [dbo].[UserPermissionGroups]  WITH CHECK ADD  CONSTRAINT [FK_UserPermissionGroups_Users_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[UserPermissionGroups] CHECK CONSTRAINT [FK_UserPermissionGroups_Users_UserId]
 GO
 ALTER TABLE [dbo].[UserPermissions]  WITH CHECK ADD  CONSTRAINT [FK_UserPermissions_AssignedBy_Users] FOREIGN KEY([AssignedBy])
 REFERENCES [dbo].[Users] ([Id])
