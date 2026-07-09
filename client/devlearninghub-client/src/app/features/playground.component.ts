@@ -32,8 +32,8 @@ export class PlaygroundComponent implements OnInit {
   languages: PlaygroundLanguage[] = [];
   isRunning = false;
   error = '';
-  output = 'Báº¥m Run Ä‘á»ƒ xem káº¿t quáº£ chÆ°Æ¡ng trÃ¬nh.';
-  stdin = '';
+  output = 'Bấm Run Code để xem kết quả chương trình.';
+  stdin = 'DevLearningHub';
   code = '';
   executionTimeMs = 0;
   memoryUsedKb = 0;
@@ -47,30 +47,19 @@ export class PlaygroundComponent implements OnInit {
   readonly fallbackLanguages: PlaygroundLanguage[] = [
     { value: 'javascript', label: 'JavaScript', runtime: 'Node.js', enabled: true },
     { value: 'python', label: 'Python', runtime: 'Python 3', enabled: true },
-    { value: 'java', label: 'Java', runtime: 'JDK', enabled: true },
-    { value: 'cpp', label: 'C++17', runtime: 'G++', enabled: true }
+    { value: 'cpp', label: 'C++17', runtime: 'G++', enabled: true },
+    { value: 'java', label: 'Java', runtime: 'JDK', enabled: true }
   ];
 
   readonly templates: Record<string, string> = {
     javascript: `const fs = require('fs');
 const input = fs.readFileSync(0, 'utf8').trim();
 const name = input || 'World';
-
 console.log('Hello, ' + name + '!');`,
     python: `import sys
 
 name = sys.stdin.read().strip() or 'World'
 print(f'Hello, {name}!')`,
-    java: `import java.io.*;
-
-public class Main {
-    public static void main(String[] args) throws Exception {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        String name = br.readLine();
-        if (name == null || name.isBlank()) name = "World";
-        System.out.println("Hello, " + name + "!");
-    }
-}`,
     cpp: `#include <bits/stdc++.h>
 using namespace std;
 
@@ -80,14 +69,24 @@ int main() {
     if (name.empty()) name = "World";
     cout << "Hello, " << name << "!" << endl;
     return 0;
+}`,
+    java: `import java.io.*;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String name = br.readLine();
+        if (name == null || name.isBlank()) name = "World";
+        System.out.println("Hello, " + name + "!");
+    }
 }`
   };
 
   readonly sampleInputs: Record<string, string> = {
     javascript: 'DevLearningHub',
     python: 'DevLearningHub',
-    java: 'DevLearningHub',
-    cpp: 'DevLearningHub'
+    cpp: 'DevLearningHub',
+    java: 'DevLearningHub'
   };
 
   constructor(private api: ApiService) {
@@ -99,8 +98,8 @@ int main() {
   }
 
   loadLanguages(): void {
-    this.api.get<PlaygroundLanguage[]>('/api/v1/code/languages').subscribe({
-      next: (response: ApiResponse<PlaygroundLanguage[]> | any) => {
+    this.api.get('/api/v1/code/languages').subscribe({
+      next: (response: ApiResponse<any> | any) => {
         const source = response?.data ?? response;
         const items = Array.isArray(source) ? source : [];
         const mapped = items
@@ -108,6 +107,7 @@ int main() {
           .filter((item: PlaygroundLanguage) => !!item.value);
 
         this.languages = mapped.length ? mapped : this.fallbackLanguages;
+
         if (!this.languages.some((item: PlaygroundLanguage) => item.value === this.language)) {
           this.setLanguage(this.languages[0]?.value || 'javascript');
         }
@@ -123,12 +123,13 @@ int main() {
       return { value: item, label: this.prettyLanguage(item), enabled: true };
     }
 
-    const value = String(item?.value || item?.id || item?.language || item?.name || '').trim();
+    const rawValue = item?.value || item?.id || item?.language || item?.name || '';
+    const value = String(rawValue).trim().toLowerCase();
     const label = String(item?.label || item?.displayName || item?.name || this.prettyLanguage(value)).trim();
 
     return {
       value,
-      label,
+      label: label || this.prettyLanguage(value),
       runtime: item?.runtime || item?.version || '',
       enabled: item?.enabled !== false
     };
@@ -142,12 +143,15 @@ int main() {
     const map: Record<string, string> = {
       javascript: 'JavaScript',
       js: 'JavaScript',
+      node: 'JavaScript',
       python: 'Python',
       py: 'Python',
-      java: 'Java',
       cpp: 'C++17',
-      cplusplus: 'C++17'
+      cplusplus: 'C++17',
+      'c++': 'C++17',
+      java: 'Java'
     };
+
     return map[value?.toLowerCase()] || value || 'Language';
   }
 
@@ -159,10 +163,11 @@ int main() {
 
   setLanguage(language: string): void {
     if (!language || this.isRunning) return;
+
     this.language = language;
     this.code = this.templates[language] || this.code || '';
     this.stdin = this.sampleInputs[language] || '';
-    this.resetResult('ÄÃ£ Ä‘á»•i ngÃ´n ngá»¯. Báº¥m Run Ä‘á»ƒ cháº¡y code má»›i.');
+    this.resetResult('Đã đổi ngôn ngữ. Bấm Run Code để chạy chương trình mới.');
   }
 
   useSampleInput(): void {
@@ -172,11 +177,11 @@ int main() {
   reset(): void {
     this.code = this.templates[this.language] || '';
     this.stdin = this.sampleInputs[this.language] || '';
-    this.resetResult('ÄÃ£ reset template. Báº¥m Run Ä‘á»ƒ cháº¡y láº¡i.');
+    this.resetResult('Đã reset template. Bấm Run Code để chạy lại.');
   }
 
   clearOutput(): void {
-    this.resetResult('Output Ä‘Ã£ Ä‘Æ°á»£c xÃ³a.');
+    this.resetResult('Output đã được xóa.');
   }
 
   private resetResult(message: string): void {
@@ -189,27 +194,34 @@ int main() {
     this.lastRunAt = '';
   }
 
+  onEditorKeydown(event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      event.preventDefault();
+      this.run();
+    }
+  }
+
   run(): void {
     if (this.isRunning) return;
 
     const sourceCode = (this.code || '').trimEnd();
     if (!sourceCode.trim()) {
       this.output = '';
-      this.error = 'Báº¡n chÆ°a nháº­p code Ä‘á»ƒ cháº¡y.';
+      this.error = 'Bạn chưa nhập code để chạy.';
       this.verdict = 'Failed';
       this.status = 'Empty source';
       return;
     }
 
     this.error = '';
-    this.output = 'Äang gá»­i code Ä‘áº¿n Judge API...';
+    this.output = 'Đang gửi code đến Judge API...';
     this.verdict = 'Running';
     this.status = 'Running';
     this.executionTimeMs = 0;
     this.memoryUsedKb = 0;
     this.isRunning = true;
 
-    this.api.post<PlaygroundResult>('/api/v1/code/run', {
+    this.api.post('/api/v1/code/run', {
       language: this.language,
       sourceCode,
       stdin: this.stdin,
@@ -225,7 +237,7 @@ int main() {
         this.error = err?.error?.message
           || err?.error?.title
           || err?.message
-          || 'KhÃ´ng cháº¡y Ä‘Æ°á»£c code. HÃ£y kiá»ƒm tra API hoáº·c runtime trÃªn server.';
+          || 'Không chạy được code. Hãy kiểm tra API hoặc runtime trên server.';
         this.verdict = 'Failed';
         this.status = 'API Error';
         this.lastRunAt = this.formatTime(new Date());
@@ -244,7 +256,7 @@ int main() {
     this.lastRunAt = this.formatTime(new Date());
 
     if (!this.output && !this.error) {
-      this.output = '(ChÆ°Æ¡ng trÃ¬nh khÃ´ng in ra dá»¯ liá»‡u.)';
+      this.output = '(Chương trình không in ra dữ liệu.)';
     }
   }
 
@@ -254,6 +266,17 @@ int main() {
 
   get codeLength(): number {
     return (this.code || '').length;
+  }
+
+  get fileName(): string {
+    const map: Record<string, string> = {
+      javascript: 'main.js',
+      python: 'main.py',
+      cpp: 'main.cpp',
+      java: 'Main.java'
+    };
+
+    return map[this.language] || `main.${this.language}`;
   }
 
   get statusClass(): string {
@@ -278,12 +301,20 @@ int main() {
   }
 
   private async copyText(text: string): Promise<void> {
-    if (navigator?.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text || '');
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text || '');
+      }
+    } catch {
+      // Clipboard may be blocked by browser settings. Ignore silently.
     }
   }
 
   private formatTime(date: Date): string {
-    return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    return date.toLocaleTimeString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
   }
 }

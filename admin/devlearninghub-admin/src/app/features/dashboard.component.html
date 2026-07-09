@@ -1,249 +1,203 @@
-﻿<div class="admin-shell">
-  <header class="admin-top">
-    <a class="logo" routerLink="/dashboard">
-      <span class="logo-mark">&lt;/&gt;</span>
-      <span>Admin Panel</span>
-    </a>
-    <div class="action-row">
-      <a class="btn btn-outline" routerLink="/code">Code Judge</a>
-      <button type="button" class="admin-sso-link" (click)="openUserWorkspace()">Back to User Workspace</button>
-      <button class="btn btn-ghost" type="button" (click)="auth.logout()">Logout</button>
+﻿<section class="admin-pro-page">
+  <header class="admin-pro-hero">
+    <div class="admin-pro-brand">
+      <div class="admin-pro-logo">DLH</div>
+      <div>
+        <p class="admin-pro-kicker">Administrator Workspace</p>
+        <h1>Admin Panel</h1>
+        <p>Quản lý người dùng, phân quyền, ngân hàng câu hỏi, bộ đề, import dữ liệu và các phân hệ vận hành.</p>
+      </div>
+    </div>
+
+    <div class="admin-pro-actions">
+      <a class="admin-pro-btn ghost" routerLink="/forum">Forum Management</a>
+      <a class="admin-pro-btn ghost" routerLink="/code">Code Judge</a>
+      <button class="admin-pro-btn ghost" type="button" (click)="auth.openUserApp('/learner/dashboard')">User Workspace</button>
+      <button class="admin-pro-btn danger" type="button" (click)="auth.logout()">Đăng xuất</button>
     </div>
   </header>
 
-  <main class="admin-wrap">
-    <div class="page-title">
-      <h1>Admin Panel</h1>
-      <p>Manage quiz categories, questions, quiz sets, imports and users.</p>
+  <div class="admin-pro-stats">
+    <article class="admin-stat-card blue">
+      <span>Total Users</span>
+      <strong>{{ users.length }}</strong>
+      <small>Tài khoản trong hệ thống</small>
+    </article>
+    <article class="admin-stat-card green">
+      <span>Total Questions</span>
+      <strong>{{ questions.length }}</strong>
+      <small>Ngân hàng câu hỏi</small>
+    </article>
+    <article class="admin-stat-card purple">
+      <span>Quiz Sets</span>
+      <strong>{{ quizSets.length }}</strong>
+      <small>Bộ đề đang quản lý</small>
+    </article>
+    <article class="admin-stat-card orange">
+      <span>Categories</span>
+      <strong>{{ categories.length }}</strong>
+      <small>Chủ đề học tập</small>
+    </article>
+  </div>
+
+  <div class="admin-alert success" *ngIf="message">{{ message }}</div>
+  <div class="admin-alert danger" *ngIf="error">{{ error }}</div>
+
+  <nav class="admin-pro-tabs" aria-label="Admin sections">
+    <button type="button" [class.active]="tab === 'questions'" (click)="tab = 'questions'">Questions</button>
+    <button type="button" [class.active]="tab === 'categories'" (click)="tab = 'categories'">Categories</button>
+    <button type="button" [class.active]="tab === 'quizsets'" (click)="tab = 'quizsets'">Quiz Sets</button>
+    <button type="button" [class.active]="tab === 'users'" (click)="tab = 'users'">Users</button>
+    <button type="button" [class.active]="tab === 'import'" (click)="tab = 'import'">Import Questions</button>
+    <a routerLink="/forum">Forum Management</a>
+  </nav>
+
+  <section class="admin-pro-card" *ngIf="tab === 'questions'">
+    <div class="admin-section-head">
+      <div>
+        <p class="admin-pro-kicker">Question Bank</p>
+        <h2>Quản lý câu hỏi</h2>
+      </div>
+      <button class="admin-pro-btn primary" type="button" (click)="showQuestionForm = !showQuestionForm">
+        {{ showQuestionForm ? 'Ẩn form' : 'Thêm câu hỏi' }}
+      </button>
     </div>
 
-    <div class="grid grid-4" style="margin:24px 0">
-      <div class="card card-pad stat-card"><div><p class="muted">Total Users</p><div class="stat-value">{{users.length}}</div></div><div class="stat-icon blue-bg">ðŸ‘¥</div></div>
-      <div class="card card-pad stat-card"><div><p class="muted">Total Questions</p><div class="stat-value">{{questions.length}}</div></div><div class="stat-icon green-bg">ðŸ“˜</div></div>
-      <div class="card card-pad stat-card"><div><p class="muted">Quiz Sets</p><div class="stat-value">{{quizSets.length}}</div></div><div class="stat-icon purple-bg">ðŸ“</div></div>
-      <div class="card card-pad stat-card"><div><p class="muted">Categories</p><div class="stat-value">{{categories.length}}</div></div><div class="stat-icon orange-bg">ðŸ·</div></div>
+    <div class="admin-filter-row">
+      <input class="admin-input" type="text" placeholder="Tìm câu hỏi..." [(ngModel)]="searchQuestion">
+      <select class="admin-input" [(ngModel)]="questionCategoryFilter">
+        <option value="all">Tất cả category</option>
+        <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
+      </select>
     </div>
 
-    <div class="alert alert-ok" *ngIf="message">{{message}}</div>
-    <div class="alert alert-error" *ngIf="error">{{error}}</div>
+    <form class="admin-form-grid" *ngIf="showQuestionForm" (ngSubmit)="createOrUpdateQuestion()">
+      <label>Category
+        <select class="admin-input" [(ngModel)]="questionForm.categoryId" name="questionCategoryId">
+          <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
+        </select>
+      </label>
+      <label>Tiêu đề
+        <input class="admin-input" [(ngModel)]="questionForm.title" name="questionTitle" placeholder="VD: API dùng để làm gì?">
+      </label>
+      <label>Độ khó
+        <select class="admin-input" [(ngModel)]="questionForm.difficulty" name="questionDifficulty">
+          <option [value]="1">Beginner</option>
+          <option [value]="2">Intermediate</option>
+          <option [value]="3">Advanced</option>
+        </select>
+      </label>
+      <label class="span-3">Nội dung câu hỏi
+        <textarea class="admin-input" rows="4" [(ngModel)]="questionForm.content" name="questionContent"></textarea>
+      </label>
+      <label class="span-3">Giải thích
+        <textarea class="admin-input" rows="3" [(ngModel)]="questionForm.explanation" name="questionExplanation"></textarea>
+      </label>
 
-    <div class="card card-pad">
-      <h2>Content Management</h2>
-      <div class="admin-tabs">
-        <button class="admin-tab" [class.active]="tab==='questions'" (click)="tab='questions'">Questions</button>
-        <button class="admin-tab" [class.active]="tab==='categories'" (click)="tab='categories'">Categories</button>
-        <button class="admin-tab" [class.active]="tab==='quizsets'" (click)="tab='quizsets'">Quiz Sets</button>
-        <button class="admin-tab" [class.active]="tab==='users'" (click)="tab='users'">Users</button>
-        <button class="admin-tab" [class.active]="tab==='import'" (click)="tab='import'">Import Questions</button><a class="admin-tab" routerLink="/forum">Forum Management</a>
+      <div class="admin-option-grid span-3">
+        <div class="admin-option-card" *ngFor="let opt of questionForm.options; let i = index">
+          <div class="option-head">
+            <strong>Option {{ i + 1 }}</strong>
+            <label><input type="radio" name="correctOption" [checked]="opt.isCorrect" (change)="markCorrect(i)"> Đáp án đúng</label>
+          </div>
+          <input class="admin-input" [(ngModel)]="opt.content" name="optionContent{{i}}" placeholder="Nội dung đáp án">
+          <input class="admin-input" [(ngModel)]="opt.explanation" name="optionExplanation{{i}}" placeholder="Giải thích đáp án">
+        </div>
       </div>
 
-      <section class="admin-panel" [class.active]="tab==='questions'">
-        <div class="filters">
-          <div class="search-wrap"><input class="input" placeholder="Search questions..." [(ngModel)]="searchQuestion"></div>
-          <select class="select" style="max-width:220px" [(ngModel)]="questionCategoryFilter">
-            <option value="all">All categories</option>
-            <option *ngFor="let c of categories" [ngValue]="c.id">{{c.name}}</option>
-          </select>
-          <button class="btn btn-primary" type="button" (click)="showQuestionForm=!showQuestionForm; editingQuestionId=null">Add Question</button>
-        </div>
+      <div class="admin-form-actions span-3">
+        <button class="admin-pro-btn primary" type="submit">{{ editingQuestionId ? 'Cập nhật câu hỏi' : 'Lưu câu hỏi' }}</button>
+        <button class="admin-pro-btn ghost" type="button" (click)="cancelQuestionEdit()">Hủy</button>
+      </div>
+    </form>
 
-        <form class="admin-form card card-pad" *ngIf="showQuestionForm" (ngSubmit)="createOrUpdateQuestion()">
-          <h3>{{editingQuestionId ? 'Edit Question #' + editingQuestionId : 'Add Question'}}</h3>
-          <div class="grid grid-3">
-            <div class="form-group"><label>Category</label><select class="select" name="categoryId" [(ngModel)]="questionForm.categoryId"><option *ngFor="let c of categories" [ngValue]="c.id">{{c.name}}</option></select></div>
-            <div class="form-group"><label>Title</label><input class="input" name="title" [(ngModel)]="questionForm.title"></div>
-            <div class="form-group"><label>Difficulty</label><select class="select" name="difficulty" [(ngModel)]="questionForm.difficulty"><option [ngValue]="1">Beginner</option><option [ngValue]="2">Intermediate</option><option [ngValue]="3">Advanced</option></select></div>
-          </div>
-          <div class="form-group"><label>Question content</label><textarea class="textarea" name="content" [(ngModel)]="questionForm.content"></textarea></div>
-          <div class="form-group"><label>Question explanation</label><textarea class="textarea" name="explanation" [(ngModel)]="questionForm.explanation" placeholder="Lá»i giáº£i thÃ­ch hiá»ƒn thá»‹ sau khi user ná»™p bÃ i"></textarea></div>
-          <div class="grid grid-2">
-            <div class="form-group card card-pad" *ngFor="let o of questionForm.options; let i=index">
-              <label>Option {{i+1}}</label>
-              <input class="input" [(ngModel)]="o.content" [name]="'op'+i" placeholder="Answer content">
-              <label style="margin-top:8px"><input type="radio" name="correctOption" [checked]="o.isCorrect" (change)="markCorrect(i)"> Correct answer</label>
-              <input class="input" style="margin-top:8px" [(ngModel)]="o.explanation" [name]="'opex'+i" placeholder="Option explanation">
-            </div>
-          </div>
-          <div class="action-row">
-            <button class="btn btn-primary">{{editingQuestionId ? 'Update Question' : 'Save Question'}}</button>
-            <button class="btn btn-outline" type="button" (click)="cancelQuestionEdit()">Cancel</button>
-          </div>
-        </form>
-
-        <table class="table">
-          <thead><tr><th>ID</th><th>Question</th><th>Topic</th><th>Level</th><th>Options</th><th>Actions</th></tr></thead>
-          <tbody>
-            <tr *ngFor="let q of filteredQuestions">
-              <td>{{q.id}}</td>
-              <td><b>{{q.title || q.content}}</b><div class="muted" *ngIf="q.explanation">CÃ³ explanation</div></td>
-              <td><span class="badge badge-gray">{{categoryName(q.categoryId)}}</span></td>
-              <td><span class="badge" [ngClass]="difficultyBadge(q.difficulty)">{{difficultyText(q.difficulty)}}</span></td>
-              <td>{{q.options?.length || 0}}</td>
-              <td class="action-row"><button class="btn btn-outline" type="button" (click)="editQuestion(q)">Edit</button><button class="btn btn-ghost" type="button" (click)="deleteQuestion(q)">Delete</button></td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="empty-state" *ngIf="!questions.length">ChÆ°a cÃ³ cÃ¢u há»i trong CSDL.</div>
-      </section>
-
-      <section class="admin-panel" [class.active]="tab==='categories'">
-        <form class="admin-form card card-pad" (ngSubmit)="createOrUpdateCategory()">
-          <h3>{{editingCategoryId ? 'Edit Category #' + editingCategoryId : 'Add Category'}}</h3>
-          <div class="grid grid-3">
-            <div class="form-group"><label>Name</label><input class="input" name="name" [(ngModel)]="categoryForm.name" (input)="autoCategorySlug()"></div>
-            <div class="form-group"><label>Slug</label><input class="input" name="slug" [(ngModel)]="categoryForm.slug"></div>
-            <div class="form-group"><label>Status</label><select class="select" name="status" [(ngModel)]="categoryForm.status"><option [ngValue]="1">Active</option><option [ngValue]="0">Inactive</option></select></div>
-          </div>
-          <div class="grid grid-2">
-            <div class="form-group"><label>Description</label><input class="input" name="description" [(ngModel)]="categoryForm.description"></div>
-            <div class="form-group"><label>Display Order</label><input class="input" type="number" name="displayOrder" [(ngModel)]="categoryForm.displayOrder"></div>
-          </div>
-          <div class="action-row"><button class="btn btn-primary">{{editingCategoryId ? 'Update Category' : 'Save Category'}}</button><button class="btn btn-outline" type="button" (click)="cancelCategoryEdit()">Cancel</button></div>
-        </form>
-        <table class="table"><thead><tr><th>ID</th><th>Name</th><th>Slug</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let c of categories"><td>{{c.id}}</td><td>{{c.name}}</td><td>{{c.slug}}</td><td>{{c.description}}</td><td><span class="badge" [ngClass]="statusBadge(c.status)">{{statusText(c.status)}}</span></td><td class="action-row"><button class="btn btn-outline" type="button" (click)="editCategory(c)">Edit</button><button class="btn btn-ghost" type="button" (click)="deleteCategory(c)">Delete</button></td></tr></tbody></table>
-      </section>
-
-      <section class="admin-panel" [class.active]="tab==='quizsets'">
-        <form class="admin-form card card-pad" (ngSubmit)="createOrUpdateQuizSet()">
-          <h3>{{editingQuizSetId ? 'Edit Quiz Set #' + editingQuizSetId : 'Add Quiz Set'}}</h3>
-          <div class="grid grid-3">
-            <div class="form-group"><label>Category</label><select class="select" name="categoryId" [(ngModel)]="quizSetForm.categoryId"><option *ngFor="let c of categories" [ngValue]="c.id">{{c.name}}</option></select></div>
-            <div class="form-group"><label>Title</label><input class="input" name="title" [(ngModel)]="quizSetForm.title" (input)="autoQuizSlug()"></div>
-            <div class="form-group"><label>Slug</label><input class="input" name="slug" [(ngModel)]="quizSetForm.slug"></div>
-          </div>
-          <div class="form-group"><label>Description</label><input class="input" name="description" [(ngModel)]="quizSetForm.description"></div>
-          <div class="grid grid-4">
-            <div class="form-group"><label>Difficulty</label><select class="select" name="difficulty" [(ngModel)]="quizSetForm.difficulty"><option [ngValue]="1">Beginner</option><option [ngValue]="2">Intermediate</option><option [ngValue]="3">Advanced</option></select></div>
-            <div class="form-group"><label>Time Limit</label><input class="input" type="number" name="timeLimit" [(ngModel)]="quizSetForm.timeLimitMinutes"></div>
-            <div class="form-group"><label>Passing Score /10</label><input class="input" type="number" name="passingScore" [(ngModel)]="quizSetForm.passingScore"></div>
-            <div class="form-group"><label>Max Attempts</label><input class="input" type="number" name="maxAttempts" [(ngModel)]="quizSetForm.maxAttempts"></div>
-          </div>
-          <div class="grid grid-4">
-            <label><input type="checkbox" name="allowReview" [(ngModel)]="quizSetForm.allowReview"> Allow review</label>
-            <label><input type="checkbox" name="shuffleQuestions" [(ngModel)]="quizSetForm.shuffleQuestions"> Shuffle questions</label>
-            <label><input type="checkbox" name="shuffleOptions" [(ngModel)]="quizSetForm.shuffleOptions"> Shuffle options</label>
-            <div class="form-group"><label>Status</label><select class="select" name="status" [(ngModel)]="quizSetForm.status"><option [ngValue]="1">Active</option><option [ngValue]="0">Inactive</option></select></div>
-          </div>
-
-          <div class="card card-pad" style="margin-top:14px">
-            <div class="filters"><h3 style="margin:0">Attach Questions</h3><select class="select" style="max-width:260px" [(ngModel)]="quizSetForm.categoryId" name="attachCategory"><option *ngFor="let c of categories" [ngValue]="c.id">{{c.name}}</option></select></div>
-            <p class="muted">Chá»n cÃ¢u há»i cáº§n gáº¯n vÃ o bá»™ Ä‘á». KhÃ´ng cáº§n nháº­p ID thá»§ cÃ´ng ná»¯a.</p>
-            <div class="grid grid-2" style="max-height:360px;overflow:auto">
-              <label class="example" *ngFor="let q of selectableQuestions">
-                <input type="checkbox" [checked]="isQuestionSelected(q.id)" (change)="toggleQuestion(q, $any($event.target).checked)">
-                <b>#{{q.id}} {{q.title || q.content}}</b>
-                <span class="muted">{{categoryName(q.categoryId)}} Â· {{difficultyText(q.difficulty)}}</span>
-                <input class="input mini-input" type="number" [ngModel]="selectedQuestionScore(q.id)" (ngModelChange)="setQuestionScore(q.id,$event)" [name]="'score'+q.id" placeholder="Score">
-              </label>
-            </div>
-            <div class="alert" *ngIf="!selectableQuestions.length">Category nÃ y chÆ°a cÃ³ cÃ¢u há»i. HÃ£y import CSV/Excel hoáº·c táº¡o cÃ¢u há»i thá»§ cÃ´ng trÆ°á»›c.</div>
-            <b>Selected: {{quizSetForm.questions.length}} questions</b>
-          </div>
-
-          <div class="action-row" style="margin-top:14px"><button class="btn btn-primary">{{editingQuizSetId ? 'Update Quiz Set' : 'Save Quiz Set'}}</button><button class="btn btn-outline" type="button" (click)="cancelQuizSetEdit()">Cancel</button></div>
-        </form>
-
-        <div class="filters"><select class="select" style="max-width:240px" [(ngModel)]="quizSetCategoryFilter"><option value="all">All categories</option><option *ngFor="let c of categories" [ngValue]="c.id">{{c.name}}</option></select></div>
-        <table class="table"><thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Questions</th><th>Time</th><th>Attempts</th><th>Status</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let q of filteredQuizSets"><td>{{q.id}}</td><td><b>{{q.title}}</b><div class="muted">{{q.slug}}</div></td><td>{{categoryName(q.categoryId)}}</td><td>{{q.questionCount}}</td><td>{{q.timeLimitMinutes || '-'}} min</td><td>{{q.maxAttempts || 'âˆž'}}</td><td><span class="badge" [ngClass]="statusBadge(q.status)">{{statusText(q.status)}}</span></td><td class="action-row"><button class="btn btn-outline" type="button" (click)="editQuizSet(q)">Edit</button><button class="btn btn-ghost" type="button" (click)="deleteQuizSet(q)">Delete</button></td></tr></tbody></table>
-      </section>
-
-      <section class="admin-panel" [class.active]="tab==='users'">
-        <div class="grid grid-2">
-          <div class="card card-pad">
-            <h3>Accounts</h3>
-            <p class="muted">Báº¥m vÃ o tÃ i khoáº£n Ä‘á»ƒ xem toÃ n bá»™ quyá»n láº» trong há»‡ thá»‘ng. Tick/untick tá»«ng quyá»n Ä‘á»ƒ cáº­p nháº­t trá»±c tiáº¿p cho tÃ i khoáº£n.</p>
-            <table class="table">
-              <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Current Roles</th><th>Action</th></tr></thead>
-              <tbody>
-                <tr *ngFor="let u of users" [class.active-row]="userPermissionDetail?.user?.id===u.id">
-                  <td>{{u.id}}</td>
-                  <td><b>{{u.fullName}}</b><div class="muted">{{u.userName}}</div></td>
-                  <td>{{u.email}}</td>
-                  <td><span class="badge badge-gray" *ngFor="let r of u.roles">{{r.name}}</span><span class="muted" *ngIf="!u.roles?.length">ChÆ°a cÃ³ role</span></td>
-                  <td><button class="btn btn-outline" type="button" (click)="openPermissionPanel(u)">PhÃ¢n quyá»n láº»</button></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="card card-pad" *ngIf="userPermissionDetail">
-            <div class="filters">
-              <div>
-                <h3 style="margin:0">Permission Assignment</h3>
-                <p class="muted" style="margin:6px 0 0">{{userPermissionDetail.user.fullName}} Â· {{userPermissionDetail.user.email}}</p>
-              </div>
-              <button class="btn btn-outline" type="button" (click)="closePermissionPanel()">Close</button>
-            </div>
-            <div class="alert">
-              ÄÃ¢y lÃ  phÃ¢n quyá»n theo tá»«ng quyá»n láº», khÃ´ng pháº£i nhÃ³m quyá»n/role. Tick = gÃ¡n quyá»n trá»±c tiáº¿p cho tÃ i khoáº£n.
-              NhÃ£n "Tá»« role" nghÄ©a lÃ  tÃ i khoáº£n Ä‘ang cÃ³ quyá»n Ä‘Ã³ thÃ´ng qua role hiá»‡n táº¡i.
-            </div>
-            <div class="permission-check-list" style="max-height:520px;overflow:auto">
-              <div *ngFor="let module of permissionModules" style="margin-bottom:18px">
-                <h4 style="margin:0 0 10px">{{module}}</h4>
-                <label class="example" *ngFor="let permission of permissionsForModule(module)" style="display:block;margin-bottom:10px">
-                  <div style="display:flex;gap:10px;align-items:flex-start">
-                    <input type="checkbox" [checked]="permission.assigned" [disabled]="permissionSaving" (change)="toggleUserPermission(permission, $any($event.target).checked)">
-                    <div>
-                      <b>{{permission.name}}</b>
-                      <span class="badge badge-gray" style="margin-left:8px">{{permission.code}}</span>
-                      <span class="badge badge-green" style="margin-left:8px" *ngIf="permission.effective">CÃ³ hiá»‡u lá»±c</span>
-                      <span class="badge badge-yellow" style="margin-left:8px" *ngIf="permission.inheritedFromRole">Tá»« role: {{sourceRoleText(permission)}}</span>
-                      <div class="muted">{{permission.description || 'KhÃ´ng cÃ³ mÃ´ táº£'}}</div>
-                    </div>
-                  </div>
-                </label>
-              </div>
-            </div>
-            <div class="alert success" *ngIf="permissionSaving">Äang cáº­p nháº­t quyá»n láº»...</div>
-          </div>
-
-          <div class="card card-pad" *ngIf="!userPermissionDetail">
-            <h3>Permission Guide</h3>
-            <p class="muted">Danh sÃ¡ch quyá»n láº» hiá»‡n cÃ³ trong há»‡ thá»‘ng:</p>
-            <div class="example" *ngFor="let p of permissions" style="margin-bottom:10px">
-              <b>{{p.name}}</b>
-              <span class="badge badge-gray" style="margin-left:8px">{{p.code}}</span>
-              <div class="muted">{{p.module}} Â· {{p.description || 'KhÃ´ng cÃ³ mÃ´ táº£'}}</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="admin-panel" [class.active]="tab==='import'">
-        <div class="card card-pad">
-          <h3>Import Questions from Excel/CSV</h3>
-          <p class="muted">DÃ nh cho Admin/Giáº£ng viÃªn nháº­p ngÃ¢n hÃ ng cÃ¢u há»i. Táº£i file máº«u CSV, má»Ÿ báº±ng Excel, Ä‘iá»n cÃ¢u há»i rá»“i lÆ°u láº¡i dáº¡ng .csv Ä‘á»ƒ import vÃ o database.</p>
-
-          <div class="alert">
-            NgÆ°á»i há»c khÃ´ng import file. NgÆ°á»i há»c chá»‰ vÃ o Learning Ä‘á»ƒ lÃ m quiz vÃ  xem káº¿t quáº£.
-          </div>
-
-          <div class="grid grid-2">
-            <div>
-              <h4>1. Táº£i file máº«u</h4>
-              <p class="muted">File cÃ³ cÃ¡c cá»™t: CategoryId, Title, Content, OptionA-D, CorrectOption, Explanation.</p>
-              <button class="btn btn-outline" type="button" (click)="downloadCsvTemplate()">Download CSV Template</button>
-            </div>
-
-            <div>
-              <h4>2. Upload CSV</h4>
-              <input class="input" type="file" (change)="pick($event)" accept=".csv">
-              <button class="btn btn-primary" type="button" (click)="importFile()" style="margin-top:12px">Import CSV</button>
-            </div>
-          </div>
-
-          <details style="margin-top:18px">
-            <summary>Advanced: Import JSON cho developer/seed dá»¯ liá»‡u</summary>
-            <p class="muted">JSON chá»‰ dÃ¹ng cho kiá»ƒm thá»­ ká»¹ thuáº­t hoáº·c seed dá»¯ liá»‡u, khÃ´ng pháº£i luá»“ng chÃ­nh trong thá»±c táº¿.</p>
-            <input class="input" type="file" (change)="pick($event)" accept=".json">
-            <button class="btn btn-outline" type="button" (click)="importJsonFile()" style="margin-top:12px">Import JSON Advanced</button>
-          </details>
-
-          <pre class="output-box" *ngIf="importResult">{{importResult | json}}</pre>
-        </div>
-      </section>
+    <div class="admin-table-wrap">
+      <table class="admin-pro-table">
+        <thead><tr><th>ID</th><th>Câu hỏi</th><th>Category</th><th>Độ khó</th><th>Options</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let q of filteredQuestions">
+            <td>#{{ q.id }}</td>
+            <td><strong>{{ q.title || q.content }}</strong><small *ngIf="q.explanation">Có explanation</small></td>
+            <td>{{ categoryName(q.categoryId) }}</td>
+            <td><span class="admin-badge" [class]="difficultyBadge(q.difficulty)">{{ difficultyText(q.difficulty) }}</span></td>
+            <td>{{ q.options?.length || 0 }}</td>
+            <td class="table-actions"><button (click)="editQuestion(q)">Edit</button><button class="danger" (click)="deleteQuestion(q)">Delete</button></td>
+          </tr>
+          <tr *ngIf="!filteredQuestions.length"><td colspan="6" class="empty-cell">Chưa có câu hỏi trong CSDL.</td></tr>
+        </tbody>
+      </table>
     </div>
-  </main>
-</div>
+  </section>
 
+  <section class="admin-pro-card" *ngIf="tab === 'categories'">
+    <div class="admin-section-head"><div><p class="admin-pro-kicker">Learning Taxonomy</p><h2>Quản lý category</h2></div></div>
+    <form class="admin-form-grid" (ngSubmit)="createOrUpdateCategory()">
+      <label>Tên category<input class="admin-input" [(ngModel)]="categoryForm.name" name="categoryName" (blur)="autoCategorySlug()"></label>
+      <label>Slug<input class="admin-input" [(ngModel)]="categoryForm.slug" name="categorySlug"></label>
+      <label>Trạng thái<select class="admin-input" [(ngModel)]="categoryForm.status" name="categoryStatus"><option [value]="1">Active</option><option [value]="0">Inactive</option></select></label>
+      <label class="span-2">Mô tả<textarea class="admin-input" rows="3" [(ngModel)]="categoryForm.description" name="categoryDescription"></textarea></label>
+      <label>Display Order<input class="admin-input" type="number" [(ngModel)]="categoryForm.displayOrder" name="displayOrder"></label>
+      <div class="admin-form-actions span-3"><button class="admin-pro-btn primary" type="submit">{{ editingCategoryId ? 'Cập nhật' : 'Lưu category' }}</button><button class="admin-pro-btn ghost" type="button" (click)="cancelCategoryEdit()">Hủy</button></div>
+    </form>
+    <div class="admin-table-wrap"><table class="admin-pro-table"><thead><tr><th>ID</th><th>Name</th><th>Slug</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let c of categories"><td>#{{c.id}}</td><td><strong>{{c.name}}</strong></td><td>{{c.slug}}</td><td>{{c.description}}</td><td><span class="admin-badge" [class]="statusBadge(c.status)">{{statusText(c.status)}}</span></td><td class="table-actions"><button (click)="editCategory(c)">Edit</button><button class="danger" (click)="deleteCategory(c)">Delete</button></td></tr></tbody></table></div>
+  </section>
+
+  <section class="admin-pro-card" *ngIf="tab === 'quizsets'">
+    <div class="admin-section-head"><div><p class="admin-pro-kicker">Quiz Builder</p><h2>Quản lý bộ đề</h2></div></div>
+    <form class="admin-form-grid" (ngSubmit)="createOrUpdateQuizSet()">
+      <label>Category<select class="admin-input" [(ngModel)]="quizSetForm.categoryId" name="quizCategory"><option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option></select></label>
+      <label>Tiêu đề<input class="admin-input" [(ngModel)]="quizSetForm.title" name="quizTitle" (blur)="autoQuizSlug()"></label>
+      <label>Slug<input class="admin-input" [(ngModel)]="quizSetForm.slug" name="quizSlug"></label>
+      <label class="span-3">Mô tả<textarea class="admin-input" rows="3" [(ngModel)]="quizSetForm.description" name="quizDescription"></textarea></label>
+      <label>Độ khó<select class="admin-input" [(ngModel)]="quizSetForm.difficulty" name="quizDifficulty"><option [value]="1">Beginner</option><option [value]="2">Intermediate</option><option [value]="3">Advanced</option></select></label>
+      <label>Time Limit<input class="admin-input" type="number" [(ngModel)]="quizSetForm.timeLimitMinutes" name="timeLimit"></label>
+      <label>Passing Score<input class="admin-input" type="number" [(ngModel)]="quizSetForm.passingScore" name="passingScore"></label>
+      <div class="span-3 attach-box">
+        <h3>Attach Questions</h3>
+        <p>Chọn câu hỏi cần gắn vào bộ đề. Không cần nhập ID thủ công.</p>
+        <div class="attach-list">
+          <label *ngFor="let q of selectableQuestions" class="attach-item">
+            <input type="checkbox" [checked]="isQuestionSelected(q.id)" (change)="toggleQuestion(q, $any($event.target).checked)">
+            <span>#{{ q.id }} {{ q.title || q.content }}</span>
+            <small>{{ categoryName(q.categoryId) }} · {{ difficultyText(q.difficulty) }}</small>
+          </label>
+        </div>
+        <strong>Selected: {{ quizSetForm.questions.length }} questions</strong>
+      </div>
+      <div class="admin-form-actions span-3"><button class="admin-pro-btn primary" type="submit">{{ editingQuizSetId ? 'Cập nhật bộ đề' : 'Lưu bộ đề' }}</button><button class="admin-pro-btn ghost" type="button" (click)="cancelQuizSetEdit()">Hủy</button></div>
+    </form>
+    <div class="admin-table-wrap"><table class="admin-pro-table"><thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Questions</th><th>Time</th><th>Status</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let q of filteredQuizSets"><td>#{{q.id}}</td><td><strong>{{q.title}}</strong><small>{{q.slug}}</small></td><td>{{categoryName(q.categoryId)}}</td><td>{{q.questionCount}}</td><td>{{q.timeLimitMinutes || '-'}} min</td><td><span class="admin-badge" [class]="statusBadge(q.status)">{{statusText(q.status)}}</span></td><td class="table-actions"><button (click)="editQuizSet(q)">Edit</button><button class="danger" (click)="deleteQuizSet(q)">Delete</button></td></tr></tbody></table></div>
+  </section>
+
+  <section class="admin-pro-card" *ngIf="tab === 'users'">
+    <div class="admin-section-head"><div><p class="admin-pro-kicker">Access Control</p><h2>Quản lý tài khoản và quyền lẻ</h2><p>Bấm vào tài khoản để xem toàn bộ quyền lẻ trong hệ thống.</p></div></div>
+    <div class="admin-table-wrap"><table class="admin-pro-table"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Current Roles</th><th>Action</th></tr></thead><tbody><tr *ngFor="let u of users"><td>#{{u.id}}</td><td><strong>{{u.fullName}}</strong><small>{{u.userName}}</small></td><td>{{u.email}}</td><td>{{roleNames(u)}}</td><td class="table-actions"><button (click)="openRolePanel(u)">Role</button><button (click)="openPermissionPanel(u)">Phân quyền lẻ</button></td></tr></tbody></table></div>
+
+    <div class="admin-drawer" *ngIf="userRoleDetail">
+      <div class="drawer-head"><h3>Role Assignment</h3><button (click)="closeRolePanel()">Close</button></div>
+      <p>{{userRoleDetail.user.fullName}} · {{userRoleDetail.user.email}}</p>
+      <label class="permission-row" *ngFor="let role of userRoleDetail.roles"><input type="checkbox" [checked]="role.assigned" (change)="toggleUserRole(role, $any($event.target).checked)"><span><strong>{{role.name}}</strong><small>{{rolePermissionText(role)}}</small></span></label>
+    </div>
+
+    <div class="admin-drawer" *ngIf="userPermissionDetail">
+      <div class="drawer-head"><h3>Permission Assignment</h3><button (click)="closePermissionPanel()">Close</button></div>
+      <p>{{userPermissionDetail.user.fullName}} · {{userPermissionDetail.user.email}}</p>
+      <div class="permission-module" *ngFor="let module of permissionModules">
+        <h4>{{ module }}</h4>
+        <label class="permission-row" *ngFor="let permission of permissionsForModule(module)"><input type="checkbox" [checked]="permission.assigned" (change)="toggleUserPermission(permission, $any($event.target).checked)"><span><strong>{{permission.name}}</strong><small>{{permission.code}} · {{permission.description || 'Không có mô tả'}}</small><em *ngIf="sourceRoleText(permission)">Từ role: {{sourceRoleText(permission)}}</em></span></label>
+      </div>
+      <p class="saving-text" *ngIf="permissionSaving">Đang cập nhật quyền lẻ...</p>
+    </div>
+  </section>
+
+  <section class="admin-pro-card" *ngIf="tab === 'import'">
+    <div class="admin-section-head"><div><p class="admin-pro-kicker">Bulk Import</p><h2>Import Questions từ Excel/CSV/JSON</h2><p>Dành cho Admin/Giảng viên nhập ngân hàng câu hỏi nhanh vào database.</p></div></div>
+    <div class="import-panel">
+      <button class="admin-pro-btn ghost" type="button" (click)="downloadCsvTemplate()">Tải file mẫu CSV</button>
+      <input class="admin-input" type="file" accept=".csv,.json" (change)="pick($event)">
+      <button class="admin-pro-btn primary" type="button" (click)="importFile()">Import CSV</button>
+      <button class="admin-pro-btn primary" type="button" (click)="importJsonFile()">Import JSON</button>
+    </div>
+    <pre class="import-result" *ngIf="importResult">{{ importResult | json }}</pre>
+  </section>
+</section>
