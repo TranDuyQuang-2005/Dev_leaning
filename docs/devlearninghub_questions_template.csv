@@ -1,0 +1,2 @@
+CategoryId,CategorySlug,CategoryName,Title,Content,QuestionExplanation,Difficulty,CorrectOption,OptionA,OptionAExplanation,OptionB,OptionBExplanation,OptionC,OptionCExplanation,OptionD,OptionDExplanation,Source
+1,,,API dùng để làm gì?,API trong hệ thống web thường dùng để làm gì?,API là lớp trung gian giúp frontend gửi yêu cầu và nhận dữ liệu từ backend.,1,A,Kết nối frontend với backend để trao đổi dữ liệu,Đúng - frontend gọi API để lấy hoặc gửi dữ liệu.,Chỉ dùng để thiết kế màu sắc giao diện,,Chỉ dùng để tạo ảnh nền,,Chỉ dùng để gõ văn bản Word,,Excel/CSV Import

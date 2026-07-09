@@ -1,0 +1,29 @@
+<div class="page">
+  <div class="page-head">
+    <div class="page-title"><h1>Forum</h1><p>Ask questions and share knowledge with the community</p></div>
+    <a class="btn btn-primary" routerLink="/learner/create-post">＋ New Post</a>
+  </div>
+  <div class="filters">
+    <div class="search-wrap"><input class="input" [(ngModel)]="keyword" (keyup.enter)="search()" placeholder="Search posts..."/></div>
+    <select class="select" [(ngModel)]="tag" (change)="search()" style="max-width:220px"><option value="all">All Tags</option><option *ngFor="let t of tags" [value]="t.slug">{{t.name}}</option></select>
+    <button class="btn btn-outline" type="button" (click)="search()">Search</button>
+  </div>
+  <div class="alert" *ngIf="error">{{error}}</div>
+  <div class="empty-state" *ngIf="!loading && !posts.length">Chưa có bài viết nào. Hãy tạo bài đầu tiên.</div>
+  <div class="grid" id="forumList">
+    <div class="card card-pad forum-post-card hover" *ngFor="let post of posts">
+      <div class="forum-row">
+        <div class="vote-col">
+          <button class="btn btn-outline" type="button" [class.active]="post.myVote===1" (click)="vote(post,1)">▲</button><b>{{post.voteScore}}</b><button class="btn btn-outline" type="button" [class.active]="post.myVote===-1" (click)="vote(post,-1)">▼</button>
+        </div>
+        <div style="flex:1">
+          <a [routerLink]="['/learner/forum-post',post.id]"><h3 class="post-title">{{post.title}} <span class="badge badge-green" *ngIf="post.isSolved">✅ Solved</span></h3></a>
+          <img *ngIf="post.firstImageUrl" class="forum-preview-img" [src]="fileViewUrl(post.firstImageUrl)" alt="post image"/><p class="muted">{{post.contentPreview}}</p><p class="muted" *ngIf="post.attachmentCount">📎 {{post.attachmentCount}} attachment(s)</p>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"><span class="badge badge-gray" *ngFor="let t of post.tags">{{t.name}}</span></div>
+          <div class="meta"><div class="meta-left"><span class="avatar" style="width:28px;height:28px">{{initials(post)}}</span><span>{{post.authorName}}</span><span>💬 {{post.commentCount}} comments</span><span *ngIf="post.isSolved">✅ answered</span><span>👁 {{post.viewCount}}</span></div><span>{{date(post.createdAt)}}</span></div>
+          <div class="action-row" style="margin-top:10px"><button class="btn btn-ghost" type="button" (click)="bookmark(post)">{{post.isBookmarked?'Bỏ lưu':'Bookmark'}}</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

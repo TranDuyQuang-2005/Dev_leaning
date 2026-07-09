@@ -1,0 +1,33 @@
+<div class="page">
+  <div class="page-title">
+    <h1>Online Judge Problem Set</h1>
+    <p>Practice coding problems and submit solutions to the judge.</p>
+  </div>
+
+  <div class="filters">
+    <div class="search-wrap">
+      <svg aria-hidden="true" class="icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+      <input class="input" [(ngModel)]="keyword" (keyup.enter)="load()" placeholder="Search problems or tags..."/>
+    </div>
+    <select class="select" [(ngModel)]="difficulty" (change)="load()" style="max-width:220px"><option value="all">All Difficulties</option><option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option></select>
+    <button class="btn btn-primary" type="button" (click)="load()">Search</button>
+  </div>
+
+  <div class="alert" *ngIf="error">{{error}}</div>
+  <div class="card">
+    <table class="table">
+      <thead><tr><th>Status</th><th>Title</th><th>Difficulty</th><th>Acceptance</th><th>Tags</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let p of problems">
+          <td><span *ngIf="p.solvedByCurrentUser" class="status-ok">✓ Solved</span><span *ngIf="!p.solvedByCurrentUser" class="muted">-</span></td>
+          <td class="strong"><a [routerLink]="['/learner/problems', p.id]">{{p.id}}. {{p.title}}</a><div class="muted">{{p.description | slice:0:110}}{{p.description?.length>110?'...':''}}</div></td>
+          <td><span class="badge" [ngClass]="difficultyBadge(p.difficulty)">{{difficultyText(p.difficulty)}}</span></td>
+          <td>{{p.acceptanceRate || 0}}%</td>
+          <td><span class="badge badge-gray" *ngFor="let t of tagList(p)">{{t}}</span></td>
+          <td><a class="btn btn-primary" [routerLink]="['/learner/problems', p.id]">Solve</a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="card card-pad" *ngIf="!loading && !problems.length"><p class="muted">Chưa có bài lập trình. Admin cần chạy script DB v12 hoặc tạo problem trong Admin Code Judge.</p></div>
+  </div>
+</div>

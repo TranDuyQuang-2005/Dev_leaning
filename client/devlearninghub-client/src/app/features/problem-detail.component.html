@@ -1,0 +1,65 @@
+<div class="problem-layout" *ngIf="problem">
+  <section class="problem-pane">
+    <div class="page">
+      <a class="btn btn-outline" routerLink="/learner/problems">← Back</a>
+      <div style="display:flex;gap:12px;align-items:center;margin:16px 0 12px">
+        <h1 style="margin:0">{{problem.id}}. {{problem.title}}</h1>
+        <span class="badge" [ngClass]="difficultyBadge(problem.difficulty)">{{difficultyText(problem.difficulty)}}</span>
+        <span class="badge badge-green" *ngIf="problem.solvedByCurrentUser">Solved</span>
+      </div>
+      <p style="white-space:pre-line">{{problem.description}}</p>
+      <div class="action-row" style="margin:12px 0"><span class="badge badge-gray" *ngFor="let t of tagList()">{{t}}</span></div>
+
+      <div><h3>Input Format</h3><p class="muted" style="white-space:pre-line">{{problem.inputFormat || 'Xem ví dụ bên dưới.'}}</p></div>
+      <div><h3>Output Format</h3><p class="muted" style="white-space:pre-line">{{problem.outputFormat || 'In kết quả ra stdout.'}}</p></div>
+      <div><h3>Examples</h3><div class="grid"><div class="example" *ngFor="let tc of problem.testCases"><b>Input:</b><pre class="output-box">{{tc.input}}</pre><b>Expected Output:</b><pre class="output-box">{{tc.expectedOutput}}</pre><p class="muted" *ngIf="tc.explanation">{{tc.explanation}}</p></div></div></div>
+      <div><h3>Constraints</h3><p style="white-space:pre-line">{{problem.constraints || 'Không có ràng buộc bổ sung.'}}</p></div>
+    </div>
+  </section>
+
+  <section class="editor-pane">
+    <div class="editor-toolbar">
+      <select class="select" style="width:180px" [(ngModel)]="language" (change)="changeLanguage()">
+        <option *ngFor="let l of languages" [ngValue]="l.value">{{l.label}}</option>
+      </select>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" type="button" [disabled]="running" (click)="run()">{{running ? 'Running...' : 'Run'}}</button>
+        <button class="btn btn-primary" type="button" [disabled]="submitting" (click)="submit()">{{submitting ? 'Submitting...' : 'Submit'}}</button>
+      </div>
+    </div>
+    <textarea class="code-textarea" spellcheck="false" [(ngModel)]="code"></textarea>
+
+    <div class="test-panel">
+      <b>Custom Input</b>
+      <textarea class="textarea" [(ngModel)]="customInput" style="min-height:90px"></textarea>
+    </div>
+
+    <div class="test-panel" *ngIf="runResult">
+      <b>Run Result: {{runResult.verdict}}</b>
+      <span class="muted"> · {{runResult.executionTimeMs}} ms</span>
+      <pre class="output-box">{{runResult.output || '(no output)'}}</pre>
+      <pre class="output-box" *ngIf="runResult.error">{{runResult.error}}</pre>
+    </div>
+
+    <div class="test-panel" *ngIf="submitResult">
+      <b>Submit Result: <span [class.status-ok]="submitResult.isAccepted">{{submitResult.verdict}}</span></b>
+      <p>{{submitResult.passedTestCases}} / {{submitResult.totalTestCases}} test cases passed · {{submitResult.executionTimeMs}} ms</p>
+      <div class="example" *ngFor="let tc of submitResult.testCaseResults">
+        <b>#{{tc.displayOrder}} {{tc.status}}</b>
+        <span [class.status-ok]="tc.passed"> {{tc.passed ? 'Passed' : 'Failed'}}</span>
+        <div *ngIf="!tc.passed">
+          <small class="muted">Input</small><pre class="output-box">{{tc.input}}</pre>
+          <small class="muted">Expected</small><pre class="output-box">{{tc.expectedOutput}}</pre>
+          <small class="muted">Actual</small><pre class="output-box">{{tc.actualOutput}}</pre>
+          <pre class="output-box" *ngIf="tc.error">{{tc.error}}</pre>
+        </div>
+      </div>
+    </div>
+    <div class="alert" *ngIf="error">{{error}}</div>
+  </section>
+</div>
+
+<div class="page" *ngIf="!problem">
+  <div class="alert" *ngIf="error">{{error}}</div>
+  <p class="muted" *ngIf="!error">Đang tải bài lập trình...</p>
+</div>

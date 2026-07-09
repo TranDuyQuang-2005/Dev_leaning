@@ -1,0 +1,21 @@
+<div class="page">
+  <div class="page-head"><div class="page-title"><h1>Quiz History</h1><p>Xem lại tất cả lượt làm bài đã nộp và mở lại đáp án/giải thích.</p></div></div>
+  <div class="alert alert-error" *ngIf="error">{{error}}</div>
+  <div class="card card-pad">
+    <table class="table">
+      <thead><tr><th>Attempt</th><th>Quiz</th><th>Score</th><th>Correct</th><th>Duration</th><th>Status</th><th>Review</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let a of attempts">
+          <td>#{{a.attemptId}}</td>
+          <td>{{a.quizTitle || ('Quiz set #' + a.quizSetId)}}</td>
+          <td><b>{{a.score}}/10</b></td>
+          <td>{{a.correctAnswers}} / {{a.totalQuestions}}</td>
+          <td>{{a.durationSeconds || 0}}s</td>
+          <td><span class="badge" [ngClass]="a.isPassed ? 'badge-green' : 'badge-red'">{{a.isPassed ? 'Passed' : 'Not passed'}}</span></td>
+          <td><a class="btn btn-outline" [routerLink]="['/learner/quiz-result', a.attemptId]">View Result</a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty-state" *ngIf="!attempts.length">Chưa có lịch sử làm bài.</div>
+  </div>
+</div>

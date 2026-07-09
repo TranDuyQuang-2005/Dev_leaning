@@ -1,0 +1,25 @@
+<div class="page">
+  <div class="page-head"><div class="page-title"><h1>Learning & Quiz</h1><p>Master programming concepts through interactive quizzes from database</p></div><a class="btn btn-outline" routerLink="/learner/quiz-history">View History</a></div>
+  <div class="filters">
+    <div class="search-wrap"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg><input class="input" placeholder="Search topics..." [(ngModel)]="keyword"></div>
+    <select class="select" style="max-width:220px" [(ngModel)]="categoryId"><option value="all">All categories</option><option *ngFor="let c of categories" [ngValue]="c.id">{{c.name}}</option></select>
+    <select class="select" style="max-width:220px" [(ngModel)]="level"><option value="all">All Levels</option><option value="1">Beginner</option><option value="2">Intermediate</option><option value="3">Advanced</option></select>
+  </div>
+  <div class="alert alert-error" *ngIf="error">{{error}}</div>
+  <div class="grid grid-3" id="learningGrid">
+    <div class="card card-pad topic-card hover" *ngFor="let q of filteredQuizSets" [attr.data-search]="q.title">
+      <div class="card-head"><div class="topic-logo" [ngClass]="logoClass(q)">{{shortTitle(q.title)}}</div><span class="badge" [ngClass]="difficultyBadge(q.difficulty)">{{difficultyText(q.difficulty)}}</span></div>
+      <h3>{{q.title}}</h3>
+      <p class="muted">{{categoryName(q.categoryId)}} · {{q.questionCount || 0}} questions</p>
+      <div class="grid grid-2" style="gap:8px;margin:12px 0">
+        <div class="example"><b>{{q.timeLimitMinutes || 'No'}} min</b><br><span class="muted">Time limit</span></div>
+        <div class="example"><b>{{q.passingScore || 0}}/10</b><br><span class="muted">Passing score</span></div>
+        <div class="example"><b>{{remainingAttempts(q)}}</b><br><span class="muted">Attempts left</span></div>
+        <div class="example"><b>{{bestScore(q) === null ? '-' : bestScore(q) + '/10'}}</b><br><span class="muted">Best score</span></div>
+      </div>
+      <div style="margin:18px 0"><div style="display:flex;justify-content:space-between;font-size:14px"><span class="muted">Progress</span><b>{{progress(q.id)}}%</b></div><div class="progress"><span [style.width.%]="progress(q.id)"></span></div></div>
+      <a class="btn btn-primary" [routerLink]="['/learner/quiz',q.id]" style="width:100%">{{progress(q.id)>0?'Continue Learning':'Start Learning'}}</a>
+    </div>
+  </div>
+  <div class="card card-pad empty-state" *ngIf="!filteredQuizSets.length"><h3>Chưa có Quiz Set trong CSDL</h3><p>Hãy vào Admin → tạo Category, Question, Quiz Set. Sau đó dữ liệu sẽ hiện tại đây.</p></div>
+</div>

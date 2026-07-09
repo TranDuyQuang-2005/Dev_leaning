@@ -1,0 +1,71 @@
+<div class="page" style="max-width:920px;margin:auto">
+  <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+
+  <ng-container *ngIf="result">
+    <div class="card card-pad" style="text-align:center">
+      <svg aria-hidden="true" class="icon icon-xl" [ngClass]="result.isPassed ? 'status-ok' : 'status-bad'" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M6 9H4a2 2 0 0 1-2-2V5h4"></path>
+        <path d="M18 9h2a2 2 0 0 0 2-2V5h-4"></path>
+        <path d="M6 2h12v7a6 6 0 0 1-12 0V2z"></path>
+        <path d="M12 15v5"></path>
+        <path d="M8 20h8"></path>
+      </svg>
+      <h1>Quiz Complete!</h1>
+      <div style="font-size:64px;font-weight:900" [ngClass]="result.isPassed ? 'status-ok' : 'status-bad'">{{ result.score }}/10</div>
+      <span class="badge" [ngClass]="result.isPassed ? 'badge-green' : 'badge-red'">{{ result.isPassed ? 'Passed' : 'Not passed' }}</span>
+
+      <div class="grid grid-4" style="max-width:720px;margin:28px auto 0">
+        <div class="example"><div class="stat-value">{{ result.totalQuestions }}</div><span class="muted">Total Questions</span></div>
+        <div class="example"><div class="stat-value status-ok">{{ result.correctAnswers }}</div><span class="muted">Correct</span></div>
+        <div class="example"><div class="stat-value status-bad">{{ result.wrongAnswers }}</div><span class="muted">Incorrect</span></div>
+        <div class="example"><div class="stat-value">{{ result.skippedAnswers }}</div><span class="muted">Skipped</span></div>
+      </div>
+    </div>
+
+    <div class="card card-pad">
+      <h3>Question Review</h3>
+      <div class="grid">
+        <div class="example" *ngFor="let q of result.questions; let i = index" [ngStyle]="{
+          'border': q.isCorrect ? '2px solid #bbf7d0' : '2px solid #fecaca',
+          'background': q.isCorrect ? '#f0fdf4' : '#fef2f2'
+        }">
+          <div class="forum-row">
+            <div [ngClass]="q.isCorrect ? 'status-ok' : 'status-bad'">
+              <span style="font-size:24px">{{ q.isCorrect ? '✓' : '✕' }}</span>
+            </div>
+            <div style="width:100%">
+              <b>Question {{ i + 1 }}: {{ q.content }}</b>
+              <p>Your answer: <span [ngClass]="q.isCorrect ? 'status-ok' : 'status-bad'">{{ selectedText(q) }}</span></p>
+              <p *ngIf="!q.isCorrect">Correct answer: <span class="status-ok">{{ correctText(q) }}</span></p>
+
+              <div class="grid" style="margin-top:12px">
+                <div class="quiz-option result-option" *ngFor="let op of q.options" [ngClass]="{
+                  'result-option-correct': op.isCorrect,
+                  'result-option-wrong': op.isSelected && !op.isCorrect,
+                  'result-option-selected': op.isSelected
+                }">
+                  <span>{{ op.content }}</span>
+                  <small *ngIf="op.isCorrect" class="status-ok">Đáp án đúng</small>
+                  <small *ngIf="op.isSelected && !op.isCorrect" class="status-bad">Bạn đã chọn</small>
+                  <small *ngIf="op.explanation" class="muted">{{ op.explanation }}</small>
+                </div>
+              </div>
+
+              <div class="alert alert-info" *ngIf="q.explanation" style="margin-top:12px">
+                <strong>Giải thích:</strong> {{ q.explanation }}
+              </div>
+              <div class="alert" *ngIf="!q.explanation" style="margin-top:12px">
+                <strong>Giải thích:</strong> Câu hỏi này chưa có lời giải thích trong database/import JSON.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;display:flex;gap:12px;justify-content:center">
+      <a class="btn btn-outline" routerLink="/learner/learning">Back to Topics</a>
+      <a class="btn btn-primary" routerLink="/learner/dashboard">Dashboard</a>
+    </div>
+  </ng-container>
+</div>

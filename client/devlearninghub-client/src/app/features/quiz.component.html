@@ -1,0 +1,115 @@
+<div class="page">
+  <div class="page-head">
+    <div class="page-title">
+      <h1>{{ result?.quizTitle || attempt?.quizTitle || 'Quiz' }}</h1>
+      <p *ngIf="!result">{{ attempt ? 'Chọn đáp án rồi bấm Submit Quiz.' : 'Đang tải quiz từ database...' }}</p>
+      <p *ngIf="result">Đã nộp bài. Bên dưới có đáp án đúng và lời giải thích.</p>
+    </div>
+    <div class="timer" *ngIf="!result" [ngClass]="{'status-bad': secondsLeft > 0 && secondsLeft <= 60}">{{ timerText }}</div>
+  </div>
+
+  <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+  <div class="alert alert-info" *ngIf="warning">{{ warning }}</div>
+
+  <div class="card card-pad" *ngIf="result">
+    <div style="text-align:center">
+      <h2>Quiz Complete!</h2>
+      <div style="font-size:56px;font-weight:900" [ngClass]="result.isPassed ? 'status-ok' : 'status-bad'">
+        {{ result.score }}/10
+      </div>
+      <span class="badge" [ngClass]="result.isPassed ? 'badge-green' : 'badge-red'">
+        {{ result.isPassed ? 'Passed' : 'Not passed' }}
+      </span>
+    </div>
+
+    <div class="grid grid-4" style="margin-top:24px">
+      <div class="example">
+        <div class="stat-value">{{ result.totalQuestions }}</div>
+        <span class="muted">Total Questions</span>
+      </div>
+      <div class="example">
+        <div class="stat-value status-ok">{{ result.correctAnswers }}</div>
+        <span class="muted">Correct</span>
+      </div>
+      <div class="example">
+        <div class="stat-value status-bad">{{ result.wrongAnswers }}</div>
+        <span class="muted">Wrong</span>
+      </div>
+      <div class="example">
+        <div class="stat-value">{{ result.skippedAnswers }}</div>
+        <span class="muted">Skipped</span>
+      </div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="!result">
+    <div class="card card-pad" *ngIf="attempt">
+      <div style="display:flex;justify-content:space-between;font-size:14px"><span class="muted">Answered {{answeredCount}} / {{attempt.questions.length}}</span><b>{{progressPercent}}%</b></div>
+      <div class="progress"><span [style.width.%]="progressPercent"></span></div>
+      <p class="muted" style="margin-top:8px">Passing score: {{attempt.passingScore}}/10 · Max attempts: {{attempt.maxAttempts || 'No limit'}} · Review: {{attempt.allowReview ? 'Allowed' : 'Disabled'}}</p>
+    </div>
+    <div class="quiz-card card card-pad" *ngFor="let q of attempt?.questions; let i = index">
+      <h2>Question {{ i + 1 }}</h2>
+      <p class="question-text">{{ q.content }}</p>
+      <div class="grid grid-2">
+        <label class="quiz-option" *ngFor="let o of q.options">
+          <input type="radio" [name]="'q' + q.id" [value]="o.id" [(ngModel)]="answers[q.id]">
+          <span>{{ o.content }}</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="quiz-nav" *ngIf="attempt">
+      <a class="btn btn-outline" routerLink="/learner/learning">Previous</a>
+      <button class="btn btn-primary" type="button" (click)="submit(false)" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Submitting...' : 'Submit Quiz' }}
+      </button>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="result">
+    <div class="card card-pad">
+      <h3>Question Review</h3>
+      <p class="muted">Mỗi câu hiển thị đáp án bạn chọn, đáp án đúng và lời giải thích lấy từ database.</p>
+
+      <div class="grid">
+        <div class="example" *ngFor="let q of result.questions; let i = index" [ngStyle]="{
+          'border': q.isCorrect ? '2px solid #bbf7d0' : '2px solid #fecaca',
+          'background': q.isCorrect ? '#f0fdf4' : '#fef2f2'
+        }">
+          <div class="forum-row">
+            <div [ngClass]="q.isCorrect ? 'status-ok' : 'status-bad'">
+              <span style="font-size:24px">{{ q.isCorrect ? '✓' : '✕' }}</span>
+            </div>
+            <div style="width:100%">
+              <b>Question {{ i + 1 }}: {{ q.content }}</b>
+              <p>Your answer: <span [ngClass]="q.isCorrect ? 'status-ok' : 'status-bad'">{{ selectedText(q) }}</span></p>
+              <p *ngIf="!q.isCorrect">Correct answer: <span class="status-ok">{{ correctText(q) }}</span></p>
+
+              <div class="grid" style="margin-top:12px">
+                <div class="quiz-option result-option" *ngFor="let op of q.options" [ngClass]="optionClass(op)">
+                  <span>{{ op.content }}</span>
+                  <small *ngIf="op.isCorrect" class="status-ok">Đáp án đúng</small>
+                  <small *ngIf="op.isSelected && !op.isCorrect" class="status-bad">Bạn đã chọn</small>
+                  <small *ngIf="op.explanation" class="muted">{{ op.explanation }}</small>
+                </div>
+              </div>
+
+              <div class="alert alert-info" *ngIf="q.explanation" style="margin-top:12px">
+                <strong>Giải thích:</strong> {{ q.explanation }}
+              </div>
+              <div class="alert" *ngIf="!q.explanation" style="margin-top:12px">
+                <strong>Giải thích:</strong> Câu hỏi này chưa có lời giải thích trong database/import JSON.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz-nav">
+      <a class="btn btn-primary" routerLink="/learner/learning">Back to Learning</a>
+      <a class="btn btn-outline" routerLink="/learner/dashboard">Dashboard</a>
+    </div>
+  </ng-container>
+</div>

@@ -1,0 +1,37 @@
+<div class="page">
+  <div class="page-title">
+    <h1>Online Code Playground</h1>
+    <p>Viết code, nhập stdin và chạy trực tiếp qua API Judge.</p>
+  </div>
+
+  <div class="playground">
+    <div class="editor-panel card">
+      <div class="editor-head">
+        <div class="tabs">
+          <button class="tab" *ngFor="let l of languages" [class.active]="language===l.value" type="button" (click)="setLanguage(l.value)">{{l.label}}</button>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-outline" type="button" (click)="reset()">Reset</button>
+          <button class="btn btn-primary" type="button" [disabled]="isRunning" (click)="run()">{{isRunning ? 'Running...' : 'Run Code'}}</button>
+        </div>
+      </div>
+      <div class="editor-label">Editor · Ctrl + Enter để chạy</div>
+      <textarea class="code-area code-editor" [(ngModel)]="code" (keydown.control.enter)="run()" spellcheck="false"></textarea>
+    </div>
+
+    <div class="console-panel card">
+      <div class="console-tabs"><button class="active">Input / Output</button></div>
+      <label class="muted">STDIN</label>
+      <textarea class="textarea" style="min-height:110px" [(ngModel)]="stdin" placeholder="Nhập input cho chương trình, ví dụ: World"></textarea>
+      <div class="filters" style="margin-top:12px">
+        <b>Verdict: <span [class.status-ok]="verdict==='Accepted'">{{verdict || 'N/A'}}</span></b>
+        <span class="muted">{{executionTimeMs || 0}} ms</span>
+      </div>
+      <label class="muted">STDOUT</label>
+      <pre class="console-output output-box">{{output}}</pre>
+      <label class="muted" *ngIf="error">STDERR</label>
+      <pre class="console-output output-box" *ngIf="error">{{error}}</pre>
+      <div class="alert" style="margin-top:12px">Lưu ý: server cần có runtime tương ứng như Node/Python/JDK/G++ để chạy code local. Production nên chạy trong sandbox Docker/Judge0.</div>
+    </div>
+  </div>
+</div>
