@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -116,7 +116,7 @@ export class DashboardComponent implements OnInit {
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
-      .replace(/đ/g, 'd')
+      .replace(/Ä‘/g, 'd')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
   }
@@ -134,14 +134,14 @@ export class DashboardComponent implements OnInit {
 
   roleNames(user: any): string {
     const roles = user?.roles || [];
-    return roles.length ? roles.map((r: any) => r.name).join(', ') : 'Chưa có quyền';
+    return roles.length ? roles.map((r: any) => r.name).join(', ') : 'ChÆ°a cÃ³ quyá»n';
   }
 
   openRolePanel(user: any): void {
     this.clearMessages();
     this.api.get<any>(`/api/v1/admin/users/${user.id}/roles`).subscribe({
       next: r => this.userRoleDetail = r.data,
-      error: e => this.notifyErr(e?.error?.message || 'Không tải được quyền tài khoản')
+      error: e => this.notifyErr(e?.error?.message || 'KhÃ´ng táº£i Ä‘Æ°á»£c quyá»n tÃ i khoáº£n')
     });
   }
 
@@ -151,7 +151,7 @@ export class DashboardComponent implements OnInit {
     this.clearMessages();
     this.api.get<any>(`/api/v1/admin/users/${user.id}/permissions`).subscribe({
       next: r => this.userPermissionDetail = r.data,
-      error: e => this.notifyErr(e?.error?.message || 'Không tải được quyền lẻ của tài khoản')
+      error: e => this.notifyErr(e?.error?.message || 'KhÃ´ng táº£i Ä‘Æ°á»£c quyá»n láº» cá»§a tÃ i khoáº£n')
     });
   }
 
@@ -167,12 +167,12 @@ export class DashboardComponent implements OnInit {
     this.api.put<any>(`/api/v1/admin/users/${this.userPermissionDetail.user.id}/permissions`, { permissionIds: selectedPermissionIds }).subscribe({
       next: r => {
         this.userPermissionDetail = r.data;
-        this.notifyOk(r.message || 'Cập nhật quyền lẻ thành công');
+        this.notifyOk(r.message || 'Cáº­p nháº­t quyá»n láº» thÃ nh cÃ´ng');
         this.loadAll();
         this.permissionSaving = false;
       },
       error: e => {
-        this.notifyErr(e?.error?.message || 'Không cập nhật được quyền lẻ');
+        this.notifyErr(e?.error?.message || 'KhÃ´ng cáº­p nháº­t Ä‘Æ°á»£c quyá»n láº»');
         this.permissionSaving = false;
         this.openPermissionPanel(this.userPermissionDetail.user);
       }
@@ -203,12 +203,12 @@ export class DashboardComponent implements OnInit {
     this.api.put<any>(`/api/v1/admin/users/${this.userRoleDetail.user.id}/roles`, { roleIds: selectedRoleIds }).subscribe({
       next: r => {
         this.userRoleDetail = r.data;
-        this.notifyOk(r.message || 'Cập nhật quyền thành công');
+        this.notifyOk(r.message || 'Cáº­p nháº­t quyá»n thÃ nh cÃ´ng');
         this.loadAll();
         this.roleSaving = false;
       },
       error: e => {
-        this.notifyErr(e?.error?.message || 'Không cập nhật được quyền');
+        this.notifyErr(e?.error?.message || 'KhÃ´ng cáº­p nháº­t Ä‘Æ°á»£c quyá»n');
         this.roleSaving = false;
         this.openRolePanel(this.userRoleDetail.user);
       }
@@ -217,7 +217,7 @@ export class DashboardComponent implements OnInit {
 
   rolePermissionText(role: any): string {
     const permissions = role?.permissions || [];
-    return permissions.length ? permissions.join(', ') : 'Không có permission riêng';
+    return permissions.length ? permissions.join(', ') : 'KhÃ´ng cÃ³ permission riÃªng';
   }
 
   autoCategorySlug(): void { if (!this.categoryForm.slug) this.categoryForm.slug = this.slugify(this.categoryForm.name); }
@@ -231,11 +231,11 @@ export class DashboardComponent implements OnInit {
       : this.api.post<any>('/api/v1/categories', this.categoryForm);
     req.subscribe({
       next: () => {
-        this.notifyOk(this.editingCategoryId ? 'Cập nhật category thành công' : 'Tạo category thành công');
+        this.notifyOk(this.editingCategoryId ? 'Cáº­p nháº­t category thÃ nh cÃ´ng' : 'Táº¡o category thÃ nh cÃ´ng');
         this.cancelCategoryEdit();
         this.loadAll();
       },
-      error: e => this.notifyErr(e?.error?.message || 'Không lưu được category')
+      error: e => this.notifyErr(e?.error?.message || 'KhÃ´ng lÆ°u Ä‘Æ°á»£c category')
     });
   }
 
@@ -251,10 +251,10 @@ export class DashboardComponent implements OnInit {
   }
 
   deleteCategory(c: any): void {
-    if (!confirm(`Xóa category "${c.name}"?`)) return;
+    if (!confirm(`XÃ³a category "${c.name}"?`)) return;
     this.api.delete<any>(`/api/v1/categories/${c.id}`).subscribe({
-      next: () => { this.notifyOk('Đã xóa category'); this.loadAll(); },
-      error: e => this.notifyErr(e?.error?.message || 'Không xóa được category')
+      next: () => { this.notifyOk('ÄÃ£ xÃ³a category'); this.loadAll(); },
+      error: e => this.notifyErr(e?.error?.message || 'KhÃ´ng xÃ³a Ä‘Æ°á»£c category')
     });
   }
 
@@ -271,11 +271,11 @@ export class DashboardComponent implements OnInit {
       : this.api.post<any>('/api/v1/questions', this.questionForm);
     req.subscribe({
       next: () => {
-        this.notifyOk(this.editingQuestionId ? 'Cập nhật question thành công' : 'Tạo question thành công');
+        this.notifyOk(this.editingQuestionId ? 'Cáº­p nháº­t question thÃ nh cÃ´ng' : 'Táº¡o question thÃ nh cÃ´ng');
         this.cancelQuestionEdit();
         this.loadAll();
       },
-      error: e => this.notifyErr(e?.error?.message || 'Không lưu được question')
+      error: e => this.notifyErr(e?.error?.message || 'KhÃ´ng lÆ°u Ä‘Æ°á»£c question')
     });
   }
 
@@ -302,10 +302,10 @@ export class DashboardComponent implements OnInit {
   }
 
   deleteQuestion(q: any): void {
-    if (!confirm(`Xóa câu hỏi #${q.id}? Câu hỏi sẽ được gỡ khỏi các bộ đề.`)) return;
+    if (!confirm(`XÃ³a cÃ¢u há»i #${q.id}? CÃ¢u há»i sáº½ Ä‘Æ°á»£c gá»¡ khá»i cÃ¡c bá»™ Ä‘á».`)) return;
     this.api.delete<any>(`/api/v1/questions/${q.id}`).subscribe({
-      next: () => { this.notifyOk('Đã xóa câu hỏi'); this.loadAll(); },
-      error: e => this.notifyErr(e?.error?.message || 'Không xóa được câu hỏi')
+      next: () => { this.notifyOk('ÄÃ£ xÃ³a cÃ¢u há»i'); this.loadAll(); },
+      error: e => this.notifyErr(e?.error?.message || 'KhÃ´ng xÃ³a Ä‘Æ°á»£c cÃ¢u há»i')
     });
   }
 
@@ -342,11 +342,11 @@ export class DashboardComponent implements OnInit {
       : this.api.post<any>('/api/v1/quiz-sets', this.quizSetForm);
     req.subscribe({
       next: () => {
-        this.notifyOk(this.editingQuizSetId ? 'Cập nhật quiz set thành công' : 'Tạo quiz set thành công');
+        this.notifyOk(this.editingQuizSetId ? 'Cáº­p nháº­t quiz set thÃ nh cÃ´ng' : 'Táº¡o quiz set thÃ nh cÃ´ng');
         this.cancelQuizSetEdit();
         this.loadAll();
       },
-      error: e => this.notifyErr(e?.error?.message || 'Không lưu được quiz set')
+      error: e => this.notifyErr(e?.error?.message || 'KhÃ´ng lÆ°u Ä‘Æ°á»£c quiz set')
     });
   }
 
@@ -373,7 +373,7 @@ export class DashboardComponent implements OnInit {
           questions: q.questions || []
         };
       },
-      error: e => this.notifyErr(e?.error?.message || 'Không tải được quiz set')
+      error: e => this.notifyErr(e?.error?.message || 'KhÃ´ng táº£i Ä‘Æ°á»£c quiz set')
     });
   }
 
@@ -383,10 +383,10 @@ export class DashboardComponent implements OnInit {
   }
 
   deleteQuizSet(q: any): void {
-    if (!confirm(`Xóa quiz set "${q.title}"?`)) return;
+    if (!confirm(`XÃ³a quiz set "${q.title}"?`)) return;
     this.api.delete<any>(`/api/v1/quiz-sets/${q.id}`).subscribe({
-      next: () => { this.notifyOk('Đã xóa quiz set'); this.loadAll(); },
-      error: e => this.notifyErr(e?.error?.message || 'Không xóa được quiz set')
+      next: () => { this.notifyOk('ÄÃ£ xÃ³a quiz set'); this.loadAll(); },
+      error: e => this.notifyErr(e?.error?.message || 'KhÃ´ng xÃ³a Ä‘Æ°á»£c quiz set')
     });
   }
 
@@ -407,18 +407,18 @@ export class DashboardComponent implements OnInit {
         this.categories[0]?.id || 1,
         this.categories[0]?.slug || '',
         this.categories[0]?.name || '',
-        'API dùng để làm gì?',
-        'API trong hệ thống web thường dùng để làm gì?',
-        'API là lớp trung gian giúp frontend gửi yêu cầu và nhận dữ liệu từ backend.',
+        'API dÃ¹ng Ä‘á»ƒ lÃ m gÃ¬?',
+        'API trong há»‡ thá»‘ng web thÆ°á»ng dÃ¹ng Ä‘á»ƒ lÃ m gÃ¬?',
+        'API lÃ  lá»›p trung gian giÃºp frontend gá»­i yÃªu cáº§u vÃ  nháº­n dá»¯ liá»‡u tá»« backend.',
         1,
         'A',
-        'Kết nối frontend với backend để trao đổi dữ liệu',
-        'Đúng, frontend gọi API để lấy hoặc gửi dữ liệu.',
-        'Chỉ dùng để thiết kế màu sắc giao diện',
+        'Káº¿t ná»‘i frontend vá»›i backend Ä‘á»ƒ trao Ä‘á»•i dá»¯ liá»‡u',
+        'ÄÃºng, frontend gá»i API Ä‘á»ƒ láº¥y hoáº·c gá»­i dá»¯ liá»‡u.',
+        'Chá»‰ dÃ¹ng Ä‘á»ƒ thiáº¿t káº¿ mÃ u sáº¯c giao diá»‡n',
         '',
-        'Chỉ dùng để tạo ảnh nền',
+        'Chá»‰ dÃ¹ng Ä‘á»ƒ táº¡o áº£nh ná»n',
         '',
-        'Chỉ dùng để gõ văn bản Word',
+        'Chá»‰ dÃ¹ng Ä‘á»ƒ gÃµ vÄƒn báº£n Word',
         '',
         'Excel/CSV Import'
       ]
@@ -436,23 +436,28 @@ export class DashboardComponent implements OnInit {
 
   importFile(): void {
     this.clearMessages();
-    if (!this.file) { this.notifyErr('Chọn file CSV trước.'); return; }
+    if (!this.file) { this.notifyErr('Chá»n file CSV trÆ°á»›c.'); return; }
     const fd = new FormData();
     fd.append('file', this.file);
     this.api.upload<any>('/api/v1/questions/import-csv', fd).subscribe({
-      next: r => { this.importResult = r; this.notifyOk('Import CSV hoàn tất. Hãy kiểm tra tab Questions và gắn câu hỏi vào Quiz Set.'); this.loadAll(); },
-      error: e => { this.importResult = e?.error; this.notifyErr(e?.error?.message || 'Import CSV thất bại'); }
+      next: r => { this.importResult = r; this.notifyOk('Import CSV hoÃ n táº¥t. HÃ£y kiá»ƒm tra tab Questions vÃ  gáº¯n cÃ¢u há»i vÃ o Quiz Set.'); this.loadAll(); },
+      error: e => { this.importResult = e?.error; this.notifyErr(e?.error?.message || 'Import CSV tháº¥t báº¡i'); }
     });
   }
 
   importJsonFile(): void {
     this.clearMessages();
-    if (!this.file) { this.notifyErr('Chọn file JSON trước.'); return; }
+    if (!this.file) { this.notifyErr('Chá»n file JSON trÆ°á»›c.'); return; }
     const fd = new FormData();
     fd.append('file', this.file);
     this.api.upload<any>('/api/v1/questions/import-json', fd).subscribe({
-      next: r => { this.importResult = r; this.notifyOk('Import JSON hoàn tất. Hãy kiểm tra tab Questions và gắn câu hỏi vào Quiz Set.'); this.loadAll(); },
-      error: e => { this.importResult = e?.error; this.notifyErr(e?.error?.message || 'Import JSON thất bại'); }
+      next: r => { this.importResult = r; this.notifyOk('Import JSON hoÃ n táº¥t. HÃ£y kiá»ƒm tra tab Questions vÃ  gáº¯n cÃ¢u há»i vÃ o Quiz Set.'); this.loadAll(); },
+      error: e => { this.importResult = e?.error; this.notifyErr(e?.error?.message || 'Import JSON tháº¥t báº¡i'); }
     });
   }
+
+  openUserWorkspace(): void {
+    this.auth.openUserApp('/learner/forum');
+  }
 }
+

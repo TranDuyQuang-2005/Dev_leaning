@@ -53,6 +53,7 @@ export class LayoutComponent implements OnInit {
   }
 
   logout(): void {
-    this.auth.logout('/login');
+    this.auth.logout();
   }
 }
+

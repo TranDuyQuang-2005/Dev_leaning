@@ -1,26 +1,208 @@
-<div class="page" style="max-width:880px;margin:auto">
-  <div class="card card-pad"><h1>{{postId?'Edit Post':'Create New Post'}}</h1><div class="alert" *ngIf="error">{{error}}</div>
-    <form (ngSubmit)="save()">
-      <div class="form-group"><label>Title *</label><input class="input" name="title" [(ngModel)]="form.title" placeholder="What's your question or topic?"/></div>
-      <div class="form-group"><label>Content *</label><textarea class="textarea" name="content" [(ngModel)]="form.content" placeholder="Provide details, code examples, or context..." rows="10"></textarea><p class="muted">Nội dung tối thiểu 20 ký tự</p></div>
-      <div class="form-group"><label>Tags * (max 5)</label><div style="display:flex;gap:10px"><input class="input" name="tagInput" [(ngModel)]="tagInput" (keyup.enter)="addTag();$event.preventDefault()" placeholder="Add a tag..."/><button class="btn btn-outline" type="button" (click)="addTag()">Add</button></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="badge badge-gray" *ngFor="let t of form.tags" type="button" (click)="removeTag(t)">{{t}} ×</button></div><p class="muted">Suggested tags:</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="badge badge-gray suggested-tag" *ngFor="let t of suggested" type="button" (click)="addTag(t)">{{t}}</button></div>
+﻿<section class="create-post-page">
+  <div class="create-post-shell">
+    <div class="create-post-hero">
+      <div>
+        <a class="create-post-back" routerLink="/learner/forum">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"></path>
+            <path d="m12 19-7-7 7-7"></path>
+          </svg>
+          Quay lại diễn đàn
+        </a>
+        <p class="create-post-eyebrow">Community Forum</p>
+        <h1>{{ isEditMode ? 'Chỉnh sửa bài viết' : 'Tạo bài viết mới' }}</h1>
+        <p class="create-post-subtitle">
+          Viết câu hỏi rõ ràng, thêm tag phù hợp và đính kèm hình ảnh/file nếu cần để mọi người hỗ trợ nhanh hơn.
+        </p>
       </div>
-      <div class="form-group">
-        <label>Images / Files</label>
-        <input class="input" type="file" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.txt,.zip" (change)="onFilesSelected($event)" />
-        <p class="muted">Ảnh/file sẽ được upload qua API lên MinIO Docker <b>localhost:9000</b>. Tối đa 5 file, mỗi file tối đa 10MB.</p>
-        <div class="attachment-grid" *ngIf="attachments.length">
-          <div class="attachment-card" *ngFor="let a of attachments">
-            <img *ngIf="isImage(a)" [src]="fileViewUrl(a)" [alt]="a.originalFileName" />
-            <div *ngIf="!isImage(a)" class="file-icon">📎</div>
-            <div class="attachment-info"><b>{{a.originalFileName}}</b><span>{{a.fileType}} · {{a.storageProvider}}</span></div>
-            <button class="btn btn-ghost" type="button" (click)="removeAttachment(a)">Remove</button>
+
+      <div class="create-post-progress-card">
+        <div class="progress-ring" [style.--progress.%]="progressPercent">
+          <span>{{ progressPercent }}%</span>
+        </div>
+        <div>
+          <strong>Mức độ hoàn thiện</strong>
+          <p>{{ canSubmit ? 'Bài viết đã sẵn sàng để đăng.' : 'Hoàn thành tiêu đề, nội dung và tag để đăng bài.' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="create-post-grid">
+      <form class="create-post-card create-post-form" (ngSubmit)="save()">
+        <div *ngIf="error" class="create-post-alert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 8v5"></path>
+            <path d="M12 17h.01"></path>
+          </svg>
+          <span>{{ error }}</span>
+        </div>
+
+        <div class="post-field-block">
+          <div class="post-field-head">
+            <label for="postTitle">Tiêu đề bài viết <span>*</span></label>
+            <small [class.ok]="titleLength >= 10">{{ titleLength }}/10 ký tự tối thiểu</small>
+          </div>
+          <input
+            id="postTitle"
+            name="title"
+            class="post-title-input"
+            type="text"
+            [(ngModel)]="form.title"
+            placeholder="Ví dụ: Lỗi Angular không gọi được API sau khi đăng nhập"
+            maxlength="160"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="post-field-block">
+          <div class="post-field-head">
+            <label for="postContent">Nội dung chi tiết <span>*</span></label>
+            <small [class.ok]="contentLength >= 20">{{ contentLength }}/20 ký tự tối thiểu</small>
+          </div>
+          <textarea
+            id="postContent"
+            name="content"
+            class="post-content-input"
+            [(ngModel)]="form.content"
+            rows="12"
+            placeholder="Mô tả vấn đề bạn gặp phải, bạn đã thử cách nào, log lỗi hoặc đoạn code liên quan..."
+          ></textarea>
+          <div class="post-editor-toolbar">
+            <span>Gợi ý: nêu rõ môi trường, bước tái hiện lỗi và kết quả mong muốn.</span>
           </div>
         </div>
-        <div class="muted" *ngIf="uploading">Uploading...</div>
-      </div>
-      <div style="display:flex;gap:10px;justify-content:flex-end"><a class="btn btn-outline" routerLink="/learner/forum">Cancel</a><button class="btn btn-primary" [disabled]="loading||uploading">{{loading?'Saving...':(postId?'Update Post':'Create Post')}}</button></div>
-    </form>
+
+        <div class="post-field-block">
+          <div class="post-field-head">
+            <label>Tags <span>*</span></label>
+            <small [class.ok]="form.tags.length > 0">{{ form.tags.length }}/5 tag</small>
+          </div>
+
+          <div class="tag-input-row">
+            <input
+              name="tagInput"
+              type="text"
+              [(ngModel)]="tagInput"
+              (keydown)="onTagKeydown($event)"
+              placeholder="Nhập tag rồi nhấn Enter"
+              autocomplete="off"
+            />
+            <button type="button" class="icon-soft-btn" (click)="addTag()" [disabled]="form.tags.length >= 5">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14"></path>
+                <path d="M5 12h14"></path>
+              </svg>
+              Thêm
+            </button>
+          </div>
+
+          <div class="selected-tags" *ngIf="form.tags.length">
+            <button type="button" class="selected-tag" *ngFor="let tag of form.tags" (click)="removeTag(tag)">
+              <span>#{{ tag }}</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="suggested-tags">
+            <span>Gợi ý:</span>
+            <button type="button" *ngFor="let tag of suggested" (click)="addTag(tag)">#{{ tag }}</button>
+          </div>
+        </div>
+
+        <div class="post-field-block">
+          <div class="post-field-head">
+            <label>Ảnh / File đính kèm</label>
+            <small>{{ remainingFiles }} lượt tải còn lại</small>
+          </div>
+
+          <label class="upload-dropzone" [class.disabled]="remainingFiles === 0 || uploading">
+            <input type="file" multiple (change)="onFilesSelected($event)" [disabled]="remainingFiles === 0 || uploading" />
+            <span class="upload-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <path d="m17 8-5-5-5 5"></path>
+                <path d="M12 3v12"></path>
+              </svg>
+            </span>
+            <strong>{{ uploading ? 'Đang upload...' : 'Kéo thả hoặc chọn file' }}</strong>
+            <small>Tối đa 5 file, mỗi file tối đa 10MB.</small>
+          </label>
+
+          <div class="attachment-modern-grid" *ngIf="attachments.length">
+            <div class="attachment-modern-card" *ngFor="let attachment of attachments">
+              <div class="attachment-thumb">
+                <img *ngIf="isImage(attachment)" [src]="fileViewUrl(attachment)" [alt]="attachmentName(attachment)" />
+                <svg *ngIf="!isImage(attachment)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <path d="M14 2v6h6"></path>
+                </svg>
+              </div>
+              <div class="attachment-body">
+                <strong>{{ attachmentName(attachment) }}</strong>
+                <small>{{ attachmentMeta(attachment) }}</small>
+              </div>
+              <button type="button" class="attachment-remove" (click)="removeAttachment(attachment)" aria-label="Xóa file">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 6 6 18"></path>
+                  <path d="m6 6 12 12"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="create-post-actions">
+          <a class="secondary-action" routerLink="/learner/forum">Hủy</a>
+          <button class="primary-action" type="submit" [disabled]="!canSubmit">
+            <svg *ngIf="!loading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 2 11 13"></path>
+              <path d="m22 2-7 20-4-9-9-4 20-7Z"></path>
+            </svg>
+            <span class="spinner" *ngIf="loading"></span>
+            {{ primaryActionLabel }}
+          </button>
+        </div>
+      </form>
+
+      <aside class="create-post-card post-side-panel">
+        <div class="side-section">
+          <h3>Checklist bài viết tốt</h3>
+          <ul class="post-checklist">
+            <li [class.done]="titleLength >= 10">
+              <span></span>
+              Tiêu đề cụ thể, dễ hiểu
+            </li>
+            <li [class.done]="contentLength >= 20">
+              <span></span>
+              Nội dung có mô tả chi tiết
+            </li>
+            <li [class.done]="form.tags.length > 0">
+              <span></span>
+              Có ít nhất một tag phù hợp
+            </li>
+          </ul>
+        </div>
+
+        <div class="side-section preview-section">
+          <h3>Xem trước nhanh</h3>
+          <div class="mini-preview">
+            <div class="mini-preview-title">{{ form.title || 'Tiêu đề bài viết sẽ hiển thị ở đây' }}</div>
+            <p>{{ form.content || 'Nội dung tóm tắt của bài viết sẽ được xem trước tại đây.' }}</p>
+            <div class="mini-preview-tags" *ngIf="form.tags.length">
+              <span *ngFor="let tag of form.tags">#{{ tag }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-section rules-section">
+          <h3>Lưu ý</h3>
+          <p>Không đăng nội dung trùng lặp. Nên che thông tin nhạy cảm trong ảnh/log trước khi tải lên.</p>
+        </div>
+      </aside>
+    </div>
   </div>
-</div>
+</section>

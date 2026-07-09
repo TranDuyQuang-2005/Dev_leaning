@@ -1,92 +1,189 @@
-﻿<div class="page playground-page">
-  <section class="playground-hero card card-pad">
+﻿<section class="playground-pro-page">
+  <div class="playground-pro-hero">
     <div>
-      <p class="eyebrow">Online Code Playground</p>
-      <h1>Run code nhanh trong trình duyệt</h1>
-      <p class="muted">Viết code, nhập STDIN và chạy qua API Judge. Hỗ trợ Ctrl + Enter để chạy nhanh.</p>
+      <p class="playground-pro-eyebrow">Online Judge</p>
+      <h1>Code Playground</h1>
+      <p>Viáº¿t code, nháº­p dá»¯ liá»‡u Ä‘áº§u vÃ o vÃ  cháº¡y trá»±c tiáº¿p qua API Judge cá»§a há»‡ thá»‘ng.</p>
     </div>
-    <div class="playground-status-card" [class.running]="status==='running'" [class.success]="status==='success'" [class.error]="status==='error'">
-      <span>Verdict</span>
-      <b>{{verdict || 'Ready'}}</b>
-      <small>{{executionTimeMs || 0}} ms <ng-container *ngIf="memoryUsedKb">· {{memoryUsedKb}} KB</ng-container></small>
-    </div>
-  </section>
 
-  <section class="playground-toolbar card card-pad">
-    <div class="language-tabs">
-      <button
-        type="button"
-        class="language-tab"
-        *ngFor="let l of languages"
-        [class.active]="language===l.value"
-        (click)="setLanguage(l.value)">
-        <b>{{l.label}}</b>
-        <small>{{l.runtime || ''}}</small>
+    <div class="playground-pro-hero-actions">
+      <button type="button" class="playground-pro-btn secondary" (click)="reset()" [disabled]="isRunning">
+        <svg viewBox="0 0 24 24" class="playground-pro-icon" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12a9 9 0 1 0 3-6.7"></path>
+          <path d="M3 4v6h6"></path>
+        </svg>
+        Reset
+      </button>
+      <button type="button" class="playground-pro-btn primary" (click)="run()" [disabled]="isRunning">
+        <svg *ngIf="!isRunning" viewBox="0 0 24 24" class="playground-pro-icon" fill="currentColor">
+          <path d="M8 5v14l11-7z"></path>
+        </svg>
+        <span *ngIf="isRunning" class="playground-pro-spinner"></span>
+        {{ isRunning ? 'Äang cháº¡y...' : 'Run Code' }}
       </button>
     </div>
+  </div>
 
-    <div class="playground-actions">
-      <button class="btn btn-outline" type="button" (click)="loadTemplate()">Load template</button>
-      <button class="btn btn-outline" type="button" (click)="reset()">Reset</button>
-      <button class="btn btn-primary" type="button" [disabled]="isRunning || !code.trim()" (click)="run()">
-        {{isRunning ? 'Running...' : 'Run Code'}}
-      </button>
-    </div>
-  </section>
-
-  <section class="playground-grid">
-    <div class="card card-pad editor-panel">
-      <div class="panel-head">
-        <div>
-          <h3>Editor</h3>
-          <p class="muted">{{currentLanguageLabel()}} · {{currentRuntime()}}</p>
+  <div class="playground-pro-shell">
+    <aside class="playground-pro-sidebar">
+      <div class="playground-pro-panel">
+        <div class="playground-pro-panel-title">
+          <svg viewBox="0 0 24 24" class="playground-pro-icon" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3h8l4 4v14H4V3h4z"></path>
+            <path d="M14 3v5h5"></path>
+          </svg>
+          NgÃ´n ngá»¯
         </div>
-        <span class="kbd">Ctrl + Enter</span>
+
+        <div class="playground-pro-language-list">
+          <button
+            type="button"
+            class="playground-pro-language"
+            *ngFor="let item of languages; trackBy: trackByLanguage"
+            [class.active]="item.value === language"
+            [disabled]="item.enabled === false || isRunning"
+            (click)="setLanguage(item.value)">
+            <span class="playground-pro-language-dot"></span>
+            <span>
+              <strong>{{ item.label }}</strong>
+              <small>{{ item.runtime || 'Runtime máº·c Ä‘á»‹nh' }}</small>
+            </span>
+          </button>
+        </div>
       </div>
 
-      <textarea
-        class="textarea code-editor playground-editor"
-        [(ngModel)]="code"
-        spellcheck="false"
-        placeholder="Viết code tại đây..."></textarea>
-    </div>
-
-    <aside class="io-panel">
-      <div class="card card-pad stdin-card">
-        <div class="panel-head compact">
-          <h3>STDIN</h3>
-          <button class="mini-action" type="button" (click)="loadSampleInput()">Sample</button>
+      <div class="playground-pro-panel">
+        <div class="playground-pro-panel-title">
+          <svg viewBox="0 0 24 24" class="playground-pro-icon" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 7h16"></path>
+            <path d="M4 12h16"></path>
+            <path d="M4 17h10"></path>
+          </svg>
+          STDIN
         </div>
-        <textarea class="textarea playground-stdin" [(ngModel)]="stdin" placeholder="Nhập input cho chương trình..."></textarea>
+        <textarea
+          class="playground-pro-input"
+          [(ngModel)]="stdin"
+          spellcheck="false"
+          placeholder="Nháº­p input cho chÆ°Æ¡ng trÃ¬nh..."></textarea>
+
+        <button type="button" class="playground-pro-btn soft full" (click)="useSampleInput()" [disabled]="isRunning">
+          DÃ¹ng input máº«u
+        </button>
       </div>
 
-      <div class="card card-pad output-card">
-        <div class="panel-head compact">
-          <h3>Output</h3>
-          <div class="mini-actions">
-            <button class="mini-action" type="button" (click)="copyOutput()">Copy</button>
-            <button class="mini-action" type="button" (click)="clearOutput()">Clear</button>
+      <div class="playground-pro-panel playground-pro-hints">
+        <div class="playground-pro-panel-title">
+          <svg viewBox="0 0 24 24" class="playground-pro-icon" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"></path>
+            <path d="M9 21h6"></path>
+          </svg>
+          Gá»£i Ã½ thao tÃ¡c
+        </div>
+        <ul>
+          <li>DÃ¹ng <kbd>Ctrl</kbd> + <kbd>Enter</kbd> Ä‘á»ƒ cháº¡y nhanh.</li>
+          <li>Class Java nÃªn Ä‘áº·t tÃªn lÃ  <b>Main</b>.</li>
+          <li>C++ dÃ¹ng chuáº©n <b>C++17</b>.</li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="playground-pro-main">
+      <div class="playground-pro-editor-card">
+        <div class="playground-pro-card-head">
+          <div>
+            <p class="playground-pro-eyebrow">Editor</p>
+            <h2>{{ currentLanguage().label }}</h2>
+          </div>
+
+          <div class="playground-pro-meta-row">
+            <span>{{ lineCount }} dÃ²ng</span>
+            <span>{{ codeLength }} kÃ½ tá»±</span>
+            <span>Limit {{ timeLimitMs }}ms</span>
           </div>
         </div>
 
-        <div class="result-meta">
-          <span [class.ok]="status==='success'" [class.bad]="status==='error'" [class.running]="status==='running'">{{verdict || 'N/A'}}</span>
-          <span>{{executionTimeMs || 0}} ms</span>
-          <span *ngIf="lastRunAt">{{lastRunAt}}</span>
+        <div class="playground-pro-editor-wrap">
+          <div class="playground-pro-editor-topbar">
+            <span class="playground-pro-dot red"></span>
+            <span class="playground-pro-dot yellow"></span>
+            <span class="playground-pro-dot green"></span>
+            <span class="playground-pro-file-name">main.{{ language === 'python' ? 'py' : language === 'cpp' ? 'cpp' : language === 'java' ? 'java' : 'js' }}</span>
+            <button type="button" class="playground-pro-icon-btn" (click)="copyCode()">
+              <svg viewBox="0 0 24 24" class="playground-pro-icon" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                <rect x="2" y="2" width="13" height="13" rx="2"></rect>
+              </svg>
+              {{ copiedCode ? 'Copied' : 'Copy' }}
+            </button>
+          </div>
+
+          <textarea
+            class="playground-pro-code"
+            [(ngModel)]="code"
+            spellcheck="false"
+            [disabled]="isRunning"
+            (keydown.control.enter)="run()"
+            (keydown.meta.enter)="run()"></textarea>
         </div>
-
-        <label class="io-label">STDOUT</label>
-        <pre class="output-box playground-output">{{output}}</pre>
-
-        <ng-container *ngIf="error">
-          <label class="io-label error-label">STDERR</label>
-          <pre class="output-box playground-error">{{error}}</pre>
-        </ng-container>
       </div>
-    </aside>
-  </section>
 
-  <div class="alert alert-info playground-note">
-    Lưu ý: server cần runtime tương ứng như Node/Python/JDK/G++ để chạy code local. Môi trường production nên chạy trong sandbox Docker/Judge0.
+      <div class="playground-pro-result-grid">
+        <section class="playground-pro-result-card">
+          <div class="playground-pro-card-head compact">
+            <div>
+              <p class="playground-pro-eyebrow">Result</p>
+              <h3>Execution Summary</h3>
+            </div>
+            <span class="playground-pro-status" [ngClass]="statusClass">
+              <span></span>
+              {{ verdict || 'N/A' }}
+            </span>
+          </div>
+
+          <div class="playground-pro-metrics">
+            <div>
+              <small>Time</small>
+              <strong>{{ executionTimeMs || 0 }} ms</strong>
+            </div>
+            <div>
+              <small>Memory</small>
+              <strong>{{ memoryUsedKb || 0 }} KB</strong>
+            </div>
+            <div>
+              <small>Last run</small>
+              <strong>{{ lastRunAt || '--:--:--' }}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="playground-pro-result-card output-card">
+          <div class="playground-pro-card-head compact">
+            <div>
+              <p class="playground-pro-eyebrow">STDOUT</p>
+              <h3>Káº¿t quáº£ in ra</h3>
+            </div>
+            <button type="button" class="playground-pro-icon-btn" (click)="copyOutput()">
+              <svg viewBox="0 0 24 24" class="playground-pro-icon" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                <rect x="2" y="2" width="13" height="13" rx="2"></rect>
+              </svg>
+              {{ copiedOutput ? 'Copied' : 'Copy' }}
+            </button>
+          </div>
+          <pre class="playground-pro-console stdout">{{ output }}</pre>
+        </section>
+
+        <section class="playground-pro-result-card output-card" *ngIf="error">
+          <div class="playground-pro-card-head compact">
+            <div>
+              <p class="playground-pro-eyebrow danger">STDERR</p>
+              <h3>Lá»—i khi cháº¡y</h3>
+            </div>
+          </div>
+          <pre class="playground-pro-console stderr">{{ error }}</pre>
+        </section>
+      </div>
+    </main>
   </div>
-</div>
+</section>

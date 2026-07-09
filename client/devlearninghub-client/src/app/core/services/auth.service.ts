@@ -1,7 +1,7 @@
 ﻿import { Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, of, tap } from 'rxjs';
-import { ApiResponse, AuthResponse, CurrentUser } from '../models/api.models';
+import { tap } from 'rxjs';
+import { AuthResponse, CurrentUser } from '../models/api.models';
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
@@ -13,31 +13,24 @@ export class AuthService {
   login(emailOrUserName: string, password: string) {
     return this.api
       .post<AuthResponse>('/api/v1/auth/login', { emailOrUserName, password })
-      .pipe(tap(r => this.save(r.data)));
+      .pipe(tap((r: any) => this.save(r.data)));
   }
 
   register(body: any) {
-    return this.api.post<ApiResponse<object>>('/api/v1/auth/register', body);
+    return this.api.post<any>('/api/v1/auth/register', body);
   }
 
-  logout(redirectTo = '/login'): void {
-    const refreshToken = localStorage.getItem('refreshToken') || '';
-
-    const finish = () => this.clearSession(redirectTo);
-
-    if (!refreshToken) {
-      finish();
-      return;
-    }
-
-    this.api
-      .post<ApiResponse<object>>('/api/v1/auth/logout', { refreshToken })
-      .pipe(catchError(() => of(null)))
-      .subscribe({ next: finish, error: finish });
+  acceptExternalSession(data: AuthResponse, redirectTo = '/learner/forum'): void {
+    this.save(data);
+    this.router.navigateByUrl(redirectTo || '/learner/forum', { replaceUrl: true });
   }
 
-  logoutLocal(redirectTo = '/login'): void {
-    this.clearSession(redirectTo);
+  logout(): void {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('currentUser');
+    this.currentUser.set(null);
+    this.router.navigate(['/login']);
   }
 
   isLoggedIn(): boolean {
@@ -55,14 +48,6 @@ export class AuthService {
     this.currentUser.set(data.user);
   }
 
-  private clearSession(redirectTo: string): void {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('currentUser');
-    this.currentUser.set(null);
-    this.router.navigate([redirectTo]);
-  }
-
   private stored(): CurrentUser | null {
     const raw = localStorage.getItem('currentUser');
     if (!raw) return null;
@@ -75,4 +60,3 @@ export class AuthService {
     }
   }
 }
-

@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+﻿import { Routes } from '@angular/router';
 import { LandingComponent } from './features/landing.component';
 import { LoginComponent } from './features/login.component';
 import { RegisterComponent } from './features/register.component';
@@ -18,11 +18,11 @@ import { LeaderboardComponent } from './features/leaderboard.component';
 import { NotificationsComponent } from './features/notifications.component';
 import { QuizResultComponent } from './features/quiz-result.component';
 import { QuizHistoryComponent } from './features/quiz-history.component';
-import { authGuard } from './core/guards/auth.guard';
+import { authGuard } from './core/guards/auth.guard'; import { SsoLoginComponent } from './features/sso-login.component';
 export const routes: Routes = [
  { path: '', component: LandingComponent },
  { path: 'login', component: LoginComponent },
- { path: 'register', component: RegisterComponent },
+ { path: 'register', component: RegisterComponent }, { path: 'sso-login', component: SsoLoginComponent },
  { path: 'learner', component: LayoutComponent, canActivate:[authGuard], children:[
   { path:'', redirectTo:'dashboard', pathMatch:'full' },
   { path:'dashboard', component:DashboardComponent, data:{title:'Dashboard',subtitle:'Dev-Learning Hub workspace'} },
@@ -47,3 +47,4 @@ export const routes: Routes = [
  ]},
  { path:'**', redirectTo:'' }
 ];
+

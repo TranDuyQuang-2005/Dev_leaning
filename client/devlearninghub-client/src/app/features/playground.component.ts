@@ -1,9 +1,25 @@
-﻿import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService } from '../core/services/api.service';
+import { ApiResponse, ApiService } from '../core/services/api.service';
 
-type RunStatus = 'idle' | 'running' | 'success' | 'error';
+interface PlaygroundLanguage {
+  value: string;
+  label: string;
+  runtime?: string;
+  enabled?: boolean;
+}
+
+interface PlaygroundResult {
+  status?: string;
+  verdict?: string;
+  output?: string;
+  stdout?: string;
+  error?: string;
+  stderr?: string;
+  executionTimeMs?: number;
+  memoryUsedKb?: number;
+}
 
 @Component({
   selector: 'app-playground',
@@ -13,24 +29,38 @@ type RunStatus = 'idle' | 'running' | 'success' | 'error';
 })
 export class PlaygroundComponent implements OnInit {
   language = 'javascript';
-  languages: any[] = [];
+  languages: PlaygroundLanguage[] = [];
   isRunning = false;
   error = '';
-  output = 'Click Run Code hoặc nhấn Ctrl + Enter để chạy.';
+  output = 'Báº¥m Run Ä‘á»ƒ xem káº¿t quáº£ chÆ°Æ¡ng trÃ¬nh.';
   stdin = '';
+  code = '';
   executionTimeMs = 0;
   memoryUsedKb = 0;
   verdict = '';
-  status: RunStatus = 'idle';
+  status = '';
   lastRunAt = '';
+  timeLimitMs = 3000;
+  copiedCode = false;
+  copiedOutput = false;
 
-  templates: Record<string, string> = {
+  readonly fallbackLanguages: PlaygroundLanguage[] = [
+    { value: 'javascript', label: 'JavaScript', runtime: 'Node.js', enabled: true },
+    { value: 'python', label: 'Python', runtime: 'Python 3', enabled: true },
+    { value: 'java', label: 'Java', runtime: 'JDK', enabled: true },
+    { value: 'cpp', label: 'C++17', runtime: 'G++', enabled: true }
+  ];
+
+  readonly templates: Record<string, string> = {
     javascript: `const fs = require('fs');
 const input = fs.readFileSync(0, 'utf8').trim();
-console.log(input ? 'Hello, ' + input + '!' : 'Hello, World!');`,
+const name = input || 'World';
+
+console.log('Hello, ' + name + '!');`,
     python: `import sys
-name = sys.stdin.read().strip()
-print('Hello, ' + name + '!' if name else 'Hello, World!')`,
+
+name = sys.stdin.read().strip() or 'World'
+print(f'Hello, {name}!')`,
     java: `import java.io.*;
 
 public class Main {
@@ -53,147 +83,207 @@ int main() {
 }`
   };
 
-  samples: Record<string, string> = {
+  readonly sampleInputs: Record<string, string> = {
     javascript: 'DevLearningHub',
     python: 'DevLearningHub',
     java: 'DevLearningHub',
     cpp: 'DevLearningHub'
   };
 
-  code = this.templates['javascript'];
-
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) {
+    this.code = this.templates[this.language];
+  }
 
   ngOnInit(): void {
-    this.api.get<any>('/api/v1/code/languages').subscribe({
-      next: (r: any) => {
-        const data = r?.data || r || [];
-        this.languages = Array.isArray(data) && data.length ? data : this.fallbackLanguages();
+    this.loadLanguages();
+  }
+
+  loadLanguages(): void {
+    this.api.get<PlaygroundLanguage[]>('/api/v1/code/languages').subscribe({
+      next: (response: ApiResponse<PlaygroundLanguage[]> | any) => {
+        const source = response?.data ?? response;
+        const items = Array.isArray(source) ? source : [];
+        const mapped = items
+          .map((item: any) => this.mapLanguage(item))
+          .filter((item: PlaygroundLanguage) => !!item.value);
+
+        this.languages = mapped.length ? mapped : this.fallbackLanguages;
+        if (!this.languages.some((item: PlaygroundLanguage) => item.value === this.language)) {
+          this.setLanguage(this.languages[0]?.value || 'javascript');
+        }
       },
-      error: () => this.languages = this.fallbackLanguages()
+      error: () => {
+        this.languages = this.fallbackLanguages;
+      }
     });
   }
 
-  @HostListener('document:keydown.control.enter', ['$event'])
-  handleCtrlEnter(event: KeyboardEvent): void {
-    event.preventDefault();
-    this.run();
+  private mapLanguage(item: any): PlaygroundLanguage {
+    if (typeof item === 'string') {
+      return { value: item, label: this.prettyLanguage(item), enabled: true };
+    }
+
+    const value = String(item?.value || item?.id || item?.language || item?.name || '').trim();
+    const label = String(item?.label || item?.displayName || item?.name || this.prettyLanguage(value)).trim();
+
+    return {
+      value,
+      label,
+      runtime: item?.runtime || item?.version || '',
+      enabled: item?.enabled !== false
+    };
   }
 
-  fallbackLanguages(): any[] {
-    return [
-      { value: 'javascript', label: 'JavaScript', runtime: 'node main.js' },
-      { value: 'python', label: 'Python', runtime: 'python main.py' },
-      { value: 'java', label: 'Java', runtime: 'javac + java Main' },
-      { value: 'cpp', label: 'C++17', runtime: 'g++ -std=c++17' }
-    ];
+  trackByLanguage(_: number, item: PlaygroundLanguage): string {
+    return item.value;
   }
 
-  currentLanguageLabel(): string {
-    return this.languages.find(x => x.value === this.language)?.label || this.language;
+  prettyLanguage(value: string): string {
+    const map: Record<string, string> = {
+      javascript: 'JavaScript',
+      js: 'JavaScript',
+      python: 'Python',
+      py: 'Python',
+      java: 'Java',
+      cpp: 'C++17',
+      cplusplus: 'C++17'
+    };
+    return map[value?.toLowerCase()] || value || 'Language';
   }
 
-  currentRuntime(): string {
-    return this.languages.find(x => x.value === this.language)?.runtime || 'Local runtime';
+  currentLanguage(): PlaygroundLanguage {
+    return this.languages.find((item: PlaygroundLanguage) => item.value === this.language)
+      || this.fallbackLanguages.find((item: PlaygroundLanguage) => item.value === this.language)
+      || this.fallbackLanguages[0];
   }
 
   setLanguage(language: string): void {
-    if (this.language === language) return;
-    const oldTemplate = this.templates[this.language] || '';
-    const canReplace = !this.code.trim() || this.code.trim() === oldTemplate.trim();
+    if (!language || this.isRunning) return;
     this.language = language;
-    if (canReplace) this.code = this.templates[language] || '';
-    this.resetResult();
+    this.code = this.templates[language] || this.code || '';
+    this.stdin = this.sampleInputs[language] || '';
+    this.resetResult('ÄÃ£ Ä‘á»•i ngÃ´n ngá»¯. Báº¥m Run Ä‘á»ƒ cháº¡y code má»›i.');
   }
 
-  loadTemplate(): void {
-    if (this.code.trim() && !confirm('Thay code hiện tại bằng template mới?')) return;
-    this.code = this.templates[this.language] || '';
-    this.resetResult();
-  }
-
-  loadSampleInput(): void {
-    this.stdin = this.samples[this.language] || 'DevLearningHub';
+  useSampleInput(): void {
+    this.stdin = this.sampleInputs[this.language] || 'DevLearningHub';
   }
 
   reset(): void {
     this.code = this.templates[this.language] || '';
-    this.stdin = '';
-    this.resetResult();
+    this.stdin = this.sampleInputs[this.language] || '';
+    this.resetResult('ÄÃ£ reset template. Báº¥m Run Ä‘á»ƒ cháº¡y láº¡i.');
   }
 
   clearOutput(): void {
-    this.output = '';
-    this.error = '';
-    this.verdict = '';
-    this.executionTimeMs = 0;
-    this.memoryUsedKb = 0;
-    this.status = 'idle';
+    this.resetResult('Output Ä‘Ã£ Ä‘Æ°á»£c xÃ³a.');
   }
 
-  private resetResult(): void {
-    this.output = 'Click Run Code hoặc nhấn Ctrl + Enter để chạy.';
+  private resetResult(message: string): void {
+    this.output = message;
     this.error = '';
     this.verdict = '';
+    this.status = '';
     this.executionTimeMs = 0;
     this.memoryUsedKb = 0;
-    this.status = 'idle';
+    this.lastRunAt = '';
   }
 
   run(): void {
     if (this.isRunning) return;
-    if (!this.code.trim()) {
-      this.error = 'Source code không được để trống.';
+
+    const sourceCode = (this.code || '').trimEnd();
+    if (!sourceCode.trim()) {
       this.output = '';
-      this.verdict = 'Invalid Input';
-      this.status = 'error';
+      this.error = 'Báº¡n chÆ°a nháº­p code Ä‘á»ƒ cháº¡y.';
+      this.verdict = 'Failed';
+      this.status = 'Empty source';
       return;
     }
 
     this.error = '';
-    this.output = 'Running...';
+    this.output = 'Äang gá»­i code Ä‘áº¿n Judge API...';
     this.verdict = 'Running';
-    this.status = 'running';
+    this.status = 'Running';
+    this.executionTimeMs = 0;
+    this.memoryUsedKb = 0;
     this.isRunning = true;
-    const started = performance.now();
 
-    this.api.post<any>('/api/v1/code/run', {
+    this.api.post<PlaygroundResult>('/api/v1/code/run', {
       language: this.language,
-      sourceCode: this.code,
+      sourceCode,
       stdin: this.stdin,
-      timeLimitMs: 3000
+      timeLimitMs: this.timeLimitMs
     }).subscribe({
-      next: (r: any) => {
-        const data = r?.data || r || {};
-        this.output = data.output || '';
-        this.error = data.error || '';
-        this.verdict = data.verdict || data.status || 'Completed';
-        this.executionTimeMs = Number(data.executionTimeMs || Math.round(performance.now() - started));
-        this.memoryUsedKb = Number(data.memoryUsedKb || 0);
-        this.status = this.error || this.verdict.toLowerCase().includes('error') || this.verdict.toLowerCase().includes('failed') ? 'error' : 'success';
-        this.lastRunAt = new Date().toLocaleString('vi-VN');
+      next: (response: ApiResponse<PlaygroundResult> | any) => {
+        const data: PlaygroundResult = response?.data ?? response ?? {};
+        this.applyResult(data);
         this.isRunning = false;
       },
-      error: (e: any) => {
+      error: (err: any) => {
         this.output = '';
-        this.error = e?.error?.message || e?.error?.title || 'Không chạy được code. Hãy kiểm tra API hoặc runtime trên server.';
+        this.error = err?.error?.message
+          || err?.error?.title
+          || err?.message
+          || 'KhÃ´ng cháº¡y Ä‘Æ°á»£c code. HÃ£y kiá»ƒm tra API hoáº·c runtime trÃªn server.';
         this.verdict = 'Failed';
-        this.executionTimeMs = Math.round(performance.now() - started);
-        this.status = 'error';
+        this.status = 'API Error';
+        this.lastRunAt = this.formatTime(new Date());
         this.isRunning = false;
       }
     });
   }
 
-  async copyOutput(): Promise<void> {
-    const text = [this.output, this.error ? `STDERR:\n${this.error}` : ''].filter(Boolean).join('\n');
-    if (!text.trim()) return;
-    try {
-      await navigator.clipboard.writeText(text);
-      this.verdict = this.verdict || 'Copied';
-    } catch {
-      alert('Trình duyệt không cho phép copy tự động. Bạn có thể bôi đen output để copy thủ công.');
+  private applyResult(data: PlaygroundResult): void {
+    this.output = data.output ?? data.stdout ?? '';
+    this.error = data.error ?? data.stderr ?? '';
+    this.status = data.status || '';
+    this.verdict = data.verdict || data.status || (this.error ? 'Failed' : 'Completed');
+    this.executionTimeMs = Number(data.executionTimeMs || 0);
+    this.memoryUsedKb = Number(data.memoryUsedKb || 0);
+    this.lastRunAt = this.formatTime(new Date());
+
+    if (!this.output && !this.error) {
+      this.output = '(ChÆ°Æ¡ng trÃ¬nh khÃ´ng in ra dá»¯ liá»‡u.)';
     }
   }
-}
 
+  get lineCount(): number {
+    return Math.max((this.code || '').split('\n').length, 1);
+  }
+
+  get codeLength(): number {
+    return (this.code || '').length;
+  }
+
+  get statusClass(): string {
+    const text = `${this.verdict} ${this.status}`.toLowerCase();
+    if (this.isRunning) return 'running';
+    if (text.includes('accept') || text.includes('success') || text.includes('complete') || text.includes('ok')) return 'success';
+    if (text.includes('wrong') || text.includes('fail') || text.includes('error') || text.includes('time')) return 'danger';
+    return 'neutral';
+  }
+
+  async copyCode(): Promise<void> {
+    await this.copyText(this.code || '');
+    this.copiedCode = true;
+    setTimeout(() => this.copiedCode = false, 1200);
+  }
+
+  async copyOutput(): Promise<void> {
+    const text = [this.output, this.error ? `\nSTDERR:\n${this.error}` : ''].join('').trim();
+    await this.copyText(text);
+    this.copiedOutput = true;
+    setTimeout(() => this.copiedOutput = false, 1200);
+  }
+
+  private async copyText(text: string): Promise<void> {
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text || '');
+    }
+  }
+
+  private formatTime(date: Date): string {
+    return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+}

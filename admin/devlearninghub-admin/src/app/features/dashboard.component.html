@@ -1,4 +1,4 @@
-<div class="admin-shell">
+﻿<div class="admin-shell">
   <header class="admin-top">
     <a class="logo" routerLink="/dashboard">
       <span class="logo-mark">&lt;/&gt;</span>
@@ -6,7 +6,7 @@
     </a>
     <div class="action-row">
       <a class="btn btn-outline" routerLink="/code">Code Judge</a>
-      <a class="btn btn-outline" href="http://localhost:4200/learner/dashboard">Back to User Workspace</a>
+      <button type="button" class="admin-sso-link" (click)="openUserWorkspace()">Back to User Workspace</button>
       <button class="btn btn-ghost" type="button" (click)="auth.logout()">Logout</button>
     </div>
   </header>
@@ -18,10 +18,10 @@
     </div>
 
     <div class="grid grid-4" style="margin:24px 0">
-      <div class="card card-pad stat-card"><div><p class="muted">Total Users</p><div class="stat-value">{{users.length}}</div></div><div class="stat-icon blue-bg">👥</div></div>
-      <div class="card card-pad stat-card"><div><p class="muted">Total Questions</p><div class="stat-value">{{questions.length}}</div></div><div class="stat-icon green-bg">📘</div></div>
-      <div class="card card-pad stat-card"><div><p class="muted">Quiz Sets</p><div class="stat-value">{{quizSets.length}}</div></div><div class="stat-icon purple-bg">📝</div></div>
-      <div class="card card-pad stat-card"><div><p class="muted">Categories</p><div class="stat-value">{{categories.length}}</div></div><div class="stat-icon orange-bg">🏷</div></div>
+      <div class="card card-pad stat-card"><div><p class="muted">Total Users</p><div class="stat-value">{{users.length}}</div></div><div class="stat-icon blue-bg">ðŸ‘¥</div></div>
+      <div class="card card-pad stat-card"><div><p class="muted">Total Questions</p><div class="stat-value">{{questions.length}}</div></div><div class="stat-icon green-bg">ðŸ“˜</div></div>
+      <div class="card card-pad stat-card"><div><p class="muted">Quiz Sets</p><div class="stat-value">{{quizSets.length}}</div></div><div class="stat-icon purple-bg">ðŸ“</div></div>
+      <div class="card card-pad stat-card"><div><p class="muted">Categories</p><div class="stat-value">{{categories.length}}</div></div><div class="stat-icon orange-bg">ðŸ·</div></div>
     </div>
 
     <div class="alert alert-ok" *ngIf="message">{{message}}</div>
@@ -55,7 +55,7 @@
             <div class="form-group"><label>Difficulty</label><select class="select" name="difficulty" [(ngModel)]="questionForm.difficulty"><option [ngValue]="1">Beginner</option><option [ngValue]="2">Intermediate</option><option [ngValue]="3">Advanced</option></select></div>
           </div>
           <div class="form-group"><label>Question content</label><textarea class="textarea" name="content" [(ngModel)]="questionForm.content"></textarea></div>
-          <div class="form-group"><label>Question explanation</label><textarea class="textarea" name="explanation" [(ngModel)]="questionForm.explanation" placeholder="Lời giải thích hiển thị sau khi user nộp bài"></textarea></div>
+          <div class="form-group"><label>Question explanation</label><textarea class="textarea" name="explanation" [(ngModel)]="questionForm.explanation" placeholder="Lá»i giáº£i thÃ­ch hiá»ƒn thá»‹ sau khi user ná»™p bÃ i"></textarea></div>
           <div class="grid grid-2">
             <div class="form-group card card-pad" *ngFor="let o of questionForm.options; let i=index">
               <label>Option {{i+1}}</label>
@@ -75,7 +75,7 @@
           <tbody>
             <tr *ngFor="let q of filteredQuestions">
               <td>{{q.id}}</td>
-              <td><b>{{q.title || q.content}}</b><div class="muted" *ngIf="q.explanation">Có explanation</div></td>
+              <td><b>{{q.title || q.content}}</b><div class="muted" *ngIf="q.explanation">CÃ³ explanation</div></td>
               <td><span class="badge badge-gray">{{categoryName(q.categoryId)}}</span></td>
               <td><span class="badge" [ngClass]="difficultyBadge(q.difficulty)">{{difficultyText(q.difficulty)}}</span></td>
               <td>{{q.options?.length || 0}}</td>
@@ -83,7 +83,7 @@
             </tr>
           </tbody>
         </table>
-        <div class="empty-state" *ngIf="!questions.length">Chưa có câu hỏi trong CSDL.</div>
+        <div class="empty-state" *ngIf="!questions.length">ChÆ°a cÃ³ cÃ¢u há»i trong CSDL.</div>
       </section>
 
       <section class="admin-panel" [class.active]="tab==='categories'">
@@ -127,16 +127,16 @@
 
           <div class="card card-pad" style="margin-top:14px">
             <div class="filters"><h3 style="margin:0">Attach Questions</h3><select class="select" style="max-width:260px" [(ngModel)]="quizSetForm.categoryId" name="attachCategory"><option *ngFor="let c of categories" [ngValue]="c.id">{{c.name}}</option></select></div>
-            <p class="muted">Chọn câu hỏi cần gắn vào bộ đề. Không cần nhập ID thủ công nữa.</p>
+            <p class="muted">Chá»n cÃ¢u há»i cáº§n gáº¯n vÃ o bá»™ Ä‘á». KhÃ´ng cáº§n nháº­p ID thá»§ cÃ´ng ná»¯a.</p>
             <div class="grid grid-2" style="max-height:360px;overflow:auto">
               <label class="example" *ngFor="let q of selectableQuestions">
                 <input type="checkbox" [checked]="isQuestionSelected(q.id)" (change)="toggleQuestion(q, $any($event.target).checked)">
                 <b>#{{q.id}} {{q.title || q.content}}</b>
-                <span class="muted">{{categoryName(q.categoryId)}} · {{difficultyText(q.difficulty)}}</span>
+                <span class="muted">{{categoryName(q.categoryId)}} Â· {{difficultyText(q.difficulty)}}</span>
                 <input class="input mini-input" type="number" [ngModel]="selectedQuestionScore(q.id)" (ngModelChange)="setQuestionScore(q.id,$event)" [name]="'score'+q.id" placeholder="Score">
               </label>
             </div>
-            <div class="alert" *ngIf="!selectableQuestions.length">Category này chưa có câu hỏi. Hãy import CSV/Excel hoặc tạo câu hỏi thủ công trước.</div>
+            <div class="alert" *ngIf="!selectableQuestions.length">Category nÃ y chÆ°a cÃ³ cÃ¢u há»i. HÃ£y import CSV/Excel hoáº·c táº¡o cÃ¢u há»i thá»§ cÃ´ng trÆ°á»›c.</div>
             <b>Selected: {{quizSetForm.questions.length}} questions</b>
           </div>
 
@@ -144,14 +144,14 @@
         </form>
 
         <div class="filters"><select class="select" style="max-width:240px" [(ngModel)]="quizSetCategoryFilter"><option value="all">All categories</option><option *ngFor="let c of categories" [ngValue]="c.id">{{c.name}}</option></select></div>
-        <table class="table"><thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Questions</th><th>Time</th><th>Attempts</th><th>Status</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let q of filteredQuizSets"><td>{{q.id}}</td><td><b>{{q.title}}</b><div class="muted">{{q.slug}}</div></td><td>{{categoryName(q.categoryId)}}</td><td>{{q.questionCount}}</td><td>{{q.timeLimitMinutes || '-'}} min</td><td>{{q.maxAttempts || '∞'}}</td><td><span class="badge" [ngClass]="statusBadge(q.status)">{{statusText(q.status)}}</span></td><td class="action-row"><button class="btn btn-outline" type="button" (click)="editQuizSet(q)">Edit</button><button class="btn btn-ghost" type="button" (click)="deleteQuizSet(q)">Delete</button></td></tr></tbody></table>
+        <table class="table"><thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Questions</th><th>Time</th><th>Attempts</th><th>Status</th><th>Actions</th></tr></thead><tbody><tr *ngFor="let q of filteredQuizSets"><td>{{q.id}}</td><td><b>{{q.title}}</b><div class="muted">{{q.slug}}</div></td><td>{{categoryName(q.categoryId)}}</td><td>{{q.questionCount}}</td><td>{{q.timeLimitMinutes || '-'}} min</td><td>{{q.maxAttempts || 'âˆž'}}</td><td><span class="badge" [ngClass]="statusBadge(q.status)">{{statusText(q.status)}}</span></td><td class="action-row"><button class="btn btn-outline" type="button" (click)="editQuizSet(q)">Edit</button><button class="btn btn-ghost" type="button" (click)="deleteQuizSet(q)">Delete</button></td></tr></tbody></table>
       </section>
 
       <section class="admin-panel" [class.active]="tab==='users'">
         <div class="grid grid-2">
           <div class="card card-pad">
             <h3>Accounts</h3>
-            <p class="muted">Bấm vào tài khoản để xem toàn bộ quyền lẻ trong hệ thống. Tick/untick từng quyền để cập nhật trực tiếp cho tài khoản.</p>
+            <p class="muted">Báº¥m vÃ o tÃ i khoáº£n Ä‘á»ƒ xem toÃ n bá»™ quyá»n láº» trong há»‡ thá»‘ng. Tick/untick tá»«ng quyá»n Ä‘á»ƒ cáº­p nháº­t trá»±c tiáº¿p cho tÃ i khoáº£n.</p>
             <table class="table">
               <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Current Roles</th><th>Action</th></tr></thead>
               <tbody>
@@ -159,8 +159,8 @@
                   <td>{{u.id}}</td>
                   <td><b>{{u.fullName}}</b><div class="muted">{{u.userName}}</div></td>
                   <td>{{u.email}}</td>
-                  <td><span class="badge badge-gray" *ngFor="let r of u.roles">{{r.name}}</span><span class="muted" *ngIf="!u.roles?.length">Chưa có role</span></td>
-                  <td><button class="btn btn-outline" type="button" (click)="openPermissionPanel(u)">Phân quyền lẻ</button></td>
+                  <td><span class="badge badge-gray" *ngFor="let r of u.roles">{{r.name}}</span><span class="muted" *ngIf="!u.roles?.length">ChÆ°a cÃ³ role</span></td>
+                  <td><button class="btn btn-outline" type="button" (click)="openPermissionPanel(u)">PhÃ¢n quyá»n láº»</button></td>
                 </tr>
               </tbody>
             </table>
@@ -170,13 +170,13 @@
             <div class="filters">
               <div>
                 <h3 style="margin:0">Permission Assignment</h3>
-                <p class="muted" style="margin:6px 0 0">{{userPermissionDetail.user.fullName}} · {{userPermissionDetail.user.email}}</p>
+                <p class="muted" style="margin:6px 0 0">{{userPermissionDetail.user.fullName}} Â· {{userPermissionDetail.user.email}}</p>
               </div>
               <button class="btn btn-outline" type="button" (click)="closePermissionPanel()">Close</button>
             </div>
             <div class="alert">
-              Đây là phân quyền theo từng quyền lẻ, không phải nhóm quyền/role. Tick = gán quyền trực tiếp cho tài khoản.
-              Nhãn "Từ role" nghĩa là tài khoản đang có quyền đó thông qua role hiện tại.
+              ÄÃ¢y lÃ  phÃ¢n quyá»n theo tá»«ng quyá»n láº», khÃ´ng pháº£i nhÃ³m quyá»n/role. Tick = gÃ¡n quyá»n trá»±c tiáº¿p cho tÃ i khoáº£n.
+              NhÃ£n "Tá»« role" nghÄ©a lÃ  tÃ i khoáº£n Ä‘ang cÃ³ quyá»n Ä‘Ã³ thÃ´ng qua role hiá»‡n táº¡i.
             </div>
             <div class="permission-check-list" style="max-height:520px;overflow:auto">
               <div *ngFor="let module of permissionModules" style="margin-bottom:18px">
@@ -187,24 +187,24 @@
                     <div>
                       <b>{{permission.name}}</b>
                       <span class="badge badge-gray" style="margin-left:8px">{{permission.code}}</span>
-                      <span class="badge badge-green" style="margin-left:8px" *ngIf="permission.effective">Có hiệu lực</span>
-                      <span class="badge badge-yellow" style="margin-left:8px" *ngIf="permission.inheritedFromRole">Từ role: {{sourceRoleText(permission)}}</span>
-                      <div class="muted">{{permission.description || 'Không có mô tả'}}</div>
+                      <span class="badge badge-green" style="margin-left:8px" *ngIf="permission.effective">CÃ³ hiá»‡u lá»±c</span>
+                      <span class="badge badge-yellow" style="margin-left:8px" *ngIf="permission.inheritedFromRole">Tá»« role: {{sourceRoleText(permission)}}</span>
+                      <div class="muted">{{permission.description || 'KhÃ´ng cÃ³ mÃ´ táº£'}}</div>
                     </div>
                   </div>
                 </label>
               </div>
             </div>
-            <div class="alert success" *ngIf="permissionSaving">Đang cập nhật quyền lẻ...</div>
+            <div class="alert success" *ngIf="permissionSaving">Äang cáº­p nháº­t quyá»n láº»...</div>
           </div>
 
           <div class="card card-pad" *ngIf="!userPermissionDetail">
             <h3>Permission Guide</h3>
-            <p class="muted">Danh sách quyền lẻ hiện có trong hệ thống:</p>
+            <p class="muted">Danh sÃ¡ch quyá»n láº» hiá»‡n cÃ³ trong há»‡ thá»‘ng:</p>
             <div class="example" *ngFor="let p of permissions" style="margin-bottom:10px">
               <b>{{p.name}}</b>
               <span class="badge badge-gray" style="margin-left:8px">{{p.code}}</span>
-              <div class="muted">{{p.module}} · {{p.description || 'Không có mô tả'}}</div>
+              <div class="muted">{{p.module}} Â· {{p.description || 'KhÃ´ng cÃ³ mÃ´ táº£'}}</div>
             </div>
           </div>
         </div>
@@ -213,16 +213,16 @@
       <section class="admin-panel" [class.active]="tab==='import'">
         <div class="card card-pad">
           <h3>Import Questions from Excel/CSV</h3>
-          <p class="muted">Dành cho Admin/Giảng viên nhập ngân hàng câu hỏi. Tải file mẫu CSV, mở bằng Excel, điền câu hỏi rồi lưu lại dạng .csv để import vào database.</p>
+          <p class="muted">DÃ nh cho Admin/Giáº£ng viÃªn nháº­p ngÃ¢n hÃ ng cÃ¢u há»i. Táº£i file máº«u CSV, má»Ÿ báº±ng Excel, Ä‘iá»n cÃ¢u há»i rá»“i lÆ°u láº¡i dáº¡ng .csv Ä‘á»ƒ import vÃ o database.</p>
 
           <div class="alert">
-            Người học không import file. Người học chỉ vào Learning để làm quiz và xem kết quả.
+            NgÆ°á»i há»c khÃ´ng import file. NgÆ°á»i há»c chá»‰ vÃ o Learning Ä‘á»ƒ lÃ m quiz vÃ  xem káº¿t quáº£.
           </div>
 
           <div class="grid grid-2">
             <div>
-              <h4>1. Tải file mẫu</h4>
-              <p class="muted">File có các cột: CategoryId, Title, Content, OptionA-D, CorrectOption, Explanation.</p>
+              <h4>1. Táº£i file máº«u</h4>
+              <p class="muted">File cÃ³ cÃ¡c cá»™t: CategoryId, Title, Content, OptionA-D, CorrectOption, Explanation.</p>
               <button class="btn btn-outline" type="button" (click)="downloadCsvTemplate()">Download CSV Template</button>
             </div>
 
@@ -234,8 +234,8 @@
           </div>
 
           <details style="margin-top:18px">
-            <summary>Advanced: Import JSON cho developer/seed dữ liệu</summary>
-            <p class="muted">JSON chỉ dùng cho kiểm thử kỹ thuật hoặc seed dữ liệu, không phải luồng chính trong thực tế.</p>
+            <summary>Advanced: Import JSON cho developer/seed dá»¯ liá»‡u</summary>
+            <p class="muted">JSON chá»‰ dÃ¹ng cho kiá»ƒm thá»­ ká»¹ thuáº­t hoáº·c seed dá»¯ liá»‡u, khÃ´ng pháº£i luá»“ng chÃ­nh trong thá»±c táº¿.</p>
             <input class="input" type="file" (change)="pick($event)" accept=".json">
             <button class="btn btn-outline" type="button" (click)="importJsonFile()" style="margin-top:12px">Import JSON Advanced</button>
           </details>
@@ -246,3 +246,4 @@
     </div>
   </main>
 </div>
+
