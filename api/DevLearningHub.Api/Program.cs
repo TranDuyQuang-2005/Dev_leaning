@@ -14,6 +14,10 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.Configure<ObjectStorageOptions>(builder.Configuration.GetSection("ObjectStorage"));
 var jwt = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>() ?? throw new InvalidOperationException("JwtSettings is missing");
@@ -124,7 +128,14 @@ builder.Services.AddCors(options =>
     {
         if (builder.Environment.IsDevelopment())
         {
-            p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+            p.WithOrigins(
+                    "http://localhost:4200",
+                    "https://localhost:4200",
+                    "http://localhost:4300",
+                    "http://localhost:5000",
+                    "https://localhost:5001")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
         }
         else
         {

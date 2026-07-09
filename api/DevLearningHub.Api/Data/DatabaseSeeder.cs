@@ -1,4 +1,5 @@
 using DevLearningHub.Api.Entities;
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace DevLearningHub.Api.Data;
@@ -56,7 +57,8 @@ public static class DatabaseSeeder
                 db.RolePermissions.Add(new RolePermission { RoleId = adminRole.Id, PermissionId = permissionId });
         }
         await db.SaveChangesAsync();
-        await EnsurePermissionGroups(db);
+        if (await PermissionGroupTablesExist(db))
+            await EnsurePermissionGroups(db);
     }
 
     private static async Task EnsurePermissionGroups(DevLearningHubDbContext db)
@@ -104,6 +106,36 @@ public static class DatabaseSeeder
         await AssignGroupToRole(db, userRole.Id, "learner_personal_practice_group");
         await AssignGroupToRole(db, moderatorRole.Id, "forum_moderator_group");
         await db.SaveChangesAsync();
+    }
+
+    private static async Task<bool> PermissionGroupTablesExist(DevLearningHubDbContext db)
+    {
+        return await TableExists(db, "PermissionGroups")
+            && await TableExists(db, "PermissionGroupPermissions")
+            && await TableExists(db, "RolePermissionGroups")
+            && await TableExists(db, "UserPermissionGroups");
+    }
+
+    private static async Task<bool> TableExists(DevLearningHubDbContext db, string tableName)
+    {
+        var connection = db.Database.GetDbConnection();
+        var shouldClose = connection.State == ConnectionState.Closed;
+        if (shouldClose) await connection.OpenAsync();
+        try
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = "SELECT COUNT(1) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = @tableName";
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = "@tableName";
+            parameter.Value = tableName;
+            command.Parameters.Add(parameter);
+            var result = await command.ExecuteScalarAsync();
+            return Convert.ToInt32(result) > 0;
+        }
+        finally
+        {
+            if (shouldClose) await connection.CloseAsync();
+        }
     }
 
     private static async Task AssignGroupToRole(DevLearningHubDbContext db, long roleId, string groupCode)

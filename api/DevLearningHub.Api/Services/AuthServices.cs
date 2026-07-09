@@ -78,7 +78,7 @@ public interface IAuthService
     Task<ApiResponse<object>> Register(RegisterRequest request, CancellationToken ct);
     Task<ApiResponse<AuthResponse>> Login(LoginRequest request, string? ip, string? ua, CancellationToken ct);
     Task<ApiResponse<AuthResponse>> Refresh(RefreshTokenRequest request, string? ip, string? ua, CancellationToken ct);
-    Task<ApiResponse<object>> Logout(LogoutRequest request, CancellationToken ct);
+    Task<ApiResponse<object>> Logout(long userId, LogoutRequest request, CancellationToken ct);
     Task<ApiResponse<CurrentUserResponse>> Me(long userId, CancellationToken ct);
     Task<ApiResponse<object>> ChangePassword(long userId, ChangePasswordRequest request, CancellationToken ct);
     Task<ApiResponse<object>> ForgotPassword(ForgotPasswordRequest request, CancellationToken ct);
@@ -166,7 +166,6 @@ public sealed class AuthService : IAuthService
             if (user.FailedLoginCount >= MaxFailedLoginCount)
             {
                 user.LockoutEndAt = DateTime.UtcNow.Add(LockoutDuration);
-                user.FailedLoginCount = 0;
             }
             await _db.SaveChangesAsync(ct);
             return ApiResponse<AuthResponse>.Fail("Account or password is incorrect");
@@ -182,6 +181,9 @@ public sealed class AuthService : IAuthService
 
     public async Task<ApiResponse<AuthResponse>> Refresh(RefreshTokenRequest r, string? ip, string? ua, CancellationToken ct)
     {
+        if (string.IsNullOrWhiteSpace(r.AccessToken) || string.IsNullOrWhiteSpace(r.RefreshToken))
+            return ApiResponse<AuthResponse>.Fail("Refresh token is invalid");
+
         var userId = _jwt.GetUserIdFromExpiredToken(r.AccessToken);
         if (userId == null) return ApiResponse<AuthResponse>.Fail("Access token is invalid");
         var hash = _jwt.HashToken(r.RefreshToken);
@@ -196,10 +198,14 @@ public sealed class AuthService : IAuthService
         return ApiResponse<AuthResponse>.Ok(response, "Refresh token successfully");
     }
 
-    public async Task<ApiResponse<object>> Logout(LogoutRequest r, CancellationToken ct)
+    public async Task<ApiResponse<object>> Logout(long userId, LogoutRequest r, CancellationToken ct)
     {
-        var hash = _jwt.HashToken(r.RefreshToken);
-        var token = await _db.RefreshTokens.FirstOrDefaultAsync(x => x.TokenHash == hash, ct);
+        var refreshToken = r?.RefreshToken?.Trim();
+        if (string.IsNullOrWhiteSpace(refreshToken))
+            return ApiResponse<object>.Ok(new { }, "Logout successfully");
+
+        var hash = _jwt.HashToken(refreshToken);
+        var token = await _db.RefreshTokens.FirstOrDefaultAsync(x => x.UserId == userId && x.TokenHash == hash, ct);
         if (token != null && token.RevokedAt == null)
         {
             token.RevokedAt = DateTime.UtcNow;

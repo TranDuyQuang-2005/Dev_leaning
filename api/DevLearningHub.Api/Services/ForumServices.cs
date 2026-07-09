@@ -273,8 +273,6 @@ public sealed class ForumModuleService : IForumModuleService
 
         var comment = await _db.Comments.FirstOrDefaultAsync(x => x.Id == commentId && x.PostId == postId && !x.IsDeleted && x.Status == 1, ct);
         if (comment == null) return ApiResponse<object>.Fail("Không tìm thấy bình luận hợp lệ trong bài viết này");
-        if (comment.ParentCommentId.HasValue) return ApiResponse<object>.Fail("Chỉ có thể đánh dấu câu trả lời chính, không đánh dấu reply");
-
         await using var tx = await _db.Database.BeginTransactionAsync(ct);
         var acceptedComments = await _db.Comments.Where(x => x.PostId == postId && x.IsAcceptedAnswer).ToListAsync(ct);
         foreach (var item in acceptedComments) item.IsAcceptedAnswer = false;
@@ -333,7 +331,9 @@ public sealed class ForumModuleService : IForumModuleService
         await _db.SaveChangesAsync(ct);
         post.VoteScore = await _db.PostVotes.Where(x => x.PostId == postId).SumAsync(x => (int)x.VoteType, ct);
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<object>.Ok(new { postId, post.VoteScore }, "Cập nhật vote bài viết thành công");
+        var likeCount = await _db.PostVotes.CountAsync(x => x.PostId == postId && x.VoteType > 0, ct);
+        var dislikeCount = await _db.PostVotes.CountAsync(x => x.PostId == postId && x.VoteType < 0, ct);
+        return ApiResponse<object>.Ok(new { postId, post.VoteScore, LikeCount = likeCount, DislikeCount = dislikeCount }, "Cập nhật vote bài viết thành công");
     }
 
     public async Task<ApiResponse<object>> VoteComment(long userId, long commentId, ForumVoteRequest request, CancellationToken ct)
@@ -348,7 +348,9 @@ public sealed class ForumModuleService : IForumModuleService
         await _db.SaveChangesAsync(ct);
         comment.VoteScore = await _db.CommentVotes.Where(x => x.CommentId == commentId).SumAsync(x => (int)x.VoteType, ct);
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<object>.Ok(new { commentId, comment.VoteScore }, "Cập nhật vote bình luận thành công");
+        var likeCount = await _db.CommentVotes.CountAsync(x => x.CommentId == commentId && x.VoteType > 0, ct);
+        var dislikeCount = await _db.CommentVotes.CountAsync(x => x.CommentId == commentId && x.VoteType < 0, ct);
+        return ApiResponse<object>.Ok(new { commentId, comment.VoteScore, LikeCount = likeCount, DislikeCount = dislikeCount }, "Cập nhật vote bình luận thành công");
     }
 
     public async Task<ApiResponse<object>> BookmarkPost(long userId, long postId, CancellationToken ct)
@@ -587,6 +589,8 @@ public sealed class ForumModuleService : IForumModuleService
     {
         var content = p.Content ?? string.Empty;
         var attachments = await LoadPostAttachments(p.Id, ct);
+        var likeCount = p.Votes.Count(x => x.VoteType > 0);
+        var dislikeCount = p.Votes.Count(x => x.VoteType < 0);
         return new ForumPostSummaryResponse
         {
             Id = p.Id,
@@ -597,7 +601,9 @@ public sealed class ForumModuleService : IForumModuleService
             Slug = p.Slug,
             ContentPreview = content.Length > 180 ? content[..180] + "..." : content,
             ViewCount = p.ViewCount,
-            VoteScore = p.VoteScore,
+            VoteScore = likeCount - dislikeCount,
+            LikeCount = likeCount,
+            DislikeCount = dislikeCount,
             CommentCount = (p.Comments != null && p.Comments.Count > 0) ? p.Comments.Count(x => !x.IsDeleted && x.Status == 1) : p.AnswerCount,
             Status = p.Status,
             CreatedAt = p.CreatedAt,
@@ -628,6 +634,8 @@ public sealed class ForumModuleService : IForumModuleService
             Content = p.Content,
             ViewCount = summary.ViewCount,
             VoteScore = summary.VoteScore,
+            LikeCount = summary.LikeCount,
+            DislikeCount = summary.DislikeCount,
             CommentCount = summary.CommentCount,
             Status = summary.Status,
             CreatedAt = summary.CreatedAt,
@@ -649,12 +657,24 @@ public sealed class ForumModuleService : IForumModuleService
     private static ForumCommentResponse MapCommentTree(Comment c, IEnumerable<Comment> all, long? currentUserId, bool canModerate)
     {
         var mapped = MapComment(c, currentUserId, canModerate);
-        mapped.Replies = all.Where(x => x.ParentCommentId == c.Id).OrderBy(x => x.CreatedAt).Select(x => MapCommentTree(x, all, currentUserId, canModerate)).ToList();
+        mapped.Replies = FlattenReplies(c.Id, all)
+            .OrderBy(x => x.CreatedAt)
+            .Select(x =>
+            {
+                var reply = MapComment(x, currentUserId, canModerate);
+                reply.ParentCommentId = c.Id;
+                reply.Replies = new List<ForumCommentResponse>();
+                return reply;
+            })
+            .ToList();
+        mapped.ReplyCount = mapped.Replies.Count;
         return mapped;
     }
 
     private static ForumCommentResponse MapComment(Comment c, long? currentUserId, bool canModerate = false)
     {
+        var likeCount = c.Votes.Count(x => x.VoteType > 0);
+        var dislikeCount = c.Votes.Count(x => x.VoteType < 0);
         return new ForumCommentResponse
         {
             Id = c.Id,
@@ -664,14 +684,39 @@ public sealed class ForumModuleService : IForumModuleService
             AuthorInitials = Initials(c.Author?.FullName ?? c.Author?.UserName ?? "U"),
             ParentCommentId = c.ParentCommentId,
             Content = c.Content,
-            VoteScore = c.VoteScore,
+            VoteScore = likeCount - dislikeCount,
+            LikeCount = likeCount,
+            DislikeCount = dislikeCount,
             IsAcceptedAnswer = c.IsAcceptedAnswer,
             Status = c.Status,
             CreatedAt = c.CreatedAt,
             UpdatedAt = c.UpdatedAt,
             CanEdit = currentUserId.HasValue && (c.AuthorId == currentUserId.Value || canModerate),
-            MyVote = currentUserId.HasValue ? c.Votes.FirstOrDefault(x => x.UserId == currentUserId.Value)?.VoteType : null
+            MyVote = currentUserId.HasValue ? c.Votes.FirstOrDefault(x => x.UserId == currentUserId.Value)?.VoteType : null,
+            ReplyCount = c.Replies.Count(x => !x.IsDeleted && x.Status == 1)
         };
+    }
+
+    private static List<Comment> FlattenReplies(long parentId, IEnumerable<Comment> all)
+    {
+        var comments = all.ToList();
+        var result = new List<Comment>();
+        var queue = new Queue<long>();
+        queue.Enqueue(parentId);
+        var seen = new HashSet<long> { parentId };
+
+        while (queue.Count > 0)
+        {
+            var currentParentId = queue.Dequeue();
+            foreach (var child in comments.Where(x => x.ParentCommentId == currentParentId))
+            {
+                if (!seen.Add(child.Id)) continue;
+                result.Add(child);
+                queue.Enqueue(child.Id);
+            }
+        }
+
+        return result;
     }
 
     private static ForumAttachmentResponse MapAttachment(AppFile f) => new()

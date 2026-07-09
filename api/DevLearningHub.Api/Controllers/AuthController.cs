@@ -43,7 +43,14 @@ public sealed class AuthController : BaseApiController
 
     [HttpPost("logout")]
     [Authorize]
-    public async Task<ActionResult<ApiResponse<object>>> Logout(LogoutRequest request, CancellationToken ct) => Ok(await _service.Logout(request, ct));
+    public async Task<ActionResult<ApiResponse<object>>> Logout(LogoutRequest request, CancellationToken ct)
+    {
+        if (CurrentUserId is null)
+            return Unauthorized(ApiResponse<object>.Fail("Token khong hop le"));
+
+        var res = await _service.Logout(CurrentUserId.Value, request, ct);
+        return Ok(res);
+    }
 
     [HttpPut("change-password")]
     [Authorize]

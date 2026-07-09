@@ -1,95 +1,120 @@
 # DevLearningHub Backend Update
 
-## Run
+## Auth/logout
 
-```powershell
-dotnet restore api/DevLearningHub.Api/DevLearningHub.Api.csproj
-dotnet build api/DevLearningHub.Api/DevLearningHub.Api.csproj
-dotnet run --project api/DevLearningHub.Api/DevLearningHub.Api.csproj
-```
+- `POST /api/v1/auth/logout` is still protected by `[Authorize]`.
+- The controller now passes `CurrentUserId` into `AuthService.Logout`.
+- Logout accepts `refreshToken`, trims it, hashes it, and revokes only the row matching `UserId + TokenHash`.
+- Missing/empty refresh token still returns success so the frontend can clear local state.
+- A revoked refresh token cannot be reused by `POST /api/v1/auth/refresh-token` because refresh rejects tokens with `RevokedAt != null`.
 
-Swagger: `http://localhost:<port>/swagger`
+## Refresh token rotation
 
-## Migration
+- Refresh token lookup uses the user id from the expired access token plus the refresh token hash.
+- Invalid, revoked, or expired refresh tokens fail.
+- Successful refresh revokes the old refresh token, stores `ReplacedByTokenHash`, creates a new refresh token row, and returns a new access token.
+- Login, refresh, and me responses use effective permissions from direct user permissions, role permissions, role permission groups, and user permission groups.
 
-DbContext has been updated for the new tables and indexes. The active migration is `ExistingDatabase_AddPermissionGroupsAndPersonalPractice` under `api/DevLearningHub.Api/Migrations`. It is an incremental migration for the existing database and only creates the missing permission-group and personal-practice tables. Apply it with:
+## Backend features kept
+
+- Advanced auth: change password, forgot password, reset password, resend email verification, verify email.
+- Personal practice: upload/list/detail/delete banks, start/submit/list/detail attempts.
+- Permission groups: CRUD, assign to role/user, effective permissions.
+- Admin security/audit: lock/unlock user and audit logs.
+- Admin quiz: statistics, overview, CSV export, reset attempts.
+- Code judge: user/admin submission detail; hidden test cases remain hidden from normal users.
+- Forum APIs remain in place for posts, comments/replies, votes, bookmarks, reports, accepted answer, and moderation.
+
+## Forum compatibility
+
+- Post/comment DTOs now include `LikeCount`, `DislikeCount`, `VoteScore`, `MyVote`, `Replies`, `ReplyCount`, `CommentCount`, and `IsAcceptedAnswer`.
+- Vote logic toggles same vote off, switches opposite votes, and does not intentionally create duplicate votes for the same user/post or user/comment.
+- EF model now has unique indexes for post/comment vote ownership.
+- Reply mapping flattens nested replies to the top-level comment reply list so a one-level frontend does not break.
+- Accepted answer now supports both comments and replies; only the chosen item is marked accepted and the rest are cleared.
+
+## Personal practice security
+
+- Bank and attempt queries are scoped by the authenticated `UserId`.
+- A different user accessing another user's bank/attempt receives not found.
+- Start attempt does not expose correct answers.
+- Submit result exposes correct answer and explanation.
+- Upload response does not expose `FileStorageKey` or real stored path.
+- CSV/JSON import validates required question text, single choice type, A/B/C/D options, correct answer, difficulty, tags, file size, and extension.
+
+## Database
+
+- Do not drop the existing database.
+- Do not run a baseline migration against an existing schema.
+- Incremental migration: `api/DevLearningHub.Api/Migrations/20260709070000_ExistingDatabase_AddPermissionGroupsAndPersonalPractice.cs`.
+- Safe SQL script added: `database/update_backend_permission_personal_practice.sql`.
+- The SQL script uses `IF OBJECT_ID(...) IS NULL` before table creation and checks FK/index existence before adding them.
+- Seeder is idempotent and skips permission-group seeding until permission-group tables exist.
+
+Apply one of these:
 
 ```powershell
 dotnet ef database update --project api/DevLearningHub.Api/DevLearningHub.Api.csproj --startup-project api/DevLearningHub.Api/DevLearningHub.Api.csproj
 ```
 
-## New Endpoints
+or run:
 
-Auth:
-- `PUT /api/v1/auth/change-password`
-- `POST /api/v1/auth/forgot-password`
-- `POST /api/v1/auth/reset-password`
-- `POST /api/v1/auth/resend-email-verification`
-- `POST /api/v1/auth/verify-email`
-
-Personal practice:
-- `POST /api/v1/me/practice-banks/upload`
-- `GET /api/v1/me/practice-banks`
-- `GET /api/v1/me/practice-banks/{bankId}`
-- `DELETE /api/v1/me/practice-banks/{bankId}`
-- `POST /api/v1/me/practice-banks/{bankId}/attempts`
-- `GET /api/v1/me/practice-attempts`
-- `GET /api/v1/me/practice-attempts/{attemptId}`
-- `POST /api/v1/me/practice-attempts/{attemptId}/submit`
-
-Admin permission groups:
-- `POST /api/v1/admin/permission-groups`
-- `GET /api/v1/admin/permission-groups`
-- `GET /api/v1/admin/permission-groups/{id}`
-- `PUT /api/v1/admin/permission-groups/{id}`
-- `DELETE /api/v1/admin/permission-groups/{id}`
-- `POST /api/v1/admin/permission-groups/{id}/permissions`
-- `DELETE /api/v1/admin/permission-groups/{id}/permissions/{permissionId}`
-- `POST /api/v1/admin/roles/{roleId}/permission-groups`
-- `DELETE /api/v1/admin/roles/{roleId}/permission-groups/{permissionGroupId}`
-- `POST /api/v1/admin/users/{userId}/permission-groups`
-- `DELETE /api/v1/admin/users/{userId}/permission-groups/{permissionGroupId}`
-- `GET /api/v1/admin/users/{userId}/effective-permissions`
-
-Admin/security utilities:
-- `POST /api/v1/admin/users/{userId}/lock`
-- `POST /api/v1/admin/users/{userId}/unlock`
-- `GET /api/v1/admin/audit-logs`
-- `GET /api/v1/admin/quizzes/{quizSetId}/statistics`
-- `GET /api/v1/admin/quizzes/statistics/overview`
-- `GET /api/v1/admin/questions/export.csv`
-- `GET /api/v1/admin/quizzes/{quizSetId}/export.csv`
-- `POST /api/v1/admin/quiz-attempts/{attemptId}/reset`
-- `POST /api/v1/admin/quizzes/{quizSetId}/users/{userId}/reset-attempts`
-- `GET /api/v1/code/submissions/{submissionId}`
-- `GET /api/v1/admin/code/submissions/{submissionId}`
-
-## Personal Practice CSV
-
-```csv
-question_text,question_type,option_a,option_b,option_c,option_d,correct_answer,explanation,difficulty,tags
-"HTML stands for what?","single_choice","Hyper Text Markup Language","High Text Machine Language","Home Tool Markup Language","Hyperlink Text Manage Language","A","HTML is a markup language","easy","html,web"
+```sql
+database/update_backend_permission_personal_practice.sql
 ```
 
-Rules: CSV and JSON are accepted; CSV is the primary supported format. Files are limited to 5MB and 1000 rows. Practice bank content is always filtered by the authenticated owner user id.
+## Frontend compatibility
 
-## Quick Swagger/Postman Flow
+- Client and admin logout now call `POST /api/v1/auth/logout` with `refreshToken`.
+- Logout clears only `accessToken`, `refreshToken`, and `currentUser`.
+- Interceptors clear only auth keys on `401`.
+- API base URL remains `http://localhost:5000`.
+
+## Verification
+
+```powershell
+dotnet restore api/DevLearningHub.Api/DevLearningHub.Api.csproj
+dotnet build api/DevLearningHub.Api/DevLearningHub.Api.csproj --no-restore
+```
+
+Result: build succeeded with `0 Warning(s), 0 Error(s)`.
+
+```powershell
+dotnet ef migrations list --project api/DevLearningHub.Api/DevLearningHub.Api.csproj --no-build
+```
+
+Result: migration `20260709070000_ExistingDatabase_AddPermissionGroupsAndPersonalPractice` is listed. EF cannot determine applied/pending status because local DB access fails.
+
+```powershell
+dotnet run --project api/DevLearningHub.Api/DevLearningHub.Api.csproj --no-build
+```
+
+Result: app did not start because the local SQL Server connection failed with: `The instance of SQL Server you attempted to connect to requires encryption but this machine does not support it.`
+
+For local dev, fix the SQL Server/TLS configuration or use a development connection string compatible with the installed SQL Server. The current `appsettings.json` already includes `TrustServerCertificate=True`.
+
+## Quick test flow
 
 1. Login user A.
-2. User A uploads a CSV to `POST /api/v1/me/practice-banks/upload`.
-3. User A calls `GET /api/v1/me/practice-banks`.
-4. User A starts an attempt with `POST /api/v1/me/practice-banks/{bankId}/attempts`.
-5. User A submits with `POST /api/v1/me/practice-attempts/{attemptId}/submit`.
-6. Login user B.
-7. User B calls user A's `bankId` and should receive not found.
-8. Login Admin.
-9. Admin creates a permission group.
-10. Admin assigns the group to a role or user.
-11. Admin verifies `GET /api/v1/admin/users/{userId}/effective-permissions`.
+2. Logout user A with refreshToken.
+3. Call refresh-token with the old refreshToken; it must fail.
+4. Login user A again.
+5. Upload personal practice CSV.
+6. Start an attempt.
+7. Submit the attempt.
+8. Login user B.
+9. User B accesses user A bank/attempt; it must return 404.
+10. Login admin.
+11. Create a permission group.
+12. Assign the group to a role/user.
+13. View effective permissions.
+14. Lock a user and confirm login fails.
+15. Unlock the user.
+16. Test forum vote/comment/reply/accepted/report/delete.
+17. Test quiz statistics/export/reset.
+18. Test code submission detail.
 
 ## TODO
 
-- Integrate SMTP for password reset and email verification; tokens are logged via `ILogger` for development.
-- Add a dedicated test project when package restore/migration tooling is available.
-- Generate and commit the EF migration in an environment where `dotnet ef` can access NuGet metadata.
-- Frontend should add screens for personal practice banks, permission groups, audit logs, and account lock/unlock.
+- Configure real SMTP for password reset and email verification instead of logging tokens.
+- Run database update and E2E flows against a working local SQL Server.

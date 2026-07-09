@@ -547,12 +547,15 @@ public sealed class ForumCommentResponse
     public long? ParentCommentId { get; set; }
     public string Content { get; set; } = string.Empty;
     public int VoteScore { get; set; }
+    public int LikeCount { get; set; }
+    public int DislikeCount { get; set; }
     public bool IsAcceptedAnswer { get; set; }
     public byte Status { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public bool CanEdit { get; set; }
     public short? MyVote { get; set; }
+    public int ReplyCount { get; set; }
     public List<ForumCommentResponse> Replies { get; set; } = new();
 }
 
@@ -567,6 +570,8 @@ public class ForumPostSummaryResponse
     public string ContentPreview { get; set; } = string.Empty;
     public int ViewCount { get; set; }
     public int VoteScore { get; set; }
+    public int LikeCount { get; set; }
+    public int DislikeCount { get; set; }
     public int CommentCount { get; set; }
     public byte Status { get; set; }
     public DateTime CreatedAt { get; set; }

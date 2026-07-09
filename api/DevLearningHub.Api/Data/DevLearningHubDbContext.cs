@@ -293,12 +293,14 @@ public sealed class DevLearningHubDbContext : DbContext
 
         b.Entity<PostVote>(e => {
             e.ToTable("PostVotes"); e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.PostId, x.UserId }).IsUnique();
             e.HasOne(x => x.Post).WithMany(x => x.Votes).HasForeignKey(x => x.PostId);
             e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
         });
 
         b.Entity<CommentVote>(e => {
             e.ToTable("CommentVotes"); e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.CommentId, x.UserId }).IsUnique();
             e.HasOne(x => x.Comment).WithMany(x => x.Votes).HasForeignKey(x => x.CommentId);
             e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
         });
