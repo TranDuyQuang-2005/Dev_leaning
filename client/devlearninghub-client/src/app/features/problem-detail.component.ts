@@ -18,6 +18,8 @@ export class ProblemDetailComponent implements OnInit {
   running = false;
   submitting = false;
   lessonId?: number;
+  mySubmissions: any[] = [];
+  submissionsLoading = false;
 
   readonly fallbackLanguages = [
     { value: 'python', label: 'Python', fileExtension: 'py' },
@@ -101,6 +103,7 @@ func main() {
         this.problem = r.data;
         this.customInput = this.problem?.testCases?.[0]?.input || '';
         this.setStarterCode();
+        this.loadMySubmissions();
         this.loading = false;
       },
       error: (e: any) => { this.error = e?.error?.message || 'Không tải được bài lập trình'; this.loading = false; }
@@ -149,7 +152,7 @@ func main() {
     const body: any = { language: this.language, sourceCode: this.code };
     if (this.lessonId) body.lessonId = this.lessonId;
     this.api.post<any>(`/api/v1/code/problems/${this.problem.id}/submit`, body).subscribe({
-      next: (r: any) => { this.submitResult = r.data || r; this.submitting = false; },
+      next: (r: any) => { this.submitResult = r.data || r; this.submitting = false; this.loadMySubmissions(); },
       error: (e: any) => { this.error = this.api.errorMessage(e, 'Không submit được bài'); this.submitting = false; }
     });
   }
@@ -157,5 +160,34 @@ func main() {
   difficultyText(d: any): string { return Number(d) === 3 ? 'Hard' : Number(d) === 2 ? 'Medium' : 'Easy'; }
   difficultyBadge(d: any): string { return Number(d) === 3 ? 'badge-red' : Number(d) === 2 ? 'badge-yellow' : 'badge-green'; }
   tagList(): string[] { return (this.problem?.tags || '').split(',').map((x: string) => x.trim()).filter(Boolean); }
+
+  loadMySubmissions(): void {
+    if (!this.problem?.id) return;
+    this.submissionsLoading = true;
+    this.api.getMyCodeSubmissions({ problemId: this.problem.id, pageIndex: 1, pageSize: 10 }).subscribe({
+      next: r => {
+        const data: any = r.data || {};
+        this.mySubmissions = data.items || (Array.isArray(data) ? data : []);
+        this.submissionsLoading = false;
+      },
+      error: () => {
+        this.mySubmissions = [];
+        this.submissionsLoading = false;
+      }
+    });
+  }
+
+  verdictText(item: any): string {
+    return item.verdict || item.status || '-';
+  }
+
+  submittedAt(item: any): any {
+    return item.submittedAt || item.createdAt;
+  }
+
+  memoryText(item: any): string {
+    const memory = item.memoryUsedKb ?? item.memoryKb;
+    return memory === null || memory === undefined || memory === '' ? '-' : `${memory} KB`;
+  }
 }
 

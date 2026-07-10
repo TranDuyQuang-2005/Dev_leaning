@@ -107,4 +107,5 @@ export class ApiService {
   changePassword(body: any) { return this.put<any>('/api/v1/auth/change-password', body); }
 
   getSubmissionDetail(id: number | string) { return this.get<any>(`/api/v1/code/submissions/${id}`); }
+  getMyCodeSubmissions(query?: any) { return this.get<any>('/api/v1/code/submissions/mine', { params: query || {} }); }
 }

@@ -355,14 +355,25 @@ public sealed class AuthService : IAuthService
         return errors;
     }
 
-    private async Task<CurrentUserResponse> MapUser(User user, CancellationToken ct) => new()
+    private async Task<CurrentUserResponse> MapUser(User user, CancellationToken ct)
     {
-        Id = user.Id,
-        FullName = user.FullName,
-        UserName = user.UserName,
-        Email = user.Email,
-        AvatarUrl = user.AvatarUrl,
-        Roles = user.UserRoles.Select(x => x.Role.Name).Distinct().ToList(),
-        Permissions = await _permissions.GetEffectivePermissionCodes(user.Id, ct)
-    };
+        var roles = user.UserRoles.Select(x => x.Role.Name).Distinct().ToList();
+        var permissions = await _permissions.GetEffectivePermissionCodes(user.Id, ct);
+        var isAdminPortalAllowed = roles.Any(x => x.Equals("Admin", StringComparison.OrdinalIgnoreCase) || x.Equals("Moderator", StringComparison.OrdinalIgnoreCase))
+            || permissions.Any(x => x.Equals("admin.access", StringComparison.OrdinalIgnoreCase));
+
+        return new CurrentUserResponse
+        {
+            UserId = user.Id,
+            Id = user.Id,
+            FullName = user.FullName,
+            UserName = user.UserName,
+            Email = user.Email,
+            AvatarUrl = user.AvatarUrl,
+            Roles = roles,
+            Permissions = permissions,
+            EffectivePermissions = permissions,
+            IsAdminPortalAllowed = isAdminPortalAllowed
+        };
+    }
 }

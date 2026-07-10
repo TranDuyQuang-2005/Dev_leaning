@@ -48,6 +48,24 @@ export class AuthService {
     return this.currentUser()?.roles?.includes(role) || false;
   }
 
+  hasPermission(permission: string): boolean {
+    const user = this.currentUser();
+    const permissions = [...(user?.permissions || []), ...(user?.effectivePermissions || [])];
+    return permissions.some(p => p.toLowerCase() === permission.toLowerCase());
+  }
+
+  hasAnyPermission(permissions: string[]): boolean {
+    return permissions.some(permission => this.hasPermission(permission));
+  }
+
+  canAccessAdmin(): boolean {
+    const user = this.currentUser();
+    return !!user?.isAdminPortalAllowed
+      || this.hasRole('Admin')
+      || this.hasRole('Moderator')
+      || this.hasPermission('admin.access');
+  }
+
   openUserApp(target = '/learner/forum'): void {
     const url = this.buildUserAppSsoUrl(target);
     window.open(url, '_blank', 'noopener,noreferrer');

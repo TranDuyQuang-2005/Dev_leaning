@@ -46747,6 +46747,9 @@ var _ApiService = class _ApiService {
   getSubmissionDetail(id) {
     return this.get(`/api/v1/code/submissions/${id}`);
   }
+  getMyCodeSubmissions(query) {
+    return this.get("/api/v1/code/submissions/mine", { params: query || {} });
+  }
 };
 _ApiService.\u0275fac = function ApiService_Factory(__ngFactoryType__) {
   return new (__ngFactoryType__ || _ApiService)(\u0275\u0275inject(HttpClient));
@@ -47193,9 +47196,10 @@ var RegisterComponent = _RegisterComponent;
 })();
 
 // src/app/features/layout.component.ts
-function LayoutComponent_span_107_Template(rf, ctx) {
+var _c0 = () => ({ exact: true });
+function LayoutComponent_span_113_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 70);
+    \u0275\u0275elementStart(0, "span", 73);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -47259,7 +47263,7 @@ var _LayoutComponent = class _LayoutComponent {
 _LayoutComponent.\u0275fac = function LayoutComponent_Factory(__ngFactoryType__) {
   return new (__ngFactoryType__ || _LayoutComponent)(\u0275\u0275directiveInject(Router), \u0275\u0275directiveInject(ActivatedRoute), \u0275\u0275directiveInject(AuthService), \u0275\u0275directiveInject(ApiService));
 };
-_LayoutComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _LayoutComponent, selectors: [["app-layout"]], decls: 115, vars: 6, consts: [[1, "app-shell"], [1, "sidebar"], ["routerLink", "/", 1, "logo"], [1, "logo-mark"], ["aria-hidden", "true", "fill", "none", "stroke", "currentColor", "stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "viewBox", "0 0 24 24", 1, "icon"], ["points", "16 18 22 12 16 6"], ["points", "8 6 2 12 8 18"], ["x1", "14", "x2", "10", "y1", "4", "y2", "20"], [1, "dev"], [1, "sidebar-nav"], ["routerLink", "/learner/dashboard", "routerLinkActive", "active", 1, "nav-item"], ["d", "m3 10 9-7 9 7"], ["d", "M5 10v10h14V10"], ["d", "M9 20v-6h6v6"], ["routerLink", "/learner/learning", "routerLinkActive", "active", 1, "nav-item"], ["d", "M4 19.5A2.5 2.5 0 0 1 6.5 17H20"], ["d", "M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"], ["routerLink", "/learner/practice-banks", "routerLinkActive", "active", 1, "nav-item"], ["d", "M12 20h9"], ["d", "M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"], ["routerLink", "/learner/practice-attempts", "routerLinkActive", "active", 1, "nav-item"], ["d", "M3 3v18h18"], ["d", "m19 9-5 5-4-4-3 3"], ["routerLink", "/learner/quiz-history", "routerLinkActive", "active", 1, "nav-item"], ["d", "M4 6h16"], ["d", "M4 12h16"], ["d", "M4 18h10"], ["routerLink", "/learner/roadmap", "routerLinkActive", "active", 1, "nav-item"], ["points", "3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6"], ["x1", "9", "x2", "9", "y1", "3", "y2", "18"], ["x1", "15", "x2", "15", "y1", "6", "y2", "21"], ["routerLink", "/learner/playground", "routerLinkActive", "active", 1, "nav-item"], ["points", "4 17 10 11 4 5"], ["x1", "12", "x2", "20", "y1", "19", "y2", "19"], ["routerLink", "/learner/problems", "routerLinkActive", "active", 1, "nav-item"], ["d", "M20 7 12 3 4 7v10l8 4 8-4V7z"], ["d", "M9 12l2 2 4-4"], ["routerLink", "/learner/forum", "routerLinkActive", "active", 1, "nav-item"], ["d", "M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"], ["routerLink", "/learner/leaderboard", "routerLinkActive", "active", 1, "nav-item"], ["d", "M6 9H4a2 2 0 0 1-2-2V5h4"], ["d", "M18 9h2a2 2 0 0 0 2-2V5h-4"], ["d", "M6 2h12v7a6 6 0 0 1-12 0V2z"], ["d", "M12 15v5"], ["d", "M8 20h8"], ["routerLink", "/learner/profile", "routerLinkActive", "active", 1, "nav-item"], ["cx", "12", "cy", "8", "r", "4"], ["d", "M20 21a8 8 0 0 0-16 0"], [1, "main"], [1, "topbar"], [1, "topbar-actions"], ["type", "button", 1, "theme-toggle", 3, "click"], ["viewBox", "0 0 24 24", "fill", "none", "stroke", "currentColor", "stroke-width", "2", "stroke-linecap", "round", "stroke-linejoin", "round", 1, "moon-icon"], ["d", "M21 12.8A8.5 8.5 0 1 1 11.2 3a6.5 6.5 0 0 0 9.8 9.8Z"], ["viewBox", "0 0 24 24", "fill", "none", "stroke", "currentColor", "stroke-width", "2", "stroke-linecap", "round", "stroke-linejoin", "round", 1, "sun-icon"], ["cx", "12", "cy", "12", "r", "4"], ["d", "M12 2v2"], ["d", "M12 20v2"], ["d", "M2 12h2"], ["d", "M20 12h2"], [1, "theme-label"], ["routerLink", "/learner/notifications", 1, "icon-btn"], ["viewBox", "0 0 24 24", "fill", "none", "stroke", "currentColor", "stroke-width", "2", "stroke-linecap", "round", "stroke-linejoin", "round", 1, "icon"], ["d", "M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"], ["d", "M13.73 21a2 2 0 0 1-3.46 0"], ["class", "dot", 4, "ngIf"], [1, "topbar-user-menu"], ["routerLink", "/learner/profile", 1, "avatar", 3, "title"], ["type", "button", "title", "\u0110\u0103ng xu\u1EA5t t\xE0i kho\u1EA3n", 1, "logout-btn", 3, "click"], [1, "content"], [1, "dot"]], template: function LayoutComponent_Template(rf, ctx) {
+_LayoutComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _LayoutComponent, selectors: [["app-layout"]], decls: 121, vars: 8, consts: [[1, "app-shell"], [1, "sidebar"], ["routerLink", "/", 1, "logo"], [1, "logo-mark"], ["aria-hidden", "true", "fill", "none", "stroke", "currentColor", "stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "viewBox", "0 0 24 24", 1, "icon"], ["points", "16 18 22 12 16 6"], ["points", "8 6 2 12 8 18"], ["x1", "14", "x2", "10", "y1", "4", "y2", "20"], [1, "dev"], [1, "sidebar-nav"], ["routerLink", "/learner/dashboard", "routerLinkActive", "active", 1, "nav-item"], ["d", "m3 10 9-7 9 7"], ["d", "M5 10v10h14V10"], ["d", "M9 20v-6h6v6"], ["routerLink", "/learner/learning", "routerLinkActive", "active", 1, "nav-item"], ["d", "M4 19.5A2.5 2.5 0 0 1 6.5 17H20"], ["d", "M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"], ["routerLink", "/learner/practice-banks", "routerLinkActive", "active", 1, "nav-item"], ["d", "M12 20h9"], ["d", "M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"], ["routerLink", "/learner/practice-attempts", "routerLinkActive", "active", 1, "nav-item"], ["d", "M3 3v18h18"], ["d", "m19 9-5 5-4-4-3 3"], ["routerLink", "/learner/quiz-history", "routerLinkActive", "active", 1, "nav-item"], ["d", "M4 6h16"], ["d", "M4 12h16"], ["d", "M4 18h10"], ["routerLink", "/learner/roadmap", "routerLinkActive", "active", 1, "nav-item"], ["points", "3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6"], ["x1", "9", "x2", "9", "y1", "3", "y2", "18"], ["x1", "15", "x2", "15", "y1", "6", "y2", "21"], ["routerLink", "/learner/playground", "routerLinkActive", "active", 1, "nav-item"], ["points", "4 17 10 11 4 5"], ["x1", "12", "x2", "20", "y1", "19", "y2", "19"], ["routerLink", "/learner/problems", "routerLinkActive", "active", 1, "nav-item"], ["d", "M20 7 12 3 4 7v10l8 4 8-4V7z"], ["d", "M9 12l2 2 4-4"], ["routerLink", "/learner/submissions", "routerLinkActive", "active", 1, "nav-item", 3, "routerLinkActiveOptions"], ["d", "M9 11 12 14 22 4"], ["d", "M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"], ["routerLink", "/learner/forum", "routerLinkActive", "active", 1, "nav-item"], ["d", "M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"], ["routerLink", "/learner/leaderboard", "routerLinkActive", "active", 1, "nav-item"], ["d", "M6 9H4a2 2 0 0 1-2-2V5h4"], ["d", "M18 9h2a2 2 0 0 0 2-2V5h-4"], ["d", "M6 2h12v7a6 6 0 0 1-12 0V2z"], ["d", "M12 15v5"], ["d", "M8 20h8"], ["routerLink", "/learner/profile", "routerLinkActive", "active", 1, "nav-item"], ["cx", "12", "cy", "8", "r", "4"], ["d", "M20 21a8 8 0 0 0-16 0"], [1, "main"], [1, "topbar"], [1, "topbar-actions"], ["type", "button", 1, "theme-toggle", 3, "click"], ["viewBox", "0 0 24 24", "fill", "none", "stroke", "currentColor", "stroke-width", "2", "stroke-linecap", "round", "stroke-linejoin", "round", 1, "moon-icon"], ["d", "M21 12.8A8.5 8.5 0 1 1 11.2 3a6.5 6.5 0 0 0 9.8 9.8Z"], ["viewBox", "0 0 24 24", "fill", "none", "stroke", "currentColor", "stroke-width", "2", "stroke-linecap", "round", "stroke-linejoin", "round", 1, "sun-icon"], ["cx", "12", "cy", "12", "r", "4"], ["d", "M12 2v2"], ["d", "M12 20v2"], ["d", "M2 12h2"], ["d", "M20 12h2"], [1, "theme-label"], ["routerLink", "/learner/notifications", 1, "icon-btn"], ["viewBox", "0 0 24 24", "fill", "none", "stroke", "currentColor", "stroke-width", "2", "stroke-linecap", "round", "stroke-linejoin", "round", 1, "icon"], ["d", "M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"], ["d", "M13.73 21a2 2 0 0 1-3.46 0"], ["class", "dot", 4, "ngIf"], [1, "topbar-user-menu"], ["routerLink", "/learner/profile", 1, "avatar", 3, "title"], ["type", "button", "title", "\u0110\u0103ng xu\u1EA5t t\xE0i kho\u1EA3n", 1, "logout-btn", 3, "click"], [1, "content"], [1, "dot"]], template: function LayoutComponent_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 0)(1, "aside", 1)(2, "a", 2)(3, "span", 3);
     \u0275\u0275namespaceSVG();
@@ -47347,74 +47351,85 @@ _LayoutComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type:
     \u0275\u0275elementStart(64, "a", 37);
     \u0275\u0275namespaceSVG();
     \u0275\u0275elementStart(65, "svg", 4);
-    \u0275\u0275element(66, "path", 38);
+    \u0275\u0275element(66, "path", 38)(67, "path", 39);
     \u0275\u0275elementEnd();
     \u0275\u0275namespaceHTML();
-    \u0275\u0275elementStart(67, "span");
-    \u0275\u0275text(68, "Forum");
+    \u0275\u0275elementStart(68, "span");
+    \u0275\u0275text(69, "B\xE0i n\u1ED9p c\u1EE7a t\xF4i");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(69, "a", 39);
+    \u0275\u0275elementStart(70, "a", 40);
     \u0275\u0275namespaceSVG();
-    \u0275\u0275elementStart(70, "svg", 4);
-    \u0275\u0275element(71, "path", 40)(72, "path", 41)(73, "path", 42)(74, "path", 43)(75, "path", 44);
+    \u0275\u0275elementStart(71, "svg", 4);
+    \u0275\u0275element(72, "path", 41);
     \u0275\u0275elementEnd();
     \u0275\u0275namespaceHTML();
-    \u0275\u0275elementStart(76, "span");
-    \u0275\u0275text(77, "Leaderboard");
+    \u0275\u0275elementStart(73, "span");
+    \u0275\u0275text(74, "Forum");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(78, "a", 45);
+    \u0275\u0275elementStart(75, "a", 42);
     \u0275\u0275namespaceSVG();
-    \u0275\u0275elementStart(79, "svg", 4);
-    \u0275\u0275element(80, "circle", 46)(81, "path", 47);
+    \u0275\u0275elementStart(76, "svg", 4);
+    \u0275\u0275element(77, "path", 43)(78, "path", 44)(79, "path", 45)(80, "path", 46)(81, "path", 47);
     \u0275\u0275elementEnd();
     \u0275\u0275namespaceHTML();
     \u0275\u0275elementStart(82, "span");
-    \u0275\u0275text(83, "Profile");
-    \u0275\u0275elementEnd()()()();
-    \u0275\u0275elementStart(84, "div", 48)(85, "header", 49)(86, "div")(87, "h2");
-    \u0275\u0275text(88);
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(89, "p");
-    \u0275\u0275text(90);
+    \u0275\u0275text(83, "Leaderboard");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(91, "div", 50)(92, "button", 51);
-    \u0275\u0275listener("click", function LayoutComponent_Template_button_click_92_listener() {
+    \u0275\u0275elementStart(84, "a", 48);
+    \u0275\u0275namespaceSVG();
+    \u0275\u0275elementStart(85, "svg", 4);
+    \u0275\u0275element(86, "circle", 49)(87, "path", 50);
+    \u0275\u0275elementEnd();
+    \u0275\u0275namespaceHTML();
+    \u0275\u0275elementStart(88, "span");
+    \u0275\u0275text(89, "Profile");
+    \u0275\u0275elementEnd()()()();
+    \u0275\u0275elementStart(90, "div", 51)(91, "header", 52)(92, "div")(93, "h2");
+    \u0275\u0275text(94);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(95, "p");
+    \u0275\u0275text(96);
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(97, "div", 53)(98, "button", 54);
+    \u0275\u0275listener("click", function LayoutComponent_Template_button_click_98_listener() {
       return ctx.toggleTheme();
     });
     \u0275\u0275namespaceSVG();
-    \u0275\u0275elementStart(93, "svg", 52);
-    \u0275\u0275element(94, "path", 53);
+    \u0275\u0275elementStart(99, "svg", 55);
+    \u0275\u0275element(100, "path", 56);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(95, "svg", 54);
-    \u0275\u0275element(96, "circle", 55)(97, "path", 56)(98, "path", 57)(99, "path", 58)(100, "path", 59);
+    \u0275\u0275elementStart(101, "svg", 57);
+    \u0275\u0275element(102, "circle", 58)(103, "path", 59)(104, "path", 60)(105, "path", 61)(106, "path", 62);
     \u0275\u0275elementEnd();
     \u0275\u0275namespaceHTML();
-    \u0275\u0275elementStart(101, "span", 60);
-    \u0275\u0275text(102);
+    \u0275\u0275elementStart(107, "span", 63);
+    \u0275\u0275text(108);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(103, "a", 61);
+    \u0275\u0275elementStart(109, "a", 64);
     \u0275\u0275namespaceSVG();
-    \u0275\u0275elementStart(104, "svg", 62);
-    \u0275\u0275element(105, "path", 63)(106, "path", 64);
+    \u0275\u0275elementStart(110, "svg", 65);
+    \u0275\u0275element(111, "path", 66)(112, "path", 67);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(107, LayoutComponent_span_107_Template, 2, 1, "span", 65);
+    \u0275\u0275template(113, LayoutComponent_span_113_Template, 2, 1, "span", 68);
     \u0275\u0275elementEnd();
     \u0275\u0275namespaceHTML();
-    \u0275\u0275elementStart(108, "div", 66)(109, "a", 67);
-    \u0275\u0275text(110);
+    \u0275\u0275elementStart(114, "div", 69)(115, "a", 70);
+    \u0275\u0275text(116);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(111, "button", 68);
-    \u0275\u0275listener("click", function LayoutComponent_Template_button_click_111_listener() {
+    \u0275\u0275elementStart(117, "button", 71);
+    \u0275\u0275listener("click", function LayoutComponent_Template_button_click_117_listener() {
       return ctx.logout();
     });
-    \u0275\u0275text(112, "\u0110\u0103ng xu\u1EA5t");
+    \u0275\u0275text(118, "\u0110\u0103ng xu\u1EA5t");
     \u0275\u0275elementEnd()()()();
-    \u0275\u0275elementStart(113, "main", 69);
-    \u0275\u0275element(114, "router-outlet");
+    \u0275\u0275elementStart(119, "main", 72);
+    \u0275\u0275element(120, "router-outlet");
     \u0275\u0275elementEnd()()();
   }
   if (rf & 2) {
-    \u0275\u0275advance(88);
+    \u0275\u0275advance(64);
+    \u0275\u0275property("routerLinkActiveOptions", \u0275\u0275pureFunction0(7, _c0));
+    \u0275\u0275advance(30);
     \u0275\u0275textInterpolate(ctx.pageTitle);
     \u0275\u0275advance(2);
     \u0275\u0275textInterpolate(ctx.pageSubtitle);
@@ -47478,6 +47493,10 @@ var LayoutComponent = _LayoutComponent;
         <svg aria-hidden="true" class="icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7 12 3 4 7v10l8 4 8-4V7z"></path><path d="M9 12l2 2 4-4"></path></svg>
         <span>Problems</span>
       </a>
+      <a class="nav-item" routerLink="/learner/submissions" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg aria-hidden="true" class="icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11 12 14 22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+        <span>B\xE0i n\u1ED9p c\u1EE7a t\xF4i</span>
+      </a>
       <a class="nav-item" routerLink="/learner/forum" routerLinkActive="active">
         <svg aria-hidden="true" class="icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path></svg>
         <span>Forum</span>
@@ -47526,7 +47545,7 @@ var LayoutComponent = _LayoutComponent;
 })();
 
 // src/app/features/dashboard.component.ts
-var _c0 = (a0) => ["/learner/quiz-result", a0];
+var _c02 = (a0) => ["/learner/quiz-result", a0];
 function DashboardComponent_div_87_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 56)(1, "div", 57);
@@ -47556,7 +47575,7 @@ function DashboardComponent_div_87_Template(rf, ctx) {
     \u0275\u0275advance(2);
     \u0275\u0275textInterpolate2("", a_r1.correctAnswers, "/", a_r1.totalQuestions, " correct");
     \u0275\u0275advance();
-    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(9, _c0, a_r1.attemptId));
+    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(9, _c02, a_r1.attemptId));
   }
 }
 function DashboardComponent_div_88_Template(rf, ctx) {
@@ -47738,7 +47757,7 @@ var DashboardComponent = _DashboardComponent;
 })();
 
 // src/app/features/learning.component.ts
-var _c02 = (a0) => ["/learner/quiz", a0];
+var _c03 = (a0) => ["/learner/quiz", a0];
 function LearningComponent_option_18_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "option", 20);
@@ -47848,7 +47867,7 @@ function LearningComponent_div_30_Template(rf, ctx) {
     \u0275\u0275advance(2);
     \u0275\u0275styleProp("width", ctx_r1.progress(q_r3.id), "%");
     \u0275\u0275advance();
-    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(17, _c02, q_r3.id));
+    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(17, _c03, q_r3.id));
     \u0275\u0275advance();
     \u0275\u0275textInterpolate(ctx_r1.progress(q_r3.id) > 0 ? "Continue Learning" : "Start Learning");
   }
@@ -48035,7 +48054,7 @@ var LearningComponent = _LearningComponent;
 })();
 
 // src/app/features/quiz.component.ts
-var _c03 = (a0) => ({ "status-bad": a0 });
+var _c04 = (a0) => ({ "status-bad": a0 });
 var _c1 = (a0, a1) => ({ "border": a0, "background": a1 });
 function QuizComponent_p_5_Template(rf, ctx) {
   if (rf & 1) {
@@ -48064,7 +48083,7 @@ function QuizComponent_div_7_Template(rf, ctx) {
   }
   if (rf & 2) {
     const ctx_r0 = \u0275\u0275nextContext();
-    \u0275\u0275property("ngClass", \u0275\u0275pureFunction1(2, _c03, ctx_r0.secondsLeft > 0 && ctx_r0.secondsLeft <= 60));
+    \u0275\u0275property("ngClass", \u0275\u0275pureFunction1(2, _c04, ctx_r0.secondsLeft > 0 && ctx_r0.secondsLeft <= 60));
     \u0275\u0275advance();
     \u0275\u0275textInterpolate(ctx_r0.timerText);
   }
@@ -49127,7 +49146,7 @@ var ProfileComponent = _ProfileComponent;
 })();
 
 // src/app/features/roadmap.component.ts
-var _c04 = (a0) => ["/learner/roadmaps", a0];
+var _c05 = (a0) => ["/learner/roadmaps", a0];
 function RoadmapComponent_div_11_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 8);
@@ -49249,7 +49268,7 @@ function RoadmapComponent_section_14_article_1_Template(rf, ctx) {
     \u0275\u0275advance(3);
     \u0275\u0275textInterpolate1("", track_r3.progressPercent || 0, "%");
     \u0275\u0275advance();
-    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(12, _c04, track_r3.slug));
+    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(12, _c05, track_r3.slug));
   }
 }
 function RoadmapComponent_section_14_Template(rf, ctx) {
@@ -49402,7 +49421,7 @@ var RoadmapComponent = _RoadmapComponent;
 })();
 
 // src/app/features/roadmap-track.component.ts
-var _c05 = (a0) => ["/learner/courses", a0];
+var _c06 = (a0) => ["/learner/courses", a0];
 function RoadmapTrackComponent_div_3_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 5);
@@ -49481,7 +49500,7 @@ function RoadmapTrackComponent_ng_container_5_article_15_Template(rf, ctx) {
     \u0275\u0275textInterpolate(course_r2.title);
     \u0275\u0275advance();
     \u0275\u0275classProp("disabled-link", course_r2.isLocked);
-    \u0275\u0275property("ngClass", course_r2.isLocked ? "btn-outline" : "btn-primary")("routerLink", course_r2.isLocked ? null : \u0275\u0275pureFunction1(18, _c05, course_r2.slug));
+    \u0275\u0275property("ngClass", course_r2.isLocked ? "btn-outline" : "btn-primary")("routerLink", course_r2.isLocked ? null : \u0275\u0275pureFunction1(18, _c06, course_r2.slug));
     \u0275\u0275advance();
     \u0275\u0275textInterpolate1(" ", ctx_r0.buttonText(course_r2), " ");
     \u0275\u0275advance(2);
@@ -49676,11 +49695,11 @@ var RoadmapTrackComponent = _RoadmapTrackComponent;
 })();
 
 // src/app/features/course-detail.component.ts
-var _c06 = (a0) => ["/learner/roadmaps", a0];
+var _c07 = (a0) => ["/learner/roadmaps", a0];
 var _c12 = (a0) => ["/learner/courses", a0];
 function CourseDetailComponent_div_3_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 6);
+    \u0275\u0275elementStart(0, "div", 9);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -49692,7 +49711,7 @@ function CourseDetailComponent_div_3_Template(rf, ctx) {
 }
 function CourseDetailComponent_div_4_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 6);
+    \u0275\u0275elementStart(0, "div", 9);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -49704,14 +49723,14 @@ function CourseDetailComponent_div_4_Template(rf, ctx) {
 }
 function CourseDetailComponent_div_5_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 7);
+    \u0275\u0275elementStart(0, "div", 10);
     \u0275\u0275text(1, "\u0110ang t\u1EA3i kh\xF3a h\u1ECDc...");
     \u0275\u0275elementEnd();
   }
 }
 function CourseDetailComponent_ng_container_6_p_10_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "p", 26);
+    \u0275\u0275elementStart(0, "p", 29);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -49723,7 +49742,7 @@ function CourseDetailComponent_ng_container_6_p_10_Template(rf, ctx) {
 }
 function CourseDetailComponent_ng_container_6_section_11_div_4_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 29);
+    \u0275\u0275elementStart(0, "div", 32);
     \u0275\u0275element(1, "span");
     \u0275\u0275elementStart(2, "p");
     \u0275\u0275text(3);
@@ -49737,11 +49756,11 @@ function CourseDetailComponent_ng_container_6_section_11_div_4_Template(rf, ctx)
 }
 function CourseDetailComponent_ng_container_6_section_11_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "section", 14)(1, "h2");
+    \u0275\u0275elementStart(0, "section", 17)(1, "h2");
     \u0275\u0275text(2, "B\u1EA1n s\u1EBD h\u1ECDc \u0111\u01B0\u1EE3c g\xEC?");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "div", 27);
-    \u0275\u0275template(4, CourseDetailComponent_ng_container_6_section_11_div_4_Template, 4, 1, "div", 28);
+    \u0275\u0275elementStart(3, "div", 30);
+    \u0275\u0275template(4, CourseDetailComponent_ng_container_6_section_11_div_4_Template, 4, 1, "div", 31);
     \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
@@ -49752,21 +49771,21 @@ function CourseDetailComponent_ng_container_6_section_11_Template(rf, ctx) {
 }
 function CourseDetailComponent_ng_container_6_article_22_span_8_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 39);
+    \u0275\u0275elementStart(0, "span", 42);
     \u0275\u0275text(1, "Completed");
     \u0275\u0275elementEnd();
   }
 }
 function CourseDetailComponent_ng_container_6_article_22_span_9_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 40);
+    \u0275\u0275elementStart(0, "span", 43);
     \u0275\u0275text(1, "Locked");
     \u0275\u0275elementEnd();
   }
 }
 function CourseDetailComponent_ng_container_6_article_22_p_10_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "p", 41);
+    \u0275\u0275elementStart(0, "p", 44);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -49778,28 +49797,28 @@ function CourseDetailComponent_ng_container_6_article_22_p_10_Template(rf, ctx) 
 }
 function CourseDetailComponent_ng_container_6_article_22_div_11_button_1_span_5_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 39);
+    \u0275\u0275elementStart(0, "span", 42);
     \u0275\u0275text(1, "Done");
     \u0275\u0275elementEnd();
   }
 }
 function CourseDetailComponent_ng_container_6_article_22_div_11_button_1_span_6_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 17);
+    \u0275\u0275elementStart(0, "span", 20);
     \u0275\u0275text(1, "Xem th\u1EED");
     \u0275\u0275elementEnd();
   }
 }
 function CourseDetailComponent_ng_container_6_article_22_div_11_button_1_span_7_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 40);
+    \u0275\u0275elementStart(0, "span", 43);
     \u0275\u0275text(1, "Locked");
     \u0275\u0275elementEnd();
   }
 }
 function CourseDetailComponent_ng_container_6_article_22_div_11_button_1_span_10_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 49);
+    \u0275\u0275elementStart(0, "span", 52);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -49812,23 +49831,23 @@ function CourseDetailComponent_ng_container_6_article_22_div_11_button_1_span_10
 function CourseDetailComponent_ng_container_6_article_22_div_11_button_1_Template(rf, ctx) {
   if (rf & 1) {
     const _r6 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "button", 44);
+    \u0275\u0275elementStart(0, "button", 47);
     \u0275\u0275listener("click", function CourseDetailComponent_ng_container_6_article_22_div_11_button_1_Template_button_click_0_listener() {
       const lesson_r7 = \u0275\u0275restoreView(_r6).$implicit;
       const ctx_r0 = \u0275\u0275nextContext(4);
       return \u0275\u0275resetView(ctx_r0.selectLesson(lesson_r7));
     });
-    \u0275\u0275elementStart(1, "span", 45);
+    \u0275\u0275elementStart(1, "span", 48);
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "span", 46);
+    \u0275\u0275elementStart(3, "span", 49);
     \u0275\u0275text(4);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(5, CourseDetailComponent_ng_container_6_article_22_div_11_button_1_span_5_Template, 2, 0, "span", 35)(6, CourseDetailComponent_ng_container_6_article_22_div_11_button_1_span_6_Template, 2, 0, "span", 47)(7, CourseDetailComponent_ng_container_6_article_22_div_11_button_1_span_7_Template, 2, 0, "span", 36);
+    \u0275\u0275template(5, CourseDetailComponent_ng_container_6_article_22_div_11_button_1_span_5_Template, 2, 0, "span", 38)(6, CourseDetailComponent_ng_container_6_article_22_div_11_button_1_span_6_Template, 2, 0, "span", 50)(7, CourseDetailComponent_ng_container_6_article_22_div_11_button_1_span_7_Template, 2, 0, "span", 39);
     \u0275\u0275elementStart(8, "small");
     \u0275\u0275text(9);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(10, CourseDetailComponent_ng_container_6_article_22_div_11_button_1_span_10_Template, 2, 1, "span", 48);
+    \u0275\u0275template(10, CourseDetailComponent_ng_container_6_article_22_div_11_button_1_span_10_Template, 2, 1, "span", 51);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
@@ -49853,8 +49872,8 @@ function CourseDetailComponent_ng_container_6_article_22_div_11_button_1_Templat
 }
 function CourseDetailComponent_ng_container_6_article_22_div_11_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 42);
-    \u0275\u0275template(1, CourseDetailComponent_ng_container_6_article_22_div_11_button_1_Template, 11, 11, "button", 43);
+    \u0275\u0275elementStart(0, "div", 45);
+    \u0275\u0275template(1, CourseDetailComponent_ng_container_6_article_22_div_11_button_1_Template, 11, 11, "button", 46);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
@@ -49866,24 +49885,24 @@ function CourseDetailComponent_ng_container_6_article_22_div_11_Template(rf, ctx
 function CourseDetailComponent_ng_container_6_article_22_Template(rf, ctx) {
   if (rf & 1) {
     const _r4 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "article", 30)(1, "button", 31);
+    \u0275\u0275elementStart(0, "article", 33)(1, "button", 34);
     \u0275\u0275listener("click", function CourseDetailComponent_ng_container_6_article_22_Template_button_click_1_listener() {
       const module_r5 = \u0275\u0275restoreView(_r4).$implicit;
       const ctx_r0 = \u0275\u0275nextContext(2);
       return \u0275\u0275resetView(ctx_r0.toggleModule(module_r5));
     });
-    \u0275\u0275elementStart(2, "span", 32);
+    \u0275\u0275elementStart(2, "span", 35);
     \u0275\u0275text(3);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(4, "span", 33);
+    \u0275\u0275elementStart(4, "span", 36);
     \u0275\u0275text(5);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(6, "span", 34);
+    \u0275\u0275elementStart(6, "span", 37);
     \u0275\u0275text(7);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(8, CourseDetailComponent_ng_container_6_article_22_span_8_Template, 2, 0, "span", 35)(9, CourseDetailComponent_ng_container_6_article_22_span_9_Template, 2, 0, "span", 36);
+    \u0275\u0275template(8, CourseDetailComponent_ng_container_6_article_22_span_8_Template, 2, 0, "span", 38)(9, CourseDetailComponent_ng_container_6_article_22_span_9_Template, 2, 0, "span", 39);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(10, CourseDetailComponent_ng_container_6_article_22_p_10_Template, 2, 1, "p", 37)(11, CourseDetailComponent_ng_container_6_article_22_div_11_Template, 2, 1, "div", 38);
+    \u0275\u0275template(10, CourseDetailComponent_ng_container_6_article_22_p_10_Template, 2, 1, "p", 40)(11, CourseDetailComponent_ng_container_6_article_22_div_11_Template, 2, 1, "div", 41);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
@@ -49909,7 +49928,7 @@ function CourseDetailComponent_ng_container_6_article_22_Template(rf, ctx) {
 }
 function CourseDetailComponent_ng_container_6_p_55_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "p", 26);
+    \u0275\u0275elementStart(0, "p", 29);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -49933,11 +49952,11 @@ function CourseDetailComponent_ng_container_6_section_56_li_4_Template(rf, ctx) 
 }
 function CourseDetailComponent_ng_container_6_section_56_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "section", 14)(1, "h2");
+    \u0275\u0275elementStart(0, "section", 17)(1, "h2");
     \u0275\u0275text(2, "Y\xEAu c\u1EA7u \u0111\u1EA7u v\xE0o");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "ul", 50);
-    \u0275\u0275template(4, CourseDetailComponent_ng_container_6_section_56_li_4_Template, 2, 1, "li", 51);
+    \u0275\u0275elementStart(3, "ul", 53);
+    \u0275\u0275template(4, CourseDetailComponent_ng_container_6_section_56_li_4_Template, 2, 1, "li", 54);
     \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
@@ -49948,7 +49967,7 @@ function CourseDetailComponent_ng_container_6_section_56_Template(rf, ctx) {
 }
 function CourseDetailComponent_ng_container_6_section_57_a_3_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "a", 53)(1, "b");
+    \u0275\u0275elementStart(0, "a", 56)(1, "b");
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(3, "span");
@@ -49966,10 +49985,10 @@ function CourseDetailComponent_ng_container_6_section_57_a_3_Template(rf, ctx) {
 }
 function CourseDetailComponent_ng_container_6_section_57_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "section", 14)(1, "h2");
+    \u0275\u0275elementStart(0, "section", 17)(1, "h2");
     \u0275\u0275text(2, "Kh\xF3a h\u1ECDc li\xEAn quan");
     \u0275\u0275elementEnd();
-    \u0275\u0275template(3, CourseDetailComponent_ng_container_6_section_57_a_3_Template, 5, 6, "a", 52);
+    \u0275\u0275template(3, CourseDetailComponent_ng_container_6_section_57_a_3_Template, 5, 6, "a", 55);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
@@ -49982,7 +50001,7 @@ function CourseDetailComponent_ng_container_6_Template(rf, ctx) {
   if (rf & 1) {
     const _r2 = \u0275\u0275getCurrentView();
     \u0275\u0275elementContainerStart(0);
-    \u0275\u0275elementStart(1, "section", 8)(2, "main", 9)(3, "div", 10)(4, "span", 11);
+    \u0275\u0275elementStart(1, "section", 11)(2, "main", 12)(3, "div", 13)(4, "span", 14);
     \u0275\u0275text(5);
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(6, "h1");
@@ -49991,25 +50010,25 @@ function CourseDetailComponent_ng_container_6_Template(rf, ctx) {
     \u0275\u0275elementStart(8, "p");
     \u0275\u0275text(9);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(10, CourseDetailComponent_ng_container_6_p_10_Template, 2, 1, "p", 12);
+    \u0275\u0275template(10, CourseDetailComponent_ng_container_6_p_10_Template, 2, 1, "p", 15);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(11, CourseDetailComponent_ng_container_6_section_11_Template, 5, 1, "section", 13);
-    \u0275\u0275elementStart(12, "section", 14)(13, "div", 15)(14, "div")(15, "h2");
+    \u0275\u0275template(11, CourseDetailComponent_ng_container_6_section_11_Template, 5, 1, "section", 16);
+    \u0275\u0275elementStart(12, "section", 17)(13, "div", 18)(14, "div")(15, "h2");
     \u0275\u0275text(16, "N\u1ED9i dung kh\xF3a h\u1ECDc");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(17, "p", 16);
+    \u0275\u0275elementStart(17, "p", 19);
     \u0275\u0275text(18);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(19, "span", 17);
+    \u0275\u0275elementStart(19, "span", 20);
     \u0275\u0275text(20);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(21, "div", 18);
-    \u0275\u0275template(22, CourseDetailComponent_ng_container_6_article_22_Template, 12, 9, "article", 19);
+    \u0275\u0275elementStart(21, "div", 21);
+    \u0275\u0275template(22, CourseDetailComponent_ng_container_6_article_22_Template, 12, 9, "article", 22);
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(23, "aside", 20)(24, "section", 21)(25, "h2");
+    \u0275\u0275elementStart(23, "aside", 23)(24, "section", 24)(25, "h2");
     \u0275\u0275text(26, "Th\xF4ng tin kh\xF3a h\u1ECDc");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(27, "div", 22)(28, "span");
+    \u0275\u0275elementStart(27, "div", 25)(28, "span");
     \u0275\u0275text(29, "Level");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(30, "b");
@@ -50033,13 +50052,13 @@ function CourseDetailComponent_ng_container_6_Template(rf, ctx) {
     \u0275\u0275elementStart(42, "b");
     \u0275\u0275text(43);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(44, "div", 23);
+    \u0275\u0275elementStart(44, "div", 26);
     \u0275\u0275element(45, "span");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(46, "p", 16);
+    \u0275\u0275elementStart(46, "p", 19);
     \u0275\u0275text(47);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(48, "button", 24);
+    \u0275\u0275elementStart(48, "button", 27);
     \u0275\u0275listener("click", function CourseDetailComponent_ng_container_6_Template_button_click_48_listener() {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
@@ -50047,15 +50066,15 @@ function CourseDetailComponent_ng_container_6_Template(rf, ctx) {
     });
     \u0275\u0275text(49);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(50, "div", 25)(51, "span");
+    \u0275\u0275elementStart(50, "div", 28)(51, "span");
     \u0275\u0275text(52, "B\xE0i ti\u1EBFp theo");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(53, "b");
     \u0275\u0275text(54);
     \u0275\u0275elementEnd()();
-    \u0275\u0275template(55, CourseDetailComponent_ng_container_6_p_55_Template, 2, 1, "p", 12);
+    \u0275\u0275template(55, CourseDetailComponent_ng_container_6_p_55_Template, 2, 1, "p", 15);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(56, CourseDetailComponent_ng_container_6_section_56_Template, 5, 1, "section", 13)(57, CourseDetailComponent_ng_container_6_section_57_Template, 4, 1, "section", 13);
+    \u0275\u0275template(56, CourseDetailComponent_ng_container_6_section_56_Template, 5, 1, "section", 16)(57, CourseDetailComponent_ng_container_6_section_57_Template, 4, 1, "section", 16);
     \u0275\u0275elementEnd()();
     \u0275\u0275elementContainerEnd();
   }
@@ -50103,24 +50122,87 @@ function CourseDetailComponent_ng_container_6_Template(rf, ctx) {
     \u0275\u0275property("ngIf", ctx_r0.course.relatedCourses == null ? null : ctx_r0.course.relatedCourses.length);
   }
 }
-function CourseDetailComponent_div_7_div_10_Template(rf, ctx) {
+function CourseDetailComponent_div_7_div_10_ng_container_1_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 62)(1, "span");
-    \u0275\u0275text(2, "Video");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "p");
-    \u0275\u0275text(4);
-    \u0275\u0275elementEnd()();
+    \u0275\u0275elementContainerStart(0);
+    \u0275\u0275element(1, "video", 67);
+    \u0275\u0275elementContainerEnd();
   }
   if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext(3);
+    \u0275\u0275advance();
+    \u0275\u0275property("src", ctx_r0.absoluteUrl(ctx_r0.selectedLesson.videoFileUrl), \u0275\u0275sanitizeUrl);
+  }
+}
+function CourseDetailComponent_div_7_div_10_ng_template_2_ng_container_0_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementContainerStart(0);
+    \u0275\u0275element(1, "iframe", 68);
+    \u0275\u0275elementContainerEnd();
+  }
+  if (rf & 2) {
+    const youtubeUrl_r11 = ctx.ngIf;
+    \u0275\u0275advance();
+    \u0275\u0275property("src", youtubeUrl_r11, \u0275\u0275sanitizeResourceUrl);
+  }
+}
+function CourseDetailComponent_div_7_div_10_ng_template_2_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275template(0, CourseDetailComponent_div_7_div_10_ng_template_2_ng_container_0_Template, 2, 1, "ng-container", 66);
+  }
+  if (rf & 2) {
+    \u0275\u0275nextContext();
+    const nonYoutubeVideo_r12 = \u0275\u0275reference(5);
     const ctx_r0 = \u0275\u0275nextContext(2);
-    \u0275\u0275advance(4);
-    \u0275\u0275textInterpolate(ctx_r0.selectedLesson.videoUrl);
+    \u0275\u0275property("ngIf", ctx_r0.safeYouTubeUrl(ctx_r0.selectedLesson.videoUrl))("ngIfElse", nonYoutubeVideo_r12);
+  }
+}
+function CourseDetailComponent_div_7_div_10_ng_template_4_video_0_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275element(0, "video", 67);
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext(4);
+    \u0275\u0275property("src", ctx_r0.absoluteUrl(ctx_r0.selectedLesson.videoUrl), \u0275\u0275sanitizeUrl);
+  }
+}
+function CourseDetailComponent_div_7_div_10_ng_template_4_ng_template_1_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "a", 70);
+    \u0275\u0275text(1, "Open video");
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext(4);
+    \u0275\u0275property("href", ctx_r0.externalVideoUrl(ctx_r0.selectedLesson.videoUrl), \u0275\u0275sanitizeUrl);
+  }
+}
+function CourseDetailComponent_div_7_div_10_ng_template_4_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275template(0, CourseDetailComponent_div_7_div_10_ng_template_4_video_0_Template, 1, 1, "video", 69)(1, CourseDetailComponent_div_7_div_10_ng_template_4_ng_template_1_Template, 2, 1, "ng-template", null, 2, \u0275\u0275templateRefExtractor);
+  }
+  if (rf & 2) {
+    const plainVideoLink_r13 = \u0275\u0275reference(2);
+    const ctx_r0 = \u0275\u0275nextContext(3);
+    \u0275\u0275property("ngIf", ctx_r0.isDirectVideoUrl(ctx_r0.selectedLesson.videoUrl))("ngIfElse", plainVideoLink_r13);
+  }
+}
+function CourseDetailComponent_div_7_div_10_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 65);
+    \u0275\u0275template(1, CourseDetailComponent_div_7_div_10_ng_container_1_Template, 2, 1, "ng-container", 66)(2, CourseDetailComponent_div_7_div_10_ng_template_2_Template, 1, 2, "ng-template", null, 0, \u0275\u0275templateRefExtractor)(4, CourseDetailComponent_div_7_div_10_ng_template_4_Template, 3, 2, "ng-template", null, 1, \u0275\u0275templateRefExtractor);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const externalVideo_r14 = \u0275\u0275reference(3);
+    const ctx_r0 = \u0275\u0275nextContext(2);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx_r0.selectedLesson.videoFileUrl)("ngIfElse", externalVideo_r14);
   }
 }
 function CourseDetailComponent_div_7_span_16_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 16);
+    \u0275\u0275elementStart(0, "span", 19);
     \u0275\u0275text(1, "B\xE0i n\xE0y ch\u01B0a th\u1EC3 ho\xE0n th\xE0nh th\u1EE7 c\xF4ng.");
     \u0275\u0275elementEnd();
   }
@@ -50128,13 +50210,13 @@ function CourseDetailComponent_div_7_span_16_Template(rf, ctx) {
 function CourseDetailComponent_div_7_Template(rf, ctx) {
   if (rf & 1) {
     const _r10 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "div", 54)(1, "div", 55)(2, "div", 15)(3, "div")(4, "span", 17);
+    \u0275\u0275elementStart(0, "div", 57)(1, "div", 58)(2, "div", 18)(3, "div")(4, "span", 20);
     \u0275\u0275text(5);
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(6, "h2");
     \u0275\u0275text(7);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(8, "button", 56);
+    \u0275\u0275elementStart(8, "button", 59);
     \u0275\u0275listener("click", function CourseDetailComponent_div_7_Template_button_click_8_listener() {
       \u0275\u0275restoreView(_r10);
       const ctx_r0 = \u0275\u0275nextContext();
@@ -50142,11 +50224,11 @@ function CourseDetailComponent_div_7_Template(rf, ctx) {
     });
     \u0275\u0275text(9, "\u0110\xF3ng");
     \u0275\u0275elementEnd()();
-    \u0275\u0275template(10, CourseDetailComponent_div_7_div_10_Template, 5, 1, "div", 57);
-    \u0275\u0275elementStart(11, "div", 58);
+    \u0275\u0275template(10, CourseDetailComponent_div_7_div_10_Template, 6, 2, "div", 60);
+    \u0275\u0275elementStart(11, "div", 61);
     \u0275\u0275text(12);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(13, "div", 59)(14, "button", 60);
+    \u0275\u0275elementStart(13, "div", 62)(14, "button", 63);
     \u0275\u0275listener("click", function CourseDetailComponent_div_7_Template_button_click_14_listener() {
       \u0275\u0275restoreView(_r10);
       const ctx_r0 = \u0275\u0275nextContext();
@@ -50154,7 +50236,7 @@ function CourseDetailComponent_div_7_Template(rf, ctx) {
     });
     \u0275\u0275text(15);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(16, CourseDetailComponent_div_7_span_16_Template, 2, 0, "span", 61);
+    \u0275\u0275template(16, CourseDetailComponent_div_7_span_16_Template, 2, 0, "span", 64);
     \u0275\u0275elementEnd()()();
   }
   if (rf & 2) {
@@ -50164,7 +50246,7 @@ function CourseDetailComponent_div_7_Template(rf, ctx) {
     \u0275\u0275advance(2);
     \u0275\u0275textInterpolate(ctx_r0.selectedLesson.title);
     \u0275\u0275advance(3);
-    \u0275\u0275property("ngIf", ctx_r0.selectedLesson.videoUrl);
+    \u0275\u0275property("ngIf", ctx_r0.isVideoLesson(ctx_r0.selectedLesson) && (ctx_r0.selectedLesson.videoFileUrl || ctx_r0.selectedLesson.videoUrl));
     \u0275\u0275advance(2);
     \u0275\u0275textInterpolate(ctx_r0.selectedLesson.content || "Admin ch\u01B0a nh\u1EADp n\u1ED9i dung chi ti\u1EBFt cho b\xE0i h\u1ECDc n\xE0y.");
     \u0275\u0275advance(2);
@@ -50176,10 +50258,11 @@ function CourseDetailComponent_div_7_Template(rf, ctx) {
   }
 }
 var _CourseDetailComponent = class _CourseDetailComponent {
-  constructor(route, router, api) {
+  constructor(route, router, api, sanitizer) {
     this.route = route;
     this.router = router;
     this.api = api;
+    this.sanitizer = sanitizer;
     this.course = null;
     this.selectedLesson = null;
     this.expanded = {};
@@ -50289,24 +50372,64 @@ var _CourseDetailComponent = class _CourseDetailComponent {
   lessonKind(lesson) {
     return lesson?.type === "CodePractice" ? "Code" : lesson?.type || "Reading";
   }
+  isVideoLesson(lesson) {
+    return String(lesson?.type || "").toLowerCase() === "video";
+  }
+  absoluteUrl(url) {
+    return this.api.toAbsoluteUrl(url);
+  }
+  safeYouTubeUrl(url) {
+    const embed = this.youtubeEmbedUrl(url);
+    return embed ? this.sanitizer.bypassSecurityTrustResourceUrl(embed) : null;
+  }
+  youtubeEmbedUrl(url) {
+    if (!url)
+      return null;
+    const id = this.youtubeId(url);
+    return id ? `https://www.youtube.com/embed/${id}` : null;
+  }
+  isDirectVideoUrl(url) {
+    return !!url && /\.(mp4|webm|mov)(\?|#|$)/i.test(url);
+  }
+  externalVideoUrl(url) {
+    return url ? url.trim() : "";
+  }
+  youtubeId(url) {
+    const trimmed = url.trim();
+    if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed))
+      return trimmed;
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.hostname.includes("youtu.be"))
+        return parsed.pathname.split("/").filter(Boolean)[0] || null;
+      if (parsed.hostname.includes("youtube.com")) {
+        if (parsed.pathname.startsWith("/embed/"))
+          return parsed.pathname.split("/").filter(Boolean)[1] || null;
+        return parsed.searchParams.get("v");
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  }
   nextLessonTitle() {
     return this.course?.nextUnlockedLesson?.title || "Ho\xE0n th\xE0nh b\xE0i hi\u1EC7n t\u1EA1i";
   }
 };
 _CourseDetailComponent.\u0275fac = function CourseDetailComponent_Factory(__ngFactoryType__) {
-  return new (__ngFactoryType__ || _CourseDetailComponent)(\u0275\u0275directiveInject(ActivatedRoute), \u0275\u0275directiveInject(Router), \u0275\u0275directiveInject(ApiService));
+  return new (__ngFactoryType__ || _CourseDetailComponent)(\u0275\u0275directiveInject(ActivatedRoute), \u0275\u0275directiveInject(Router), \u0275\u0275directiveInject(ApiService), \u0275\u0275directiveInject(DomSanitizer));
 };
-_CourseDetailComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _CourseDetailComponent, selectors: [["app-course-detail"]], decls: 8, vars: 8, consts: [[1, "page", "roadmap-page"], [1, "linklike", 3, "routerLink"], ["class", "alert alert-error", 4, "ngIf"], ["class", "empty-state", 4, "ngIf"], [4, "ngIf"], ["class", "modal-backdrop", 4, "ngIf"], [1, "alert", "alert-error"], [1, "empty-state"], [1, "course-detail-layout"], [1, "course-main"], [1, "course-title-block"], [1, "eyebrow"], ["class", "lock-note", 4, "ngIf"], ["class", "card card-pad", 4, "ngIf"], [1, "card", "card-pad"], [1, "course-section-head"], [1, "muted"], [1, "badge", "badge-blue"], [1, "module-list"], ["class", "module-item", 4, "ngFor", "ngForOf"], [1, "course-sidebar"], [1, "card", "card-pad", "course-summary-card"], [1, "course-facts"], [1, "progress"], ["type", "button", 1, "btn", "btn-primary", "full", 3, "click", "disabled"], [1, "next-lesson-box"], [1, "lock-note"], [1, "outcome-grid"], ["class", "outcome-item", 4, "ngFor", "ngForOf"], [1, "outcome-item"], [1, "module-item"], ["type", "button", 1, "module-toggle", 3, "click", "disabled"], [1, "module-caret"], [1, "module-title"], [1, "module-meta"], ["class", "badge badge-green", 4, "ngIf"], ["class", "badge badge-gray", 4, "ngIf"], ["class", "lock-note module-lock", 4, "ngIf"], ["class", "lesson-list", 4, "ngIf"], [1, "badge", "badge-green"], [1, "badge", "badge-gray"], [1, "lock-note", "module-lock"], [1, "lesson-list"], ["class", "lesson-row", "type", "button", 3, "locked", "done", "click", 4, "ngFor", "ngForOf"], ["type", "button", 1, "lesson-row", 3, "click"], [1, "lesson-kind"], [1, "lesson-title"], ["class", "badge badge-blue", 4, "ngIf"], ["class", "lesson-lock-text", 4, "ngIf"], [1, "lesson-lock-text"], [1, "clean-list"], [4, "ngFor", "ngForOf"], ["class", "related-course", 3, "routerLink", 4, "ngFor", "ngForOf"], [1, "related-course", 3, "routerLink"], [1, "modal-backdrop"], [1, "lesson-modal", "card", "card-pad"], ["type", "button", 1, "btn", "btn-outline", 3, "click"], ["class", "video-box", 4, "ngIf"], [1, "lesson-content"], [1, "action-row"], ["type", "button", 1, "btn", "btn-primary", 3, "click", "disabled"], ["class", "muted", 4, "ngIf"], [1, "video-box"]], template: function CourseDetailComponent_Template(rf, ctx) {
+_CourseDetailComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _CourseDetailComponent, selectors: [["app-course-detail"]], decls: 8, vars: 8, consts: [["externalVideo", ""], ["nonYoutubeVideo", ""], ["plainVideoLink", ""], [1, "page", "roadmap-page"], [1, "linklike", 3, "routerLink"], ["class", "alert alert-error", 4, "ngIf"], ["class", "empty-state", 4, "ngIf"], [4, "ngIf"], ["class", "modal-backdrop", 4, "ngIf"], [1, "alert", "alert-error"], [1, "empty-state"], [1, "course-detail-layout"], [1, "course-main"], [1, "course-title-block"], [1, "eyebrow"], ["class", "lock-note", 4, "ngIf"], ["class", "card card-pad", 4, "ngIf"], [1, "card", "card-pad"], [1, "course-section-head"], [1, "muted"], [1, "badge", "badge-blue"], [1, "module-list"], ["class", "module-item", 4, "ngFor", "ngForOf"], [1, "course-sidebar"], [1, "card", "card-pad", "course-summary-card"], [1, "course-facts"], [1, "progress"], ["type", "button", 1, "btn", "btn-primary", "full", 3, "click", "disabled"], [1, "next-lesson-box"], [1, "lock-note"], [1, "outcome-grid"], ["class", "outcome-item", 4, "ngFor", "ngForOf"], [1, "outcome-item"], [1, "module-item"], ["type", "button", 1, "module-toggle", 3, "click", "disabled"], [1, "module-caret"], [1, "module-title"], [1, "module-meta"], ["class", "badge badge-green", 4, "ngIf"], ["class", "badge badge-gray", 4, "ngIf"], ["class", "lock-note module-lock", 4, "ngIf"], ["class", "lesson-list", 4, "ngIf"], [1, "badge", "badge-green"], [1, "badge", "badge-gray"], [1, "lock-note", "module-lock"], [1, "lesson-list"], ["class", "lesson-row", "type", "button", 3, "locked", "done", "click", 4, "ngFor", "ngForOf"], ["type", "button", 1, "lesson-row", 3, "click"], [1, "lesson-kind"], [1, "lesson-title"], ["class", "badge badge-blue", 4, "ngIf"], ["class", "lesson-lock-text", 4, "ngIf"], [1, "lesson-lock-text"], [1, "clean-list"], [4, "ngFor", "ngForOf"], ["class", "related-course", 3, "routerLink", 4, "ngFor", "ngForOf"], [1, "related-course", 3, "routerLink"], [1, "modal-backdrop"], [1, "lesson-modal", "card", "card-pad"], ["type", "button", 1, "btn", "btn-outline", 3, "click"], ["class", "video-box", 4, "ngIf"], [1, "lesson-content"], [1, "action-row"], ["type", "button", 1, "btn", "btn-primary", 3, "click", "disabled"], ["class", "muted", 4, "ngIf"], [1, "video-box"], [4, "ngIf", "ngIfElse"], ["controls", "", "preload", "metadata", 1, "lesson-video-player", 3, "src"], ["title", "Lesson video", "allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share", "allowfullscreen", "", 1, "lesson-video-player", 3, "src"], ["class", "lesson-video-player", "controls", "", "preload", "metadata", 3, "src", 4, "ngIf", "ngIfElse"], ["target", "_blank", "rel", "noopener", 1, "btn", "btn-outline", 3, "href"]], template: function CourseDetailComponent_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 0)(1, "a", 1);
+    \u0275\u0275elementStart(0, "div", 3)(1, "a", 4);
     \u0275\u0275text(2, "Quay l\u1EA1i l\u1ED9 tr\xECnh");
     \u0275\u0275elementEnd();
-    \u0275\u0275template(3, CourseDetailComponent_div_3_Template, 2, 1, "div", 2)(4, CourseDetailComponent_div_4_Template, 2, 1, "div", 2)(5, CourseDetailComponent_div_5_Template, 2, 0, "div", 3)(6, CourseDetailComponent_ng_container_6_Template, 58, 23, "ng-container", 4)(7, CourseDetailComponent_div_7_Template, 17, 7, "div", 5);
+    \u0275\u0275template(3, CourseDetailComponent_div_3_Template, 2, 1, "div", 5)(4, CourseDetailComponent_div_4_Template, 2, 1, "div", 5)(5, CourseDetailComponent_div_5_Template, 2, 0, "div", 6)(6, CourseDetailComponent_ng_container_6_Template, 58, 23, "ng-container", 7)(7, CourseDetailComponent_div_7_Template, 17, 7, "div", 8);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
     \u0275\u0275advance();
-    \u0275\u0275property("routerLink", ctx.course ? \u0275\u0275pureFunction1(6, _c06, ctx.course.trackSlug) : "/learner/roadmap");
+    \u0275\u0275property("routerLink", ctx.course ? \u0275\u0275pureFunction1(6, _c07, ctx.course.trackSlug) : "/learner/roadmap");
     \u0275\u0275advance(2);
     \u0275\u0275property("ngIf", ctx.error);
     \u0275\u0275advance();
@@ -50436,9 +50559,27 @@ var CourseDetailComponent = _CourseDetailComponent;
         </div>
         <button class="btn btn-outline" type="button" (click)="closeLesson()">\u0110\xF3ng</button>
       </div>
-      <div class="video-box" *ngIf="selectedLesson.videoUrl">
-        <span>Video</span>
-        <p>{{selectedLesson.videoUrl}}</p>
+      <div class="video-box" *ngIf="isVideoLesson(selectedLesson) && (selectedLesson.videoFileUrl || selectedLesson.videoUrl)">
+        <ng-container *ngIf="selectedLesson.videoFileUrl; else externalVideo">
+          <video class="lesson-video-player" controls preload="metadata" [src]="absoluteUrl(selectedLesson.videoFileUrl)"></video>
+        </ng-container>
+        <ng-template #externalVideo>
+          <ng-container *ngIf="safeYouTubeUrl(selectedLesson.videoUrl) as youtubeUrl; else nonYoutubeVideo">
+            <iframe
+              class="lesson-video-player"
+              [src]="youtubeUrl"
+              title="Lesson video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen>
+            </iframe>
+          </ng-container>
+        </ng-template>
+        <ng-template #nonYoutubeVideo>
+          <video *ngIf="isDirectVideoUrl(selectedLesson.videoUrl); else plainVideoLink" class="lesson-video-player" controls preload="metadata" [src]="absoluteUrl(selectedLesson.videoUrl)"></video>
+          <ng-template #plainVideoLink>
+            <a class="btn btn-outline" [href]="externalVideoUrl(selectedLesson.videoUrl)" target="_blank" rel="noopener">Open video</a>
+          </ng-template>
+        </ng-template>
       </div>
       <div class="lesson-content">{{selectedLesson.content || 'Admin ch\u01B0a nh\u1EADp n\u1ED9i dung chi ti\u1EBFt cho b\xE0i h\u1ECDc n\xE0y.'}}</div>
       <div class="action-row">
@@ -50451,14 +50592,14 @@ var CourseDetailComponent = _CourseDetailComponent;
   </div>
 </div>
 ` }]
-  }], () => [{ type: ActivatedRoute }, { type: Router }, { type: ApiService }], null);
+  }], () => [{ type: ActivatedRoute }, { type: Router }, { type: ApiService }, { type: DomSanitizer }], null);
 })();
 (() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(CourseDetailComponent, { className: "CourseDetailComponent", filePath: "src/app/features/course-detail.component.ts", lineNumber: 13 });
+  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(CourseDetailComponent, { className: "CourseDetailComponent", filePath: "src/app/features/course-detail.component.ts", lineNumber: 14 });
 })();
 
 // src/app/features/forum.component.ts
-var _c07 = (a0) => ["/learner/forum-post", a0];
+var _c08 = (a0) => ["/learner/forum-post", a0];
 function ForumComponent_option_16_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "option", 16);
@@ -50631,7 +50772,7 @@ function ForumComponent_article_24_Template(rf, ctx) {
     const post_r4 = ctx.$implicit;
     const ctx_r1 = \u0275\u0275nextContext();
     \u0275\u0275advance(3);
-    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(20, _c07, post_r4.id));
+    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(20, _c08, post_r4.id));
     \u0275\u0275advance(2);
     \u0275\u0275textInterpolate(post_r4.title);
     \u0275\u0275advance();
@@ -50665,7 +50806,7 @@ function ForumComponent_article_24_Template(rf, ctx) {
     \u0275\u0275advance(2);
     \u0275\u0275textInterpolate(post_r4.isBookmarked ? "B\u1ECF l\u01B0u" : "Bookmark");
     \u0275\u0275advance();
-    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(22, _c07, post_r4.id));
+    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(22, _c08, post_r4.id));
   }
 }
 function ForumComponent_div_25_Template(rf, ctx) {
@@ -50979,7 +51120,7 @@ var ForumComponent = _ForumComponent;
 })();
 
 // src/app/features/forum-post.component.ts
-var _c08 = (a0) => ["/learner/edit-post", a0];
+var _c09 = (a0) => ["/learner/edit-post", a0];
 function ForumPostComponent_div_0_div_8_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 43);
@@ -51105,7 +51246,7 @@ function ForumPostComponent_div_0_a_45_Template(rf, ctx) {
   }
   if (rf & 2) {
     const ctx_r1 = \u0275\u0275nextContext(2);
-    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(1, _c08, ctx_r1.post.id));
+    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(1, _c09, ctx_r1.post.id));
   }
 }
 function ForumPostComponent_div_0_button_46_Template(rf, ctx) {
@@ -54118,7 +54259,7 @@ var PlaygroundComponent = _PlaygroundComponent;
 })();
 
 // src/app/features/problems.component.ts
-var _c09 = (a0) => ["/learner/problems", a0];
+var _c010 = (a0) => ["/learner/problems", a0];
 function ProblemsComponent_div_23_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 19);
@@ -54190,7 +54331,7 @@ function ProblemsComponent_tr_41_Template(rf, ctx) {
     \u0275\u0275advance();
     \u0275\u0275property("ngIf", !p_r3.solvedByCurrentUser);
     \u0275\u0275advance(2);
-    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(16, _c09, p_r3.id));
+    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(16, _c010, p_r3.id));
     \u0275\u0275advance();
     \u0275\u0275textInterpolate2("", p_r3.id, ". ", p_r3.title);
     \u0275\u0275advance(2);
@@ -54204,7 +54345,7 @@ function ProblemsComponent_tr_41_Template(rf, ctx) {
     \u0275\u0275advance(2);
     \u0275\u0275property("ngForOf", ctx_r0.tagList(p_r3));
     \u0275\u0275advance(2);
-    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(18, _c09, p_r3.id));
+    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(18, _c010, p_r3.id));
   }
 }
 function ProblemsComponent_div_42_Template(rf, ctx) {
@@ -54386,17 +54527,17 @@ var ProblemsComponent = _ProblemsComponent;
 })();
 
 // src/app/features/problem-detail.component.ts
-var _c010 = (a0) => ["/learner/submissions", a0];
+var _c011 = (a0) => ["/learner/submissions", a0];
 function ProblemDetailComponent_div_0_span_10_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 28);
+    \u0275\u0275elementStart(0, "span", 33);
     \u0275\u0275text(1, "Solved");
     \u0275\u0275elementEnd();
   }
 }
 function ProblemDetailComponent_div_0_span_14_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 29);
+    \u0275\u0275elementStart(0, "span", 34);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -54408,7 +54549,7 @@ function ProblemDetailComponent_div_0_span_14_Template(rf, ctx) {
 }
 function ProblemDetailComponent_div_0_div_29_p_9_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "p", 33);
+    \u0275\u0275elementStart(0, "p", 38);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -54420,19 +54561,19 @@ function ProblemDetailComponent_div_0_div_29_p_9_Template(rf, ctx) {
 }
 function ProblemDetailComponent_div_0_div_29_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 30)(1, "b");
+    \u0275\u0275elementStart(0, "div", 35)(1, "b");
     \u0275\u0275text(2, "Input:");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "pre", 31);
+    \u0275\u0275elementStart(3, "pre", 36);
     \u0275\u0275text(4);
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(5, "b");
     \u0275\u0275text(6, "Expected Output:");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(7, "pre", 31);
+    \u0275\u0275elementStart(7, "pre", 36);
     \u0275\u0275text(8);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(9, ProblemDetailComponent_div_0_div_29_p_9_Template, 2, 1, "p", 32);
+    \u0275\u0275template(9, ProblemDetailComponent_div_0_div_29_p_9_Template, 2, 1, "p", 37);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
@@ -54445,22 +54586,106 @@ function ProblemDetailComponent_div_0_div_29_Template(rf, ctx) {
     \u0275\u0275property("ngIf", tc_r3.explanation);
   }
 }
-function ProblemDetailComponent_div_0_option_38_Template(rf, ctx) {
+function ProblemDetailComponent_div_0_div_41_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "option", 34);
+    \u0275\u0275elementStart(0, "div", 39);
+    \u0275\u0275text(1, "\u0110ang t\u1EA3i l\u1ECBch s\u1EED n\u1ED9p b\xE0i...");
+    \u0275\u0275elementEnd();
+  }
+}
+function ProblemDetailComponent_div_0_div_42_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 39);
+    \u0275\u0275text(1, "B\u1EA1n ch\u01B0a n\u1ED9p b\xE0i n\xE0y.");
+    \u0275\u0275elementEnd();
+  }
+}
+function ProblemDetailComponent_div_0_table_43_tr_15_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "tr")(1, "td")(2, "span", 8);
+    \u0275\u0275text(3);
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(4, "td");
+    \u0275\u0275text(5);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(6, "td");
+    \u0275\u0275text(7);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(8, "td");
+    \u0275\u0275text(9);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(10, "td");
+    \u0275\u0275text(11);
+    \u0275\u0275pipe(12, "date");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(13, "td")(14, "a", 42);
+    \u0275\u0275text(15, "Chi ti\u1EBFt");
+    \u0275\u0275elementEnd()()();
+  }
+  if (rf & 2) {
+    const item_r5 = ctx.$implicit;
+    const ctx_r3 = \u0275\u0275nextContext(3);
+    \u0275\u0275advance(2);
+    \u0275\u0275property("ngClass", item_r5.isAccepted ? "badge-green" : "badge-gray");
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate(ctx_r3.verdictText(item_r5));
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate2("", item_r5.passedTestCases || 0, "/", item_r5.totalTestCases || 0);
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate1("", item_r5.executionTimeMs || item_r5.runtimeMs || 0, " ms");
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate(ctx_r3.memoryText(item_r5));
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate(ctx_r3.submittedAt(item_r5) ? \u0275\u0275pipeBind2(12, 8, ctx_r3.submittedAt(item_r5), "short") : "-");
+    \u0275\u0275advance(3);
+    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(11, _c011, item_r5.id || item_r5.submissionId));
+  }
+}
+function ProblemDetailComponent_div_0_table_43_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "table", 40)(1, "thead")(2, "tr")(3, "th");
+    \u0275\u0275text(4, "Verdict");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(5, "th");
+    \u0275\u0275text(6, "Testcases");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(7, "th");
+    \u0275\u0275text(8, "Runtime");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(9, "th");
+    \u0275\u0275text(10, "Memory");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(11, "th");
+    \u0275\u0275text(12, "SubmittedAt");
+    \u0275\u0275elementEnd();
+    \u0275\u0275element(13, "th");
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(14, "tbody");
+    \u0275\u0275template(15, ProblemDetailComponent_div_0_table_43_tr_15_Template, 16, 13, "tr", 41);
+    \u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const ctx_r3 = \u0275\u0275nextContext(2);
+    \u0275\u0275advance(15);
+    \u0275\u0275property("ngForOf", ctx_r3.mySubmissions);
+  }
+}
+function ProblemDetailComponent_div_0_option_47_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "option", 43);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const l_r5 = ctx.$implicit;
-    \u0275\u0275property("ngValue", l_r5.value);
+    const l_r6 = ctx.$implicit;
+    \u0275\u0275property("ngValue", l_r6.value);
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(l_r5.label);
+    \u0275\u0275textInterpolate(l_r6.label);
   }
 }
-function ProblemDetailComponent_div_0_div_49_pre_7_Template(rf, ctx) {
+function ProblemDetailComponent_div_0_div_58_pre_7_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "pre", 31);
+    \u0275\u0275elementStart(0, "pre", 36);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -54470,18 +54695,18 @@ function ProblemDetailComponent_div_0_div_49_pre_7_Template(rf, ctx) {
     \u0275\u0275textInterpolate(ctx_r3.runResult.error || ctx_r3.runResult.stderr || ctx_r3.runResult.compileOutput);
   }
 }
-function ProblemDetailComponent_div_0_div_49_Template(rf, ctx) {
+function ProblemDetailComponent_div_0_div_58_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 24)(1, "b");
+    \u0275\u0275elementStart(0, "div", 29)(1, "b");
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "span", 33);
+    \u0275\u0275elementStart(3, "span", 38);
     \u0275\u0275text(4);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(5, "pre", 31);
+    \u0275\u0275elementStart(5, "pre", 36);
     \u0275\u0275text(6);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(7, ProblemDetailComponent_div_0_div_49_pre_7_Template, 2, 1, "pre", 35);
+    \u0275\u0275template(7, ProblemDetailComponent_div_0_div_58_pre_7_Template, 2, 1, "pre", 44);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
@@ -54496,90 +54721,90 @@ function ProblemDetailComponent_div_0_div_49_Template(rf, ctx) {
     \u0275\u0275property("ngIf", ctx_r3.runResult.error || ctx_r3.runResult.stderr || ctx_r3.runResult.compileOutput);
   }
 }
-function ProblemDetailComponent_div_0_div_50_a_7_Template(rf, ctx) {
+function ProblemDetailComponent_div_0_div_59_a_7_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "a", 37);
+    \u0275\u0275elementStart(0, "a", 42);
     \u0275\u0275text(1, "Xem chi ti\u1EBFt submission");
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
     const ctx_r3 = \u0275\u0275nextContext(3);
-    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(1, _c010, ctx_r3.submitResult.id || ctx_r3.submitResult.submissionId));
+    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(1, _c011, ctx_r3.submitResult.id || ctx_r3.submitResult.submissionId));
   }
 }
-function ProblemDetailComponent_div_0_div_50_div_8_div_5_pre_13_Template(rf, ctx) {
+function ProblemDetailComponent_div_0_div_59_div_8_div_5_pre_13_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "pre", 31);
+    \u0275\u0275elementStart(0, "pre", 36);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const tc_r6 = \u0275\u0275nextContext(2).$implicit;
+    const tc_r7 = \u0275\u0275nextContext(2).$implicit;
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(tc_r6.error);
+    \u0275\u0275textInterpolate(tc_r7.error);
   }
 }
-function ProblemDetailComponent_div_0_div_50_div_8_div_5_Template(rf, ctx) {
+function ProblemDetailComponent_div_0_div_59_div_8_div_5_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div")(1, "small", 33);
+    \u0275\u0275elementStart(0, "div")(1, "small", 38);
     \u0275\u0275text(2, "Input");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "pre", 31);
+    \u0275\u0275elementStart(3, "pre", 36);
     \u0275\u0275text(4);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(5, "small", 33);
+    \u0275\u0275elementStart(5, "small", 38);
     \u0275\u0275text(6, "Expected");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(7, "pre", 31);
+    \u0275\u0275elementStart(7, "pre", 36);
     \u0275\u0275text(8);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(9, "small", 33);
+    \u0275\u0275elementStart(9, "small", 38);
     \u0275\u0275text(10, "Actual");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(11, "pre", 31);
+    \u0275\u0275elementStart(11, "pre", 36);
     \u0275\u0275text(12);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(13, ProblemDetailComponent_div_0_div_50_div_8_div_5_pre_13_Template, 2, 1, "pre", 35);
+    \u0275\u0275template(13, ProblemDetailComponent_div_0_div_59_div_8_div_5_pre_13_Template, 2, 1, "pre", 44);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const tc_r6 = \u0275\u0275nextContext().$implicit;
+    const tc_r7 = \u0275\u0275nextContext().$implicit;
     \u0275\u0275advance(4);
-    \u0275\u0275textInterpolate(tc_r6.input);
+    \u0275\u0275textInterpolate(tc_r7.input);
     \u0275\u0275advance(4);
-    \u0275\u0275textInterpolate(tc_r6.expectedOutput);
+    \u0275\u0275textInterpolate(tc_r7.expectedOutput);
     \u0275\u0275advance(4);
-    \u0275\u0275textInterpolate(tc_r6.actualOutput);
+    \u0275\u0275textInterpolate(tc_r7.actualOutput);
     \u0275\u0275advance();
-    \u0275\u0275property("ngIf", tc_r6.error);
+    \u0275\u0275property("ngIf", tc_r7.error);
   }
 }
-function ProblemDetailComponent_div_0_div_50_div_8_Template(rf, ctx) {
+function ProblemDetailComponent_div_0_div_59_div_8_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 30)(1, "b");
+    \u0275\u0275elementStart(0, "div", 35)(1, "b");
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(3, "span");
     \u0275\u0275text(4);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(5, ProblemDetailComponent_div_0_div_50_div_8_div_5_Template, 14, 4, "div", 38);
+    \u0275\u0275template(5, ProblemDetailComponent_div_0_div_59_div_8_div_5_Template, 14, 4, "div", 46);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const tc_r6 = ctx.$implicit;
+    const tc_r7 = ctx.$implicit;
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate2("#", tc_r6.displayOrder, " ", tc_r6.status);
+    \u0275\u0275textInterpolate2("#", tc_r7.displayOrder, " ", tc_r7.status);
     \u0275\u0275advance();
-    \u0275\u0275classProp("status-ok", tc_r6.passed);
+    \u0275\u0275classProp("status-ok", tc_r7.passed);
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate1(" ", tc_r6.passed ? "Passed" : "Failed");
+    \u0275\u0275textInterpolate1(" ", tc_r7.passed ? "Passed" : "Failed");
     \u0275\u0275advance();
-    \u0275\u0275property("ngIf", !tc_r6.passed);
+    \u0275\u0275property("ngIf", !tc_r7.passed);
   }
 }
-function ProblemDetailComponent_div_0_div_50_Template(rf, ctx) {
+function ProblemDetailComponent_div_0_div_59_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 24)(1, "b");
+    \u0275\u0275elementStart(0, "div", 29)(1, "b");
     \u0275\u0275text(2, "Submit Result: ");
     \u0275\u0275elementStart(3, "span");
     \u0275\u0275text(4);
@@ -54587,7 +54812,7 @@ function ProblemDetailComponent_div_0_div_50_Template(rf, ctx) {
     \u0275\u0275elementStart(5, "p");
     \u0275\u0275text(6);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(7, ProblemDetailComponent_div_0_div_50_a_7_Template, 2, 3, "a", 36)(8, ProblemDetailComponent_div_0_div_50_div_8_Template, 6, 6, "div", 15);
+    \u0275\u0275template(7, ProblemDetailComponent_div_0_div_59_a_7_Template, 2, 3, "a", 45)(8, ProblemDetailComponent_div_0_div_59_div_8_Template, 6, 6, "div", 15);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
@@ -54604,9 +54829,9 @@ function ProblemDetailComponent_div_0_div_50_Template(rf, ctx) {
     \u0275\u0275property("ngForOf", ctx_r3.submitResult.testCaseResults);
   }
 }
-function ProblemDetailComponent_div_0_div_51_Template(rf, ctx) {
+function ProblemDetailComponent_div_0_div_60_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 39);
+    \u0275\u0275elementStart(0, "div", 47);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -54659,57 +54884,70 @@ function ProblemDetailComponent_div_0_Template(rf, ctx) {
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(33, "p", 10);
     \u0275\u0275text(34);
-    \u0275\u0275elementEnd()()()();
-    \u0275\u0275elementStart(35, "section", 16)(36, "div", 17)(37, "select", 18);
-    \u0275\u0275twoWayListener("ngModelChange", function ProblemDetailComponent_div_0_Template_select_ngModelChange_37_listener($event) {
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(35, "section", 16)(36, "div", 17)(37, "h3", 7);
+    \u0275\u0275text(38, "B\xE0i n\u1ED9p c\u1EE7a t\xF4i");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(39, "button", 18);
+    \u0275\u0275listener("click", function ProblemDetailComponent_div_0_Template_button_click_39_listener() {
+      \u0275\u0275restoreView(_r1);
+      const ctx_r3 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r3.loadMySubmissions());
+    });
+    \u0275\u0275text(40, "Refresh");
+    \u0275\u0275elementEnd()();
+    \u0275\u0275template(41, ProblemDetailComponent_div_0_div_41_Template, 2, 0, "div", 19)(42, ProblemDetailComponent_div_0_div_42_Template, 2, 0, "div", 19)(43, ProblemDetailComponent_div_0_table_43_Template, 16, 1, "table", 20);
+    \u0275\u0275elementEnd()()();
+    \u0275\u0275elementStart(44, "section", 21)(45, "div", 22)(46, "select", 23);
+    \u0275\u0275twoWayListener("ngModelChange", function ProblemDetailComponent_div_0_Template_select_ngModelChange_46_listener($event) {
       \u0275\u0275restoreView(_r1);
       const ctx_r3 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r3.language, $event) || (ctx_r3.language = $event);
       return \u0275\u0275resetView($event);
     });
-    \u0275\u0275listener("change", function ProblemDetailComponent_div_0_Template_select_change_37_listener() {
+    \u0275\u0275listener("change", function ProblemDetailComponent_div_0_Template_select_change_46_listener() {
       \u0275\u0275restoreView(_r1);
       const ctx_r3 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r3.changeLanguage());
     });
-    \u0275\u0275template(38, ProblemDetailComponent_div_0_option_38_Template, 2, 2, "option", 19);
+    \u0275\u0275template(47, ProblemDetailComponent_div_0_option_47_Template, 2, 2, "option", 24);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(39, "div", 20)(40, "button", 21);
-    \u0275\u0275listener("click", function ProblemDetailComponent_div_0_Template_button_click_40_listener() {
+    \u0275\u0275elementStart(48, "div", 25)(49, "button", 26);
+    \u0275\u0275listener("click", function ProblemDetailComponent_div_0_Template_button_click_49_listener() {
       \u0275\u0275restoreView(_r1);
       const ctx_r3 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r3.run());
     });
-    \u0275\u0275text(41);
+    \u0275\u0275text(50);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(42, "button", 22);
-    \u0275\u0275listener("click", function ProblemDetailComponent_div_0_Template_button_click_42_listener() {
+    \u0275\u0275elementStart(51, "button", 27);
+    \u0275\u0275listener("click", function ProblemDetailComponent_div_0_Template_button_click_51_listener() {
       \u0275\u0275restoreView(_r1);
       const ctx_r3 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r3.submit());
     });
-    \u0275\u0275text(43);
+    \u0275\u0275text(52);
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(44, "textarea", 23);
-    \u0275\u0275twoWayListener("ngModelChange", function ProblemDetailComponent_div_0_Template_textarea_ngModelChange_44_listener($event) {
+    \u0275\u0275elementStart(53, "textarea", 28);
+    \u0275\u0275twoWayListener("ngModelChange", function ProblemDetailComponent_div_0_Template_textarea_ngModelChange_53_listener($event) {
       \u0275\u0275restoreView(_r1);
       const ctx_r3 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r3.code, $event) || (ctx_r3.code = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(45, "div", 24)(46, "b");
-    \u0275\u0275text(47, "Custom Input");
+    \u0275\u0275elementStart(54, "div", 29)(55, "b");
+    \u0275\u0275text(56, "Custom Input");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(48, "textarea", 25);
-    \u0275\u0275twoWayListener("ngModelChange", function ProblemDetailComponent_div_0_Template_textarea_ngModelChange_48_listener($event) {
+    \u0275\u0275elementStart(57, "textarea", 30);
+    \u0275\u0275twoWayListener("ngModelChange", function ProblemDetailComponent_div_0_Template_textarea_ngModelChange_57_listener($event) {
       \u0275\u0275restoreView(_r1);
       const ctx_r3 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r3.customInput, $event) || (ctx_r3.customInput = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275template(49, ProblemDetailComponent_div_0_div_49_Template, 8, 4, "div", 26)(50, ProblemDetailComponent_div_0_div_50_Template, 9, 8, "div", 26)(51, ProblemDetailComponent_div_0_div_51_Template, 2, 1, "div", 27);
+    \u0275\u0275template(58, ProblemDetailComponent_div_0_div_58_Template, 8, 4, "div", 31)(59, ProblemDetailComponent_div_0_div_59_Template, 9, 8, "div", 31)(60, ProblemDetailComponent_div_0_div_60_Template, 2, 1, "div", 32);
     \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
@@ -54734,6 +54972,12 @@ function ProblemDetailComponent_div_0_Template(rf, ctx) {
     \u0275\u0275property("ngForOf", ctx_r3.problem.testCases);
     \u0275\u0275advance(5);
     \u0275\u0275textInterpolate(ctx_r3.problem.constraints || "Kh\xF4ng c\xF3 r\xE0ng bu\u1ED9c b\u1ED5 sung.");
+    \u0275\u0275advance(7);
+    \u0275\u0275property("ngIf", ctx_r3.submissionsLoading);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", !ctx_r3.submissionsLoading && !ctx_r3.mySubmissions.length);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", !ctx_r3.submissionsLoading && ctx_r3.mySubmissions.length);
     \u0275\u0275advance(3);
     \u0275\u0275twoWayProperty("ngModel", ctx_r3.language);
     \u0275\u0275advance();
@@ -54760,7 +55004,7 @@ function ProblemDetailComponent_div_0_Template(rf, ctx) {
 }
 function ProblemDetailComponent_div_1_div_1_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 39);
+    \u0275\u0275elementStart(0, "div", 47);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -54772,7 +55016,7 @@ function ProblemDetailComponent_div_1_div_1_Template(rf, ctx) {
 }
 function ProblemDetailComponent_div_1_p_2_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "p", 33);
+    \u0275\u0275elementStart(0, "p", 38);
     \u0275\u0275text(1, "\u0110ang t\u1EA3i b\xE0i l\u1EADp tr\xECnh...");
     \u0275\u0275elementEnd();
   }
@@ -54780,7 +55024,7 @@ function ProblemDetailComponent_div_1_p_2_Template(rf, ctx) {
 function ProblemDetailComponent_div_1_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 4);
-    \u0275\u0275template(1, ProblemDetailComponent_div_1_div_1_Template, 2, 1, "div", 27)(2, ProblemDetailComponent_div_1_p_2_Template, 2, 0, "p", 32);
+    \u0275\u0275template(1, ProblemDetailComponent_div_1_div_1_Template, 2, 1, "div", 32)(2, ProblemDetailComponent_div_1_p_2_Template, 2, 0, "p", 37);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
@@ -54803,6 +55047,8 @@ var _ProblemDetailComponent = class _ProblemDetailComponent {
     this.loading = false;
     this.running = false;
     this.submitting = false;
+    this.mySubmissions = [];
+    this.submissionsLoading = false;
     this.fallbackLanguages = [
       { value: "python", label: "Python", fileExtension: "py" },
       { value: "javascript", label: "JavaScript", fileExtension: "js" },
@@ -54882,6 +55128,7 @@ func main() {
         this.problem = r.data;
         this.customInput = this.problem?.testCases?.[0]?.input || "";
         this.setStarterCode();
+        this.loadMySubmissions();
         this.loading = false;
       },
       error: (e) => {
@@ -54946,6 +55193,7 @@ func main() {
       next: (r) => {
         this.submitResult = r.data || r;
         this.submitting = false;
+        this.loadMySubmissions();
       },
       error: (e) => {
         this.error = this.api.errorMessage(e, "Kh\xF4ng submit \u0111\u01B0\u1EE3c b\xE0i");
@@ -54962,20 +55210,46 @@ func main() {
   tagList() {
     return (this.problem?.tags || "").split(",").map((x) => x.trim()).filter(Boolean);
   }
+  loadMySubmissions() {
+    if (!this.problem?.id)
+      return;
+    this.submissionsLoading = true;
+    this.api.getMyCodeSubmissions({ problemId: this.problem.id, pageIndex: 1, pageSize: 10 }).subscribe({
+      next: (r) => {
+        const data = r.data || {};
+        this.mySubmissions = data.items || (Array.isArray(data) ? data : []);
+        this.submissionsLoading = false;
+      },
+      error: () => {
+        this.mySubmissions = [];
+        this.submissionsLoading = false;
+      }
+    });
+  }
+  verdictText(item) {
+    return item.verdict || item.status || "-";
+  }
+  submittedAt(item) {
+    return item.submittedAt || item.createdAt;
+  }
+  memoryText(item) {
+    const memory = item.memoryUsedKb ?? item.memoryKb;
+    return memory === null || memory === void 0 || memory === "" ? "-" : `${memory} KB`;
+  }
 };
 _ProblemDetailComponent.\u0275fac = function ProblemDetailComponent_Factory(__ngFactoryType__) {
   return new (__ngFactoryType__ || _ProblemDetailComponent)(\u0275\u0275directiveInject(ActivatedRoute), \u0275\u0275directiveInject(ApiService));
 };
-_ProblemDetailComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _ProblemDetailComponent, selectors: [["app-problem-detail"]], decls: 2, vars: 2, consts: [["class", "problem-layout", 4, "ngIf"], ["class", "page", 4, "ngIf"], [1, "problem-layout"], [1, "problem-pane"], [1, "page"], ["routerLink", "/learner/problems", 1, "btn", "btn-outline"], [2, "display", "flex", "gap", "12px", "align-items", "center", "margin", "16px 0 12px"], [2, "margin", "0"], [1, "badge", 3, "ngClass"], ["class", "badge badge-green", 4, "ngIf"], [2, "white-space", "pre-line"], [1, "action-row", 2, "margin", "12px 0"], ["class", "badge badge-gray", 4, "ngFor", "ngForOf"], [1, "muted", 2, "white-space", "pre-line"], [1, "grid"], ["class", "example", 4, "ngFor", "ngForOf"], [1, "editor-pane"], [1, "editor-toolbar"], [1, "select", 2, "width", "180px", 3, "ngModelChange", "change", "ngModel"], [3, "ngValue", 4, "ngFor", "ngForOf"], [2, "display", "flex", "gap", "8px"], ["type", "button", 1, "btn", "btn-outline", 3, "click", "disabled"], ["type", "button", 1, "btn", "btn-primary", 3, "click", "disabled"], ["spellcheck", "false", 1, "code-textarea", 3, "ngModelChange", "ngModel"], [1, "test-panel"], [1, "textarea", 2, "min-height", "90px", 3, "ngModelChange", "ngModel"], ["class", "test-panel", 4, "ngIf"], ["class", "alert", 4, "ngIf"], [1, "badge", "badge-green"], [1, "badge", "badge-gray"], [1, "example"], [1, "output-box"], ["class", "muted", 4, "ngIf"], [1, "muted"], [3, "ngValue"], ["class", "output-box", 4, "ngIf"], ["class", "btn btn-outline", 3, "routerLink", 4, "ngIf"], [1, "btn", "btn-outline", 3, "routerLink"], [4, "ngIf"], [1, "alert"]], template: function ProblemDetailComponent_Template(rf, ctx) {
+_ProblemDetailComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _ProblemDetailComponent, selectors: [["app-problem-detail"]], decls: 2, vars: 2, consts: [["class", "problem-layout", 4, "ngIf"], ["class", "page", 4, "ngIf"], [1, "problem-layout"], [1, "problem-pane"], [1, "page"], ["routerLink", "/learner/problems", 1, "btn", "btn-outline"], [2, "display", "flex", "gap", "12px", "align-items", "center", "margin", "16px 0 12px"], [2, "margin", "0"], [1, "badge", 3, "ngClass"], ["class", "badge badge-green", 4, "ngIf"], [2, "white-space", "pre-line"], [1, "action-row", 2, "margin", "12px 0"], ["class", "badge badge-gray", 4, "ngFor", "ngForOf"], [1, "muted", 2, "white-space", "pre-line"], [1, "grid"], ["class", "example", 4, "ngFor", "ngForOf"], [1, "card", "card-pad", 2, "margin-top", "18px"], [1, "filters"], ["type", "button", 1, "btn", "btn-outline", 3, "click"], ["class", "empty-state", 4, "ngIf"], ["class", "table", 4, "ngIf"], [1, "editor-pane"], [1, "editor-toolbar"], [1, "select", 2, "width", "180px", 3, "ngModelChange", "change", "ngModel"], [3, "ngValue", 4, "ngFor", "ngForOf"], [2, "display", "flex", "gap", "8px"], ["type", "button", 1, "btn", "btn-outline", 3, "click", "disabled"], ["type", "button", 1, "btn", "btn-primary", 3, "click", "disabled"], ["spellcheck", "false", 1, "code-textarea", 3, "ngModelChange", "ngModel"], [1, "test-panel"], [1, "textarea", 2, "min-height", "90px", 3, "ngModelChange", "ngModel"], ["class", "test-panel", 4, "ngIf"], ["class", "alert", 4, "ngIf"], [1, "badge", "badge-green"], [1, "badge", "badge-gray"], [1, "example"], [1, "output-box"], ["class", "muted", 4, "ngIf"], [1, "muted"], [1, "empty-state"], [1, "table"], [4, "ngFor", "ngForOf"], [1, "btn", "btn-outline", 3, "routerLink"], [3, "ngValue"], ["class", "output-box", 4, "ngIf"], ["class", "btn btn-outline", 3, "routerLink", 4, "ngIf"], [4, "ngIf"], [1, "alert"]], template: function ProblemDetailComponent_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275template(0, ProblemDetailComponent_div_0_Template, 52, 22, "div", 0)(1, ProblemDetailComponent_div_1_Template, 3, 2, "div", 1);
+    \u0275\u0275template(0, ProblemDetailComponent_div_0_Template, 61, 25, "div", 0)(1, ProblemDetailComponent_div_1_Template, 3, 2, "div", 1);
   }
   if (rf & 2) {
     \u0275\u0275property("ngIf", ctx.problem);
     \u0275\u0275advance();
     \u0275\u0275property("ngIf", !ctx.problem);
   }
-}, dependencies: [CommonModule, NgClass, NgForOf, NgIf, FormsModule, NgSelectOption, \u0275NgSelectMultipleOption, DefaultValueAccessor, SelectControlValueAccessor, NgControlStatus, NgModel, RouterLink], encapsulation: 2 });
+}, dependencies: [CommonModule, NgClass, NgForOf, NgIf, FormsModule, NgSelectOption, \u0275NgSelectMultipleOption, DefaultValueAccessor, SelectControlValueAccessor, NgControlStatus, NgModel, RouterLink, DatePipe], encapsulation: 2 });
 var ProblemDetailComponent = _ProblemDetailComponent;
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(ProblemDetailComponent, [{
@@ -54995,7 +55269,28 @@ var ProblemDetailComponent = _ProblemDetailComponent;
       <div><h3>Input Format</h3><p class="muted" style="white-space:pre-line">{{problem.inputFormat || 'Xem v\xED d\u1EE5 b\xEAn d\u01B0\u1EDBi.'}}</p></div>\r
       <div><h3>Output Format</h3><p class="muted" style="white-space:pre-line">{{problem.outputFormat || 'In k\u1EBFt qu\u1EA3 ra stdout.'}}</p></div>\r
       <div><h3>Examples</h3><div class="grid"><div class="example" *ngFor="let tc of problem.testCases"><b>Input:</b><pre class="output-box">{{tc.input}}</pre><b>Expected Output:</b><pre class="output-box">{{tc.expectedOutput}}</pre><p class="muted" *ngIf="tc.explanation">{{tc.explanation}}</p></div></div></div>\r
-      <div><h3>Constraints</h3><p style="white-space:pre-line">{{problem.constraints || 'Kh\xF4ng c\xF3 r\xE0ng bu\u1ED9c b\u1ED5 sung.'}}</p></div>\r
+      <div><h3>Constraints</h3><p style="white-space:pre-line">{{problem.constraints || 'Kh\xF4ng c\xF3 r\xE0ng bu\u1ED9c b\u1ED5 sung.'}}</p></div>
+      <section class="card card-pad" style="margin-top:18px">
+        <div class="filters">
+          <h3 style="margin:0">B\xE0i n\u1ED9p c\u1EE7a t\xF4i</h3>
+          <button class="btn btn-outline" type="button" (click)="loadMySubmissions()">Refresh</button>
+        </div>
+        <div class="empty-state" *ngIf="submissionsLoading">\u0110ang t\u1EA3i l\u1ECBch s\u1EED n\u1ED9p b\xE0i...</div>
+        <div class="empty-state" *ngIf="!submissionsLoading && !mySubmissions.length">B\u1EA1n ch\u01B0a n\u1ED9p b\xE0i n\xE0y.</div>
+        <table class="table" *ngIf="!submissionsLoading && mySubmissions.length">
+          <thead><tr><th>Verdict</th><th>Testcases</th><th>Runtime</th><th>Memory</th><th>SubmittedAt</th><th></th></tr></thead>
+          <tbody>
+            <tr *ngFor="let item of mySubmissions">
+              <td><span class="badge" [ngClass]="item.isAccepted ? 'badge-green' : 'badge-gray'">{{verdictText(item)}}</span></td>
+              <td>{{item.passedTestCases || 0}}/{{item.totalTestCases || 0}}</td>
+              <td>{{item.executionTimeMs || item.runtimeMs || 0}} ms</td>
+              <td>{{memoryText(item)}}</td>
+              <td>{{submittedAt(item) ? (submittedAt(item) | date:'short') : '-'}}</td>
+              <td><a class="btn btn-outline" [routerLink]="['/learner/submissions', item.id || item.submissionId]">Chi ti\u1EBFt</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
     </div>\r
   </section>\r
 \r
@@ -55300,7 +55595,7 @@ function NotificationsComponent_div_12_div_1_Template(rf, ctx) {
     \u0275\u0275advance();
     \u0275\u0275property("ngIf", !item_r4.isRead);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(item_r4.message);
+    \u0275\u0275textInterpolate(item_r4.message || item_r4.content);
     \u0275\u0275advance(2);
     \u0275\u0275textInterpolate(ctx_r0.date(item_r4.createdAt));
     \u0275\u0275advance(2);
@@ -55457,7 +55752,7 @@ var NotificationsComponent = _NotificationsComponent;
             <h3 style="margin:0">{{ item.title }}</h3>
             <span class="badge badge-solid" *ngIf="!item.isRead">New</span>
           </div>
-          <p>{{ item.message }}</p>
+          <p>{{ item.message || item.content }}</p>
           <span class="muted">{{ date(item.createdAt) }}</span>
 
           <div class="action-row" style="margin-top:10px">
@@ -55474,11 +55769,11 @@ var NotificationsComponent = _NotificationsComponent;
   }], () => [{ type: ApiService }], null);
 })();
 (() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(NotificationsComponent, { className: "NotificationsComponent", filePath: "src/app/features/notifications.component.ts", lineNumber: 23 });
+  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(NotificationsComponent, { className: "NotificationsComponent", filePath: "src/app/features/notifications.component.ts", lineNumber: 24 });
 })();
 
 // src/app/features/quiz-result.component.ts
-var _c011 = (a0, a1) => ({ "border": a0, "background": a1 });
+var _c012 = (a0, a1) => ({ "border": a0, "background": a1 });
 var _c13 = (a0, a1, a2) => ({ "result-option-correct": a0, "result-option-wrong": a1, "result-option-selected": a2 });
 function QuizResultComponent_div_1_Template(rf, ctx) {
   if (rf & 1) {
@@ -55601,7 +55896,7 @@ function QuizResultComponent_ng_container_2_div_39_Template(rf, ctx) {
     const q_r2 = ctx.$implicit;
     const i_r4 = ctx.index;
     const ctx_r0 = \u0275\u0275nextContext(2);
-    \u0275\u0275property("ngStyle", \u0275\u0275pureFunction2(11, _c011, q_r2.isCorrect ? "2px solid #bbf7d0" : "2px solid #fecaca", q_r2.isCorrect ? "#f0fdf4" : "#fef2f2"));
+    \u0275\u0275property("ngStyle", \u0275\u0275pureFunction2(11, _c012, q_r2.isCorrect ? "2px solid #bbf7d0" : "2px solid #fecaca", q_r2.isCorrect ? "#f0fdf4" : "#fef2f2"));
     \u0275\u0275advance(2);
     \u0275\u0275property("ngClass", q_r2.isCorrect ? "status-ok" : "status-bad");
     \u0275\u0275advance(2);
@@ -55827,7 +56122,7 @@ var QuizResultComponent = _QuizResultComponent;
 })();
 
 // src/app/features/quiz-history.component.ts
-var _c012 = (a0) => ["/learner/quiz-result", a0];
+var _c013 = (a0) => ["/learner/quiz-result", a0];
 function QuizHistoryComponent_div_7_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 8);
@@ -55881,7 +56176,7 @@ function QuizHistoryComponent_tr_27_Template(rf, ctx) {
     \u0275\u0275advance();
     \u0275\u0275textInterpolate(a_r2.isPassed ? "Passed" : "Not passed");
     \u0275\u0275advance(2);
-    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(9, _c012, a_r2.attemptId));
+    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(9, _c013, a_r2.attemptId));
   }
 }
 function QuizHistoryComponent_div_28_Template(rf, ctx) {
@@ -56537,9 +56832,9 @@ var ResendVerificationComponent = _ResendVerificationComponent;
 })();
 
 // src/app/features/submission-detail.component.ts
-function SubmissionDetailComponent_div_3_Template(rf, ctx) {
+function SubmissionDetailComponent_div_6_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 7);
+    \u0275\u0275elementStart(0, "div", 9);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -56549,173 +56844,302 @@ function SubmissionDetailComponent_div_3_Template(rf, ctx) {
     \u0275\u0275textInterpolate(ctx_r0.error);
   }
 }
-function SubmissionDetailComponent_div_4_Template(rf, ctx) {
+function SubmissionDetailComponent_div_7_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 8);
+    \u0275\u0275elementStart(0, "div", 10);
     \u0275\u0275text(1, "\u0110ang t\u1EA3i submission...");
     \u0275\u0275elementEnd();
   }
 }
-function SubmissionDetailComponent_section_5_Template(rf, ctx) {
+function SubmissionDetailComponent_section_8_button_36_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "section", 9)(1, "div", 10)(2, "div")(3, "h1");
+    const _r2 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "button", 20);
+    \u0275\u0275listener("click", function SubmissionDetailComponent_section_8_button_36_Template_button_click_0_listener() {
+      \u0275\u0275restoreView(_r2);
+      const ctx_r0 = \u0275\u0275nextContext(2);
+      return \u0275\u0275resetView(ctx_r0.copyCode());
+    });
+    \u0275\u0275text(1);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext(2);
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate(ctx_r0.copied ? "\u0110\xE3 copy" : "Copy code");
+  }
+}
+function SubmissionDetailComponent_section_8_pre_37_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "pre", 21)(1, "code");
+    \u0275\u0275text(2);
+    \u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext(2);
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate(ctx_r0.sourceCode);
+  }
+}
+function SubmissionDetailComponent_section_8_ng_template_38_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 22);
+    \u0275\u0275text(1, "Kh\xF4ng c\xF3 source code \u0111\u01B0\u1EE3c l\u01B0u cho submission n\xE0y.");
+    \u0275\u0275elementEnd();
+  }
+}
+function SubmissionDetailComponent_section_8_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "section", 11)(1, "div", 12)(2, "div")(3, "h1");
     \u0275\u0275text(4);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(5, "p", 11);
+    \u0275\u0275elementStart(5, "p", 13);
     \u0275\u0275text(6);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(7, "span", 12);
+    \u0275\u0275elementStart(7, "span", 14);
     \u0275\u0275text(8);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(9, "div", 13)(10, "div")(11, "b");
+    \u0275\u0275elementStart(9, "div", 15)(10, "div")(11, "b");
     \u0275\u0275text(12, "Ng\xF4n ng\u1EEF");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(13, "p", 11);
+    \u0275\u0275elementStart(13, "p", 13);
     \u0275\u0275text(14);
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(15, "div")(16, "b");
     \u0275\u0275text(17, "\u0110i\u1EC3m");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(18, "p", 11);
+    \u0275\u0275elementStart(18, "p", 13);
     \u0275\u0275text(19);
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(20, "div")(21, "b");
     \u0275\u0275text(22, "Runtime");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(23, "p", 11);
+    \u0275\u0275elementStart(23, "p", 13);
     \u0275\u0275text(24);
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(25, "div")(26, "b");
     \u0275\u0275text(27, "Memory");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(28, "p", 11);
+    \u0275\u0275elementStart(28, "p", 13);
     \u0275\u0275text(29);
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(30, "p", 11);
+    \u0275\u0275elementStart(30, "p", 13);
     \u0275\u0275text(31);
     \u0275\u0275pipe(32, "date");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(33, "h3");
-    \u0275\u0275text(34, "Source Code");
+    \u0275\u0275elementStart(33, "div", 16)(34, "h3", 17);
+    \u0275\u0275text(35, "Source Code");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(35, "pre", 14);
-    \u0275\u0275text(36);
-    \u0275\u0275elementEnd()();
+    \u0275\u0275template(36, SubmissionDetailComponent_section_8_button_36_Template, 2, 1, "button", 18);
+    \u0275\u0275elementEnd();
+    \u0275\u0275template(37, SubmissionDetailComponent_section_8_pre_37_Template, 3, 1, "pre", 19)(38, SubmissionDetailComponent_section_8_ng_template_38_Template, 2, 0, "ng-template", null, 0, \u0275\u0275templateRefExtractor);
+    \u0275\u0275elementEnd();
   }
   if (rf & 2) {
+    const noSource_r3 = \u0275\u0275reference(39);
     const ctx_r0 = \u0275\u0275nextContext();
     \u0275\u0275advance(4);
     \u0275\u0275textInterpolate1("Submission #", ctx_r0.submission.id || ctx_r0.submission.submissionId);
     \u0275\u0275advance(2);
     \u0275\u0275textInterpolate(ctx_r0.submission.problemTitle || "Problem #" + ctx_r0.submission.problemId);
-    \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(ctx_r0.submission.status || ctx_r0.submission.verdict);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngClass", ctx_r0.submission.isAccepted ? "badge-green" : "badge-gray");
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate(ctx_r0.verdictText);
     \u0275\u0275advance(6);
-    \u0275\u0275textInterpolate(ctx_r0.submission.language);
+    \u0275\u0275textInterpolate(ctx_r0.submission.language || "-");
     \u0275\u0275advance(5);
-    \u0275\u0275textInterpolate(ctx_r0.submission.score ?? "-");
+    \u0275\u0275textInterpolate(ctx_r0.scoreText);
     \u0275\u0275advance(5);
-    \u0275\u0275textInterpolate1("", ctx_r0.submission.runtimeMs || ctx_r0.submission.executionTimeMs || "-", " ms");
+    \u0275\u0275textInterpolate(ctx_r0.runtimeText);
     \u0275\u0275advance(5);
-    \u0275\u0275textInterpolate1("", ctx_r0.submission.memoryKb || "-", " KB");
+    \u0275\u0275textInterpolate(ctx_r0.memoryText);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate1("N\u1ED9p l\xFAc: ", \u0275\u0275pipeBind2(32, 9, ctx_r0.submission.submittedAt, "short"));
+    \u0275\u0275textInterpolate1("N\u1ED9p l\xFAc: ", ctx_r0.submittedAt ? \u0275\u0275pipeBind2(32, 12, ctx_r0.submittedAt, "short") : "-");
     \u0275\u0275advance(5);
-    \u0275\u0275textInterpolate(ctx_r0.submission.sourceCode);
+    \u0275\u0275property("ngIf", ctx_r0.sourceCode);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx_r0.sourceCode)("ngIfElse", noSource_r3);
   }
 }
-function SubmissionDetailComponent_section_6_div_3_ng_container_5_Template(rf, ctx) {
+function SubmissionDetailComponent_section_9_div_3_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementContainerStart(0);
-    \u0275\u0275elementStart(1, "small", 11);
-    \u0275\u0275text(2, "Input");
+    \u0275\u0275elementStart(0, "div")(1, "b");
+    \u0275\u0275text(2, "Output");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "pre", 14);
+    \u0275\u0275elementStart(3, "pre", 21);
     \u0275\u0275text(4);
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(5, "small", 11);
-    \u0275\u0275text(6, "Expected");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(7, "pre", 14);
-    \u0275\u0275text(8);
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementContainerEnd();
+    \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
-    const tc_r2 = \u0275\u0275nextContext().$implicit;
+    const ctx_r0 = \u0275\u0275nextContext(2);
     \u0275\u0275advance(4);
-    \u0275\u0275textInterpolate(tc_r2.input);
-    \u0275\u0275advance(4);
-    \u0275\u0275textInterpolate(tc_r2.expectedOutput);
+    \u0275\u0275textInterpolate(ctx_r0.outputText);
   }
 }
-function SubmissionDetailComponent_section_6_div_3_ng_template_6_Template(rf, ctx) {
+function SubmissionDetailComponent_section_9_div_4_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "p", 11);
-    \u0275\u0275text(1, "Hidden testcase");
+    \u0275\u0275elementStart(0, "div")(1, "b");
+    \u0275\u0275text(2, "Error");
     \u0275\u0275elementEnd();
-  }
-}
-function SubmissionDetailComponent_section_6_div_3_pre_12_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "pre", 14);
-    \u0275\u0275text(1);
-    \u0275\u0275elementEnd();
-  }
-  if (rf & 2) {
-    const tc_r2 = \u0275\u0275nextContext().$implicit;
-    \u0275\u0275advance();
-    \u0275\u0275textInterpolate(tc_r2.error);
-  }
-}
-function SubmissionDetailComponent_section_6_div_3_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 17)(1, "b");
-    \u0275\u0275text(2);
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "span", 18);
+    \u0275\u0275elementStart(3, "pre", 21);
     \u0275\u0275text(4);
-    \u0275\u0275elementEnd();
-    \u0275\u0275template(5, SubmissionDetailComponent_section_6_div_3_ng_container_5_Template, 9, 2, "ng-container", 19)(6, SubmissionDetailComponent_section_6_div_3_ng_template_6_Template, 2, 0, "ng-template", null, 0, \u0275\u0275templateRefExtractor);
-    \u0275\u0275elementStart(8, "small", 11);
-    \u0275\u0275text(9, "Actual");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(10, "pre", 14);
-    \u0275\u0275text(11);
-    \u0275\u0275elementEnd();
-    \u0275\u0275template(12, SubmissionDetailComponent_section_6_div_3_pre_12_Template, 2, 1, "pre", 20);
-    \u0275\u0275elementEnd();
+    \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
-    const tc_r2 = ctx.$implicit;
-    const i_r3 = ctx.index;
-    const hiddenCase_r4 = \u0275\u0275reference(7);
-    \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate2("#", tc_r2.displayOrder || i_r3 + 1, " ", tc_r2.status || tc_r2.verdict);
-    \u0275\u0275advance();
-    \u0275\u0275property("ngClass", tc_r2.passed ? "badge-green" : "badge-red");
-    \u0275\u0275advance();
-    \u0275\u0275textInterpolate(tc_r2.passed ? "Passed" : "Failed");
-    \u0275\u0275advance();
-    \u0275\u0275property("ngIf", tc_r2.input || tc_r2.expectedOutput)("ngIfElse", hiddenCase_r4);
-    \u0275\u0275advance(6);
-    \u0275\u0275textInterpolate(tc_r2.actualOutput || "(no output)");
-    \u0275\u0275advance();
-    \u0275\u0275property("ngIf", tc_r2.error);
+    const ctx_r0 = \u0275\u0275nextContext(2);
+    \u0275\u0275advance(4);
+    \u0275\u0275textInterpolate(ctx_r0.errorText);
   }
 }
-function SubmissionDetailComponent_section_6_Template(rf, ctx) {
+function SubmissionDetailComponent_section_9_div_5_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "section", 15)(1, "h3");
-    \u0275\u0275text(2, "Testcase Results");
+    \u0275\u0275elementStart(0, "div")(1, "b");
+    \u0275\u0275text(2, "Compile Output");
     \u0275\u0275elementEnd();
-    \u0275\u0275template(3, SubmissionDetailComponent_section_6_div_3_Template, 13, 8, "div", 16);
+    \u0275\u0275elementStart(3, "pre", 21);
+    \u0275\u0275text(4);
+    \u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext(2);
+    \u0275\u0275advance(4);
+    \u0275\u0275textInterpolate(ctx_r0.compileOutputText);
+  }
+}
+function SubmissionDetailComponent_section_9_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "section", 23)(1, "h3");
+    \u0275\u0275text(2, "Output / Error");
+    \u0275\u0275elementEnd();
+    \u0275\u0275template(3, SubmissionDetailComponent_section_9_div_3_Template, 5, 1, "div", 24)(4, SubmissionDetailComponent_section_9_div_4_Template, 5, 1, "div", 24)(5, SubmissionDetailComponent_section_9_div_5_Template, 5, 1, "div", 24);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
     const ctx_r0 = \u0275\u0275nextContext();
     \u0275\u0275advance(3);
+    \u0275\u0275property("ngIf", ctx_r0.outputText);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx_r0.errorText);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx_r0.compileOutputText);
+  }
+}
+function SubmissionDetailComponent_section_10_div_3_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 10);
+    \u0275\u0275text(1, "Submission n\xE0y kh\xF4ng c\xF3 testcase result.");
+    \u0275\u0275elementEnd();
+  }
+}
+function SubmissionDetailComponent_section_10_table_4_tr_18_pre_12_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "pre", 21);
+    \u0275\u0275text(1);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const tc_r4 = \u0275\u0275nextContext().$implicit;
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate(tc_r4.error);
+  }
+}
+function SubmissionDetailComponent_section_10_table_4_tr_18_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "tr")(1, "td");
+    \u0275\u0275text(2);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(3, "td")(4, "pre", 21);
+    \u0275\u0275text(5);
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(6, "td")(7, "pre", 21);
+    \u0275\u0275text(8);
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(9, "td")(10, "pre", 21);
+    \u0275\u0275text(11);
+    \u0275\u0275elementEnd();
+    \u0275\u0275template(12, SubmissionDetailComponent_section_10_table_4_tr_18_pre_12_Template, 2, 1, "pre", 28);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(13, "td")(14, "span", 14);
+    \u0275\u0275text(15);
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(16, "td");
+    \u0275\u0275text(17);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(18, "td");
+    \u0275\u0275text(19);
+    \u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const tc_r4 = ctx.$implicit;
+    const i_r5 = ctx.index;
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate(tc_r4.displayOrder || i_r5 + 1);
+    \u0275\u0275advance(3);
+    \u0275\u0275textInterpolate(tc_r4.input || "-");
+    \u0275\u0275advance(3);
+    \u0275\u0275textInterpolate(tc_r4.expectedOutput || "-");
+    \u0275\u0275advance(3);
+    \u0275\u0275textInterpolate(tc_r4.actualOutput || "(no output)");
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", tc_r4.error);
+    \u0275\u0275advance(2);
+    \u0275\u0275property("ngClass", tc_r4.passed ? "badge-green" : "badge-red");
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate(tc_r4.status || (tc_r4.passed ? "Passed" : "Failed"));
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate1("", tc_r4.runtimeMs || tc_r4.executionTimeMs || 0, " ms");
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate(tc_r4.isHidden ? "hidden" : "public");
+  }
+}
+function SubmissionDetailComponent_section_10_table_4_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "table", 26)(1, "thead")(2, "tr")(3, "th");
+    \u0275\u0275text(4, "#");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(5, "th");
+    \u0275\u0275text(6, "Input");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(7, "th");
+    \u0275\u0275text(8, "Expected");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(9, "th");
+    \u0275\u0275text(10, "Actual");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(11, "th");
+    \u0275\u0275text(12, "Status");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(13, "th");
+    \u0275\u0275text(14, "Runtime");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(15, "th");
+    \u0275\u0275text(16, "Type");
+    \u0275\u0275elementEnd()()();
+    \u0275\u0275elementStart(17, "tbody");
+    \u0275\u0275template(18, SubmissionDetailComponent_section_10_table_4_tr_18_Template, 20, 9, "tr", 27);
+    \u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext(2);
+    \u0275\u0275advance(18);
     \u0275\u0275property("ngForOf", ctx_r0.tests);
+  }
+}
+function SubmissionDetailComponent_section_10_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "section", 23)(1, "h3");
+    \u0275\u0275text(2, "Testcase Results");
+    \u0275\u0275elementEnd();
+    \u0275\u0275template(3, SubmissionDetailComponent_section_10_div_3_Template, 2, 0, "div", 6)(4, SubmissionDetailComponent_section_10_table_4_Template, 19, 1, "table", 25);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275advance(3);
+    \u0275\u0275property("ngIf", !ctx_r0.tests.length);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx_r0.tests.length);
   }
 }
 var _SubmissionDetailComponent = class _SubmissionDetailComponent {
@@ -56724,6 +57148,7 @@ var _SubmissionDetailComponent = class _SubmissionDetailComponent {
     this.api = api;
     this.loading = false;
     this.error = "";
+    this.copied = false;
   }
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get("submissionId") || "";
@@ -56742,25 +57167,74 @@ var _SubmissionDetailComponent = class _SubmissionDetailComponent {
   get tests() {
     return this.submission?.testcaseResults || this.submission?.testCaseResults || [];
   }
+  get sourceCode() {
+    const s = this.submission || {};
+    return s.sourceCode ?? s.code ?? s.submittedCode ?? s.userCode ?? s.content ?? "";
+  }
+  get scoreText() {
+    const s = this.submission || {};
+    if (s.score !== null && s.score !== void 0)
+      return `${s.score}`;
+    if (s.isAccepted)
+      return "Accepted";
+    if (s.totalTestCases)
+      return `${s.passedTestCases || 0}/${s.totalTestCases}`;
+    return "-";
+  }
+  get memoryText() {
+    const memory = this.submission?.memoryUsedKb ?? this.submission?.memoryKb;
+    return memory === null || memory === void 0 || memory === "" ? "-" : `${memory} KB`;
+  }
+  get runtimeText() {
+    const runtime = this.submission?.executionTimeMs ?? this.submission?.runtimeMs;
+    return runtime === null || runtime === void 0 || runtime === "" ? "-" : `${runtime} ms`;
+  }
+  get submittedAt() {
+    return this.submission?.submittedAt || this.submission?.createdAt;
+  }
+  get verdictText() {
+    return this.submission?.verdict || this.submission?.status || "-";
+  }
+  get outputText() {
+    return this.submission?.stdout ?? this.submission?.output ?? "";
+  }
+  get errorText() {
+    return this.submission?.stderr ?? this.submission?.error ?? "";
+  }
+  get compileOutputText() {
+    return this.submission?.compileOutput ?? "";
+  }
+  copyCode() {
+    return __async(this, null, function* () {
+      yield navigator.clipboard?.writeText(this.sourceCode || "");
+      this.copied = true;
+      setTimeout(() => this.copied = false, 1200);
+    });
+  }
 };
 _SubmissionDetailComponent.\u0275fac = function SubmissionDetailComponent_Factory(__ngFactoryType__) {
   return new (__ngFactoryType__ || _SubmissionDetailComponent)(\u0275\u0275directiveInject(ActivatedRoute), \u0275\u0275directiveInject(ApiService));
 };
-_SubmissionDetailComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _SubmissionDetailComponent, selectors: [["app-submission-detail"]], decls: 7, vars: 4, consts: [["hiddenCase", ""], [1, "page"], ["routerLink", "/learner/problems", 1, "btn", "btn-outline"], ["class", "alert alert-error", "style", "white-space:pre-line", 4, "ngIf"], ["class", "empty-state", 4, "ngIf"], ["class", "card card-pad", 4, "ngIf"], ["class", "card card-pad", "style", "margin-top:18px", 4, "ngIf"], [1, "alert", "alert-error", 2, "white-space", "pre-line"], [1, "empty-state"], [1, "card", "card-pad"], [1, "page-head"], [1, "muted"], [1, "badge", "badge-gray"], [1, "grid", "grid-4"], [1, "output-box"], [1, "card", "card-pad", 2, "margin-top", "18px"], ["class", "example", "style", "margin-bottom:12px", 4, "ngFor", "ngForOf"], [1, "example", 2, "margin-bottom", "12px"], [1, "badge", 3, "ngClass"], [4, "ngIf", "ngIfElse"], ["class", "output-box", 4, "ngIf"]], template: function SubmissionDetailComponent_Template(rf, ctx) {
+_SubmissionDetailComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _SubmissionDetailComponent, selectors: [["app-submission-detail"]], decls: 11, vars: 5, consts: [["noSource", ""], [1, "page"], [1, "action-row"], ["routerLink", "/learner/submissions", 1, "btn", "btn-outline"], ["routerLink", "/learner/problems", 1, "btn", "btn-outline"], ["class", "alert alert-error", "style", "white-space:pre-line", 4, "ngIf"], ["class", "empty-state", 4, "ngIf"], ["class", "card card-pad", 4, "ngIf"], ["class", "card card-pad", "style", "margin-top:18px", 4, "ngIf"], [1, "alert", "alert-error", 2, "white-space", "pre-line"], [1, "empty-state"], [1, "card", "card-pad"], [1, "page-head"], [1, "muted"], [1, "badge", 3, "ngClass"], [1, "grid", "grid-4"], [1, "filters"], [2, "margin", "0"], ["class", "btn btn-outline", "type", "button", 3, "click", 4, "ngIf"], ["class", "output-box", 4, "ngIf", "ngIfElse"], ["type", "button", 1, "btn", "btn-outline", 3, "click"], [1, "output-box"], [1, "alert"], [1, "card", "card-pad", 2, "margin-top", "18px"], [4, "ngIf"], ["class", "table", 4, "ngIf"], [1, "table"], [4, "ngFor", "ngForOf"], ["class", "output-box", 4, "ngIf"]], template: function SubmissionDetailComponent_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 1)(1, "a", 2);
-    \u0275\u0275text(2, "\u2190 Quay l\u1EA1i Problems");
+    \u0275\u0275elementStart(0, "div", 1)(1, "div", 2)(2, "a", 3);
+    \u0275\u0275text(3, "\u2190 B\xE0i n\u1ED9p c\u1EE7a t\xF4i");
     \u0275\u0275elementEnd();
-    \u0275\u0275template(3, SubmissionDetailComponent_div_3_Template, 2, 1, "div", 3)(4, SubmissionDetailComponent_div_4_Template, 2, 0, "div", 4)(5, SubmissionDetailComponent_section_5_Template, 37, 12, "section", 5)(6, SubmissionDetailComponent_section_6_Template, 4, 1, "section", 6);
+    \u0275\u0275elementStart(4, "a", 4);
+    \u0275\u0275text(5, "Problems");
+    \u0275\u0275elementEnd()();
+    \u0275\u0275template(6, SubmissionDetailComponent_div_6_Template, 2, 1, "div", 5)(7, SubmissionDetailComponent_div_7_Template, 2, 0, "div", 6)(8, SubmissionDetailComponent_section_8_Template, 40, 15, "section", 7)(9, SubmissionDetailComponent_section_9_Template, 6, 3, "section", 8)(10, SubmissionDetailComponent_section_10_Template, 5, 2, "section", 8);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    \u0275\u0275advance(3);
+    \u0275\u0275advance(6);
     \u0275\u0275property("ngIf", ctx.error);
     \u0275\u0275advance();
     \u0275\u0275property("ngIf", ctx.loading);
     \u0275\u0275advance();
     \u0275\u0275property("ngIf", ctx.submission);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx.submission && (ctx.outputText || ctx.errorText || ctx.compileOutputText));
     \u0275\u0275advance();
     \u0275\u0275property("ngIf", ctx.submission);
   }
@@ -56770,7 +57244,11 @@ var SubmissionDetailComponent = _SubmissionDetailComponent;
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(SubmissionDetailComponent, [{
     type: Component,
     args: [{ selector: "app-submission-detail", standalone: true, imports: [CommonModule, RouterLink], template: `<div class="page">
-  <a class="btn btn-outline" routerLink="/learner/problems">\u2190 Quay l\u1EA1i Problems</a>
+  <div class="action-row">
+    <a class="btn btn-outline" routerLink="/learner/submissions">\u2190 B\xE0i n\u1ED9p c\u1EE7a t\xF4i</a>
+    <a class="btn btn-outline" routerLink="/learner/problems">Problems</a>
+  </div>
+
   <div class="alert alert-error" *ngIf="error" style="white-space:pre-line">{{error}}</div>
   <div class="empty-state" *ngIf="loading">\u0110ang t\u1EA3i submission...</div>
 
@@ -56780,32 +57258,49 @@ var SubmissionDetailComponent = _SubmissionDetailComponent;
         <h1>Submission #{{submission.id || submission.submissionId}}</h1>
         <p class="muted">{{submission.problemTitle || ('Problem #' + submission.problemId)}}</p>
       </div>
-      <span class="badge badge-gray">{{submission.status || submission.verdict}}</span>
+      <span class="badge" [ngClass]="submission.isAccepted ? 'badge-green' : 'badge-gray'">{{verdictText}}</span>
     </div>
+
     <div class="grid grid-4">
-      <div><b>Ng\xF4n ng\u1EEF</b><p class="muted">{{submission.language}}</p></div>
-      <div><b>\u0110i\u1EC3m</b><p class="muted">{{submission.score ?? '-'}}</p></div>
-      <div><b>Runtime</b><p class="muted">{{submission.runtimeMs || submission.executionTimeMs || '-'}} ms</p></div>
-      <div><b>Memory</b><p class="muted">{{submission.memoryKb || '-'}} KB</p></div>
+      <div><b>Ng\xF4n ng\u1EEF</b><p class="muted">{{submission.language || '-'}}</p></div>
+      <div><b>\u0110i\u1EC3m</b><p class="muted">{{scoreText}}</p></div>
+      <div><b>Runtime</b><p class="muted">{{runtimeText}}</p></div>
+      <div><b>Memory</b><p class="muted">{{memoryText}}</p></div>
     </div>
-    <p class="muted">N\u1ED9p l\xFAc: {{submission.submittedAt | date:'short'}}</p>
-    <h3>Source Code</h3>
-    <pre class="output-box">{{submission.sourceCode}}</pre>
+    <p class="muted">N\u1ED9p l\xFAc: {{submittedAt ? (submittedAt | date:'short') : '-'}}</p>
+
+    <div class="filters">
+      <h3 style="margin:0">Source Code</h3>
+      <button class="btn btn-outline" type="button" *ngIf="sourceCode" (click)="copyCode()">{{copied ? '\u0110\xE3 copy' : 'Copy code'}}</button>
+    </div>
+    <pre class="output-box" *ngIf="sourceCode; else noSource"><code>{{sourceCode}}</code></pre>
+    <ng-template #noSource><div class="alert">Kh\xF4ng c\xF3 source code \u0111\u01B0\u1EE3c l\u01B0u cho submission n\xE0y.</div></ng-template>
+  </section>
+
+  <section class="card card-pad" *ngIf="submission && (outputText || errorText || compileOutputText)" style="margin-top:18px">
+    <h3>Output / Error</h3>
+    <div *ngIf="outputText"><b>Output</b><pre class="output-box">{{outputText}}</pre></div>
+    <div *ngIf="errorText"><b>Error</b><pre class="output-box">{{errorText}}</pre></div>
+    <div *ngIf="compileOutputText"><b>Compile Output</b><pre class="output-box">{{compileOutputText}}</pre></div>
   </section>
 
   <section class="card card-pad" *ngIf="submission" style="margin-top:18px">
     <h3>Testcase Results</h3>
-    <div class="example" *ngFor="let tc of tests; let i=index" style="margin-bottom:12px">
-      <b>#{{tc.displayOrder || i + 1}} {{tc.status || tc.verdict}}</b>
-      <span class="badge" [ngClass]="tc.passed ? 'badge-green' : 'badge-red'">{{tc.passed ? 'Passed' : 'Failed'}}</span>
-      <ng-container *ngIf="tc.input || tc.expectedOutput; else hiddenCase">
-        <small class="muted">Input</small><pre class="output-box">{{tc.input}}</pre>
-        <small class="muted">Expected</small><pre class="output-box">{{tc.expectedOutput}}</pre>
-      </ng-container>
-      <ng-template #hiddenCase><p class="muted">Hidden testcase</p></ng-template>
-      <small class="muted">Actual</small><pre class="output-box">{{tc.actualOutput || '(no output)'}}</pre>
-      <pre class="output-box" *ngIf="tc.error">{{tc.error}}</pre>
-    </div>
+    <div class="empty-state" *ngIf="!tests.length">Submission n\xE0y kh\xF4ng c\xF3 testcase result.</div>
+    <table class="table" *ngIf="tests.length">
+      <thead><tr><th>#</th><th>Input</th><th>Expected</th><th>Actual</th><th>Status</th><th>Runtime</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let tc of tests; let i=index">
+          <td>{{tc.displayOrder || i + 1}}</td>
+          <td><pre class="output-box">{{tc.input || '-'}}</pre></td>
+          <td><pre class="output-box">{{tc.expectedOutput || '-'}}</pre></td>
+          <td><pre class="output-box">{{tc.actualOutput || '(no output)'}}</pre><pre class="output-box" *ngIf="tc.error">{{tc.error}}</pre></td>
+          <td><span class="badge" [ngClass]="tc.passed ? 'badge-green' : 'badge-red'">{{tc.status || (tc.passed ? 'Passed' : 'Failed')}}</span></td>
+          <td>{{tc.runtimeMs || tc.executionTimeMs || 0}} ms</td>
+          <td>{{tc.isHidden ? 'hidden' : 'public'}}</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 </div>
 ` }]
@@ -56815,8 +57310,392 @@ var SubmissionDetailComponent = _SubmissionDetailComponent;
   (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(SubmissionDetailComponent, { className: "SubmissionDetailComponent", filePath: "src/app/features/submission-detail.component.ts", lineNumber: 12 });
 })();
 
+// src/app/features/submissions.component.ts
+var _c014 = (a0) => ["/learner/submissions", a0];
+function SubmissionsComponent_div_45_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 26);
+    \u0275\u0275text(1);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate(ctx_r0.error);
+  }
+}
+function SubmissionsComponent_div_46_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 27);
+    \u0275\u0275text(1, "\u0110ang t\u1EA3i l\u1ECBch s\u1EED n\u1ED9p b\xE0i...");
+    \u0275\u0275elementEnd();
+  }
+}
+function SubmissionsComponent_div_47_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 27);
+    \u0275\u0275text(1, "B\u1EA1n ch\u01B0a c\xF3 b\xE0i n\u1ED9p n\xE0o.");
+    \u0275\u0275elementEnd();
+  }
+}
+function SubmissionsComponent_section_48_tr_21_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "tr")(1, "td")(2, "b");
+    \u0275\u0275text(3);
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(4, "td");
+    \u0275\u0275text(5);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(6, "td")(7, "span", 33);
+    \u0275\u0275text(8);
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(9, "td");
+    \u0275\u0275text(10);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(11, "td");
+    \u0275\u0275text(12);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(13, "td");
+    \u0275\u0275text(14);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(15, "td");
+    \u0275\u0275text(16);
+    \u0275\u0275pipe(17, "date");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(18, "td")(19, "a", 34);
+    \u0275\u0275text(20, "Xem chi ti\u1EBFt");
+    \u0275\u0275elementEnd()()();
+  }
+  if (rf & 2) {
+    const item_r3 = ctx.$implicit;
+    const ctx_r0 = \u0275\u0275nextContext(2);
+    \u0275\u0275advance(3);
+    \u0275\u0275textInterpolate(item_r3.problemTitle || "Problem #" + item_r3.problemId);
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate(item_r3.language);
+    \u0275\u0275advance(2);
+    \u0275\u0275property("ngClass", item_r3.isAccepted ? "badge-green" : "badge-gray");
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate(ctx_r0.verdictText(item_r3));
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate2("", item_r3.passedTestCases || 0, "/", item_r3.totalTestCases || 0);
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate(ctx_r0.runtimeText(item_r3));
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate(ctx_r0.memoryText(item_r3));
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate(ctx_r0.submittedAt(item_r3) ? \u0275\u0275pipeBind2(17, 10, ctx_r0.submittedAt(item_r3), "short") : "-");
+    \u0275\u0275advance(3);
+    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(13, _c014, item_r3.id || item_r3.submissionId));
+  }
+}
+function SubmissionsComponent_section_48_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r2 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "section", 28)(1, "table", 29)(2, "thead")(3, "tr")(4, "th");
+    \u0275\u0275text(5, "Problem");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(6, "th");
+    \u0275\u0275text(7, "Language");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(8, "th");
+    \u0275\u0275text(9, "Verdict");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(10, "th");
+    \u0275\u0275text(11, "Testcases");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(12, "th");
+    \u0275\u0275text(13, "Runtime");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(14, "th");
+    \u0275\u0275text(15, "Memory");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(16, "th");
+    \u0275\u0275text(17, "SubmittedAt");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(18, "th");
+    \u0275\u0275text(19, "Action");
+    \u0275\u0275elementEnd()()();
+    \u0275\u0275elementStart(20, "tbody");
+    \u0275\u0275template(21, SubmissionsComponent_section_48_tr_21_Template, 21, 15, "tr", 30);
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(22, "div", 31)(23, "button", 32);
+    \u0275\u0275listener("click", function SubmissionsComponent_section_48_Template_button_click_23_listener() {
+      \u0275\u0275restoreView(_r2);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.load(ctx_r0.filters.pageIndex - 1));
+    });
+    \u0275\u0275text(24, "Tr\u01B0\u1EDBc");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(25, "span", 2);
+    \u0275\u0275text(26);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(27, "button", 32);
+    \u0275\u0275listener("click", function SubmissionsComponent_section_48_Template_button_click_27_listener() {
+      \u0275\u0275restoreView(_r2);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.load(ctx_r0.filters.pageIndex + 1));
+    });
+    \u0275\u0275text(28, "Sau");
+    \u0275\u0275elementEnd()()();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275advance(21);
+    \u0275\u0275property("ngForOf", ctx_r0.submissions);
+    \u0275\u0275advance(2);
+    \u0275\u0275property("disabled", ctx_r0.filters.pageIndex <= 1);
+    \u0275\u0275advance(3);
+    \u0275\u0275textInterpolate2("Trang ", ctx_r0.filters.pageIndex, " / ", ctx_r0.totalPages);
+    \u0275\u0275advance();
+    \u0275\u0275property("disabled", ctx_r0.filters.pageIndex >= ctx_r0.totalPages);
+  }
+}
+var _SubmissionsComponent = class _SubmissionsComponent {
+  constructor(api) {
+    this.api = api;
+    this.submissions = [];
+    this.loading = false;
+    this.error = "";
+    this.filters = { language: "", verdict: "", pageIndex: 1, pageSize: 20 };
+    this.totalItems = 0;
+    this.totalPages = 1;
+  }
+  ngOnInit() {
+    this.load();
+  }
+  load(pageIndex = this.filters.pageIndex) {
+    this.loading = true;
+    this.error = "";
+    this.filters.pageIndex = pageIndex;
+    const query = Object.fromEntries(Object.entries(this.filters).filter(([, value]) => value !== "" && value !== null && value !== void 0));
+    this.api.getMyCodeSubmissions(query).subscribe({
+      next: (r) => {
+        const data = r.data || {};
+        this.submissions = data.items || (Array.isArray(data) ? data : []);
+        this.totalItems = data.totalItems || this.submissions.length;
+        this.totalPages = data.totalPages || 1;
+        this.loading = false;
+      },
+      error: (e) => {
+        this.error = this.api.errorMessage(e, "Kh\xF4ng t\u1EA3i \u0111\u01B0\u1EE3c l\u1ECBch s\u1EED n\u1ED9p b\xE0i.");
+        this.loading = false;
+      }
+    });
+  }
+  resetFilters() {
+    this.filters = { language: "", verdict: "", pageIndex: 1, pageSize: 20 };
+    this.load(1);
+  }
+  verdictText(item) {
+    return item.verdict || item.status || "-";
+  }
+  scoreText(item) {
+    if (item.score !== null && item.score !== void 0)
+      return `${item.score}`;
+    if (item.isAccepted)
+      return "Accepted";
+    if (item.totalTestCases)
+      return `${item.passedTestCases || 0}/${item.totalTestCases}`;
+    return "-";
+  }
+  memoryText(item) {
+    const memory = item.memoryUsedKb ?? item.memoryKb;
+    return memory === null || memory === void 0 || memory === "" ? "-" : `${memory} KB`;
+  }
+  runtimeText(item) {
+    const runtime = item.executionTimeMs ?? item.runtimeMs;
+    return runtime === null || runtime === void 0 || runtime === "" ? "-" : `${runtime} ms`;
+  }
+  submittedAt(item) {
+    return item.submittedAt || item.createdAt;
+  }
+};
+_SubmissionsComponent.\u0275fac = function SubmissionsComponent_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _SubmissionsComponent)(\u0275\u0275directiveInject(ApiService));
+};
+_SubmissionsComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _SubmissionsComponent, selectors: [["app-submissions"]], decls: 49, vars: 6, consts: [[1, "page"], [1, "page-head"], [1, "muted"], ["routerLink", "/learner/problems", 1, "btn", "btn-outline"], [1, "card", "card-pad"], [1, "filters"], [1, "select", 2, "max-width", "180px", 3, "ngModelChange", "change", "ngModel"], ["value", ""], ["value", "javascript"], ["value", "typescript"], ["value", "python"], ["value", "java"], ["value", "c"], ["value", "cpp"], ["value", "csharp"], ["value", "go"], [1, "select", 2, "max-width", "200px", 3, "ngModelChange", "change", "ngModel"], ["value", "Accepted"], ["value", "WrongAnswer"], ["value", "RuntimeError"], ["value", "CompilationError"], ["value", "TimeLimitExceeded"], ["type", "button", 1, "btn", "btn-outline", 3, "click"], ["class", "alert alert-error", "style", "white-space:pre-line", 4, "ngIf"], ["class", "empty-state", 4, "ngIf"], ["class", "card card-pad", "style", "margin-top:18px", 4, "ngIf"], [1, "alert", "alert-error", 2, "white-space", "pre-line"], [1, "empty-state"], [1, "card", "card-pad", 2, "margin-top", "18px"], [1, "table"], [4, "ngFor", "ngForOf"], [1, "action-row", 2, "margin-top", "16px"], ["type", "button", 1, "btn", "btn-outline", 3, "click", "disabled"], [1, "badge", 3, "ngClass"], [1, "btn", "btn-outline", 3, "routerLink"]], template: function SubmissionsComponent_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 0)(1, "div", 1)(2, "div")(3, "h1");
+    \u0275\u0275text(4, "B\xE0i n\u1ED9p c\u1EE7a t\xF4i");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(5, "p", 2);
+    \u0275\u0275text(6, "L\u1ECBch s\u1EED Code Problems v\xE0 Playground runs c\u1EE7a b\u1EA1n.");
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(7, "a", 3);
+    \u0275\u0275text(8, "Problems");
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(9, "section", 4)(10, "div", 5)(11, "select", 6);
+    \u0275\u0275twoWayListener("ngModelChange", function SubmissionsComponent_Template_select_ngModelChange_11_listener($event) {
+      \u0275\u0275twoWayBindingSet(ctx.filters.language, $event) || (ctx.filters.language = $event);
+      return $event;
+    });
+    \u0275\u0275listener("change", function SubmissionsComponent_Template_select_change_11_listener() {
+      return ctx.load(1);
+    });
+    \u0275\u0275elementStart(12, "option", 7);
+    \u0275\u0275text(13, "T\u1EA5t c\u1EA3 ng\xF4n ng\u1EEF");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(14, "option", 8);
+    \u0275\u0275text(15, "JavaScript");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(16, "option", 9);
+    \u0275\u0275text(17, "TypeScript");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(18, "option", 10);
+    \u0275\u0275text(19, "Python");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(20, "option", 11);
+    \u0275\u0275text(21, "Java");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(22, "option", 12);
+    \u0275\u0275text(23, "C");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(24, "option", 13);
+    \u0275\u0275text(25, "C++17");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(26, "option", 14);
+    \u0275\u0275text(27, "C#");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(28, "option", 15);
+    \u0275\u0275text(29, "Go");
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(30, "select", 16);
+    \u0275\u0275twoWayListener("ngModelChange", function SubmissionsComponent_Template_select_ngModelChange_30_listener($event) {
+      \u0275\u0275twoWayBindingSet(ctx.filters.verdict, $event) || (ctx.filters.verdict = $event);
+      return $event;
+    });
+    \u0275\u0275listener("change", function SubmissionsComponent_Template_select_change_30_listener() {
+      return ctx.load(1);
+    });
+    \u0275\u0275elementStart(31, "option", 7);
+    \u0275\u0275text(32, "T\u1EA5t c\u1EA3 verdict");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(33, "option", 17);
+    \u0275\u0275text(34, "Accepted");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(35, "option", 18);
+    \u0275\u0275text(36, "Wrong Answer");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(37, "option", 19);
+    \u0275\u0275text(38, "Runtime Error");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(39, "option", 20);
+    \u0275\u0275text(40, "Compilation Error");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(41, "option", 21);
+    \u0275\u0275text(42, "Time Limit Exceeded");
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(43, "button", 22);
+    \u0275\u0275listener("click", function SubmissionsComponent_Template_button_click_43_listener() {
+      return ctx.resetFilters();
+    });
+    \u0275\u0275text(44, "X\xF3a l\u1ECDc");
+    \u0275\u0275elementEnd()()();
+    \u0275\u0275template(45, SubmissionsComponent_div_45_Template, 2, 1, "div", 23)(46, SubmissionsComponent_div_46_Template, 2, 0, "div", 24)(47, SubmissionsComponent_div_47_Template, 2, 0, "div", 24)(48, SubmissionsComponent_section_48_Template, 29, 5, "section", 25);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    \u0275\u0275advance(11);
+    \u0275\u0275twoWayProperty("ngModel", ctx.filters.language);
+    \u0275\u0275advance(19);
+    \u0275\u0275twoWayProperty("ngModel", ctx.filters.verdict);
+    \u0275\u0275advance(15);
+    \u0275\u0275property("ngIf", ctx.error);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx.loading);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", !ctx.loading && !ctx.submissions.length);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", !ctx.loading && ctx.submissions.length);
+  }
+}, dependencies: [CommonModule, NgClass, NgForOf, NgIf, FormsModule, NgSelectOption, \u0275NgSelectMultipleOption, SelectControlValueAccessor, NgControlStatus, NgModel, RouterLink, DatePipe], encapsulation: 2 });
+var SubmissionsComponent = _SubmissionsComponent;
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(SubmissionsComponent, [{
+    type: Component,
+    args: [{ selector: "app-submissions", standalone: true, imports: [CommonModule, FormsModule, RouterLink], template: `<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>B\xE0i n\u1ED9p c\u1EE7a t\xF4i</h1>
+      <p class="muted">L\u1ECBch s\u1EED Code Problems v\xE0 Playground runs c\u1EE7a b\u1EA1n.</p>
+    </div>
+    <a class="btn btn-outline" routerLink="/learner/problems">Problems</a>
+  </div>
+
+  <section class="card card-pad">
+    <div class="filters">
+      <select class="select" style="max-width:180px" [(ngModel)]="filters.language" (change)="load(1)">
+        <option value="">T\u1EA5t c\u1EA3 ng\xF4n ng\u1EEF</option>
+        <option value="javascript">JavaScript</option>
+        <option value="typescript">TypeScript</option>
+        <option value="python">Python</option>
+        <option value="java">Java</option>
+        <option value="c">C</option>
+        <option value="cpp">C++17</option>
+        <option value="csharp">C#</option>
+        <option value="go">Go</option>
+      </select>
+      <select class="select" style="max-width:200px" [(ngModel)]="filters.verdict" (change)="load(1)">
+        <option value="">T\u1EA5t c\u1EA3 verdict</option>
+        <option value="Accepted">Accepted</option>
+        <option value="WrongAnswer">Wrong Answer</option>
+        <option value="RuntimeError">Runtime Error</option>
+        <option value="CompilationError">Compilation Error</option>
+        <option value="TimeLimitExceeded">Time Limit Exceeded</option>
+      </select>
+      <button class="btn btn-outline" type="button" (click)="resetFilters()">X\xF3a l\u1ECDc</button>
+    </div>
+  </section>
+
+  <div class="alert alert-error" *ngIf="error" style="white-space:pre-line">{{error}}</div>
+  <div class="empty-state" *ngIf="loading">\u0110ang t\u1EA3i l\u1ECBch s\u1EED n\u1ED9p b\xE0i...</div>
+  <div class="empty-state" *ngIf="!loading && !submissions.length">B\u1EA1n ch\u01B0a c\xF3 b\xE0i n\u1ED9p n\xE0o.</div>
+
+  <section class="card card-pad" *ngIf="!loading && submissions.length" style="margin-top:18px">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Problem</th>
+          <th>Language</th>
+          <th>Verdict</th>
+          <th>Testcases</th>
+          <th>Runtime</th>
+          <th>Memory</th>
+          <th>SubmittedAt</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of submissions">
+          <td><b>{{item.problemTitle || ('Problem #' + item.problemId)}}</b></td>
+          <td>{{item.language}}</td>
+          <td><span class="badge" [ngClass]="item.isAccepted ? 'badge-green' : 'badge-gray'">{{verdictText(item)}}</span></td>
+          <td>{{item.passedTestCases || 0}}/{{item.totalTestCases || 0}}</td>
+          <td>{{runtimeText(item)}}</td>
+          <td>{{memoryText(item)}}</td>
+          <td>{{submittedAt(item) ? (submittedAt(item) | date:'short') : '-'}}</td>
+          <td><a class="btn btn-outline" [routerLink]="['/learner/submissions', item.id || item.submissionId]">Xem chi ti\u1EBFt</a></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="action-row" style="margin-top:16px">
+      <button class="btn btn-outline" type="button" [disabled]="filters.pageIndex <= 1" (click)="load(filters.pageIndex - 1)">Tr\u01B0\u1EDBc</button>
+      <span class="muted">Trang {{filters.pageIndex}} / {{totalPages}}</span>
+      <button class="btn btn-outline" type="button" [disabled]="filters.pageIndex >= totalPages" (click)="load(filters.pageIndex + 1)">Sau</button>
+    </div>
+  </section>
+</div>
+` }]
+  }], () => [{ type: ApiService }], null);
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(SubmissionsComponent, { className: "SubmissionsComponent", filePath: "src/app/features/submissions.component.ts", lineNumber: 13 });
+})();
+
 // src/app/features/personal-practice/personal-practice.component.ts
-var _c013 = (a0) => ["/learner/practice-banks", a0];
+var _c015 = (a0) => ["/learner/practice-banks", a0];
 function PersonalPracticeComponent_div_9_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 21);
@@ -56915,7 +57794,7 @@ function PersonalPracticeComponent_table_39_tr_14_Template(rf, ctx) {
     \u0275\u0275advance(2);
     \u0275\u0275textInterpolate(\u0275\u0275pipeBind2(10, 5, bank_r4.createdAt, "short"));
     \u0275\u0275advance(3);
-    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(8, _c013, bank_r4.id));
+    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(8, _c015, bank_r4.id));
   }
 }
 function PersonalPracticeComponent_table_39_Template(rf, ctx) {
@@ -57235,7 +58114,7 @@ var PersonalPracticeComponent = _PersonalPracticeComponent;
 })();
 
 // src/app/features/personal-practice/personal-practice-detail.component.ts
-var _c014 = () => [];
+var _c016 = () => [];
 function PersonalPracticeDetailComponent_div_3_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 6);
@@ -57351,7 +58230,7 @@ function PersonalPracticeDetailComponent_section_5_div_3_Template(rf, ctx) {
     \u0275\u0275advance(2);
     \u0275\u0275textInterpolate2("#", i_r5 + 1, " ", q_r4.questionText || q_r4.content || q_r4.title);
     \u0275\u0275advance(2);
-    \u0275\u0275property("ngForOf", q_r4.options || q_r4.answers || \u0275\u0275pureFunction0(3, _c014));
+    \u0275\u0275property("ngForOf", q_r4.options || q_r4.answers || \u0275\u0275pureFunction0(3, _c016));
   }
 }
 function PersonalPracticeDetailComponent_section_5_Template(rf, ctx) {
@@ -57499,7 +58378,7 @@ var PersonalPracticeDetailComponent = _PersonalPracticeDetailComponent;
 })();
 
 // src/app/features/personal-practice/personal-practice-attempt.component.ts
-var _c015 = () => [];
+var _c017 = () => [];
 function PersonalPracticeAttemptComponent_div_9_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 9);
@@ -57585,7 +58464,7 @@ function PersonalPracticeAttemptComponent_section_11_Template(rf, ctx) {
     \u0275\u0275advance(2);
     \u0275\u0275textInterpolate(q_r3.questionText || q_r3.content || q_r3.title);
     \u0275\u0275advance();
-    \u0275\u0275property("ngForOf", q_r3.options || q_r3.answers || \u0275\u0275pureFunction0(3, _c015));
+    \u0275\u0275property("ngForOf", q_r3.options || q_r3.answers || \u0275\u0275pureFunction0(3, _c017));
   }
 }
 function PersonalPracticeAttemptComponent_div_12_Template(rf, ctx) {
@@ -57666,7 +58545,7 @@ var _PersonalPracticeAttemptComponent = class _PersonalPracticeAttemptComponent 
     if (!confirm("B\u1EA1n ch\u1EAFc ch\u1EAFn mu\u1ED1n n\u1ED9p b\xE0i?"))
       return;
     const id = this.route.snapshot.paramMap.get("attemptId") || "";
-    const answers = this.questions.filter((q) => this.selected[this.questionId(q)]).map((q) => ({ questionId: Number(this.questionId(q)), selectedOptionLabel: this.selected[this.questionId(q)] }));
+    const answers = this.questions.filter((q) => this.selected[this.questionId(q)]).map((q) => ({ questionId: Number(this.questionId(q)), selectedOptionKey: this.selected[this.questionId(q)] }));
     this.submitting = true;
     this.api.submitPracticeAttempt(id, { answers }).subscribe({
       next: () => {
@@ -57757,7 +58636,7 @@ var PersonalPracticeAttemptComponent = _PersonalPracticeAttemptComponent;
 })();
 
 // src/app/features/personal-practice/personal-practice-history.component.ts
-var _c016 = (a0) => ["/learner/practice-attempts", a0, "result"];
+var _c018 = (a0) => ["/learner/practice-attempts", a0, "result"];
 function PersonalPracticeHistoryComponent_div_9_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 8);
@@ -57811,7 +58690,7 @@ function PersonalPracticeHistoryComponent_table_11_tr_18_Template(rf, ctx) {
     \u0275\u0275advance(2);
     \u0275\u0275textInterpolate2("", a_r2.correctCount ?? 0, " / ", a_r2.totalQuestions ?? a_r2.questionCount ?? 0);
     \u0275\u0275advance(2);
-    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(14, _c016, a_r2.id || a_r2.attemptId));
+    \u0275\u0275property("routerLink", \u0275\u0275pureFunction1(14, _c018, a_r2.id || a_r2.attemptId));
   }
 }
 function PersonalPracticeHistoryComponent_table_11_Template(rf, ctx) {
@@ -57956,7 +58835,7 @@ var PersonalPracticeHistoryComponent = _PersonalPracticeHistoryComponent;
 // src/app/features/personal-practice/personal-practice-result.component.ts
 function PersonalPracticeResultComponent_div_12_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 10);
+    \u0275\u0275elementStart(0, "div", 11);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -57968,22 +58847,22 @@ function PersonalPracticeResultComponent_div_12_Template(rf, ctx) {
 }
 function PersonalPracticeResultComponent_section_13_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "section", 11)(1, "div", 12)(2, "div", 13);
+    \u0275\u0275elementStart(0, "section", 12)(1, "div", 13)(2, "div", 14);
     \u0275\u0275text(3);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(4, "p", 2);
+    \u0275\u0275elementStart(4, "p", 3);
     \u0275\u0275text(5, "\u0110i\u1EC3m");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(6, "div", 12)(7, "div", 13);
+    \u0275\u0275elementStart(6, "div", 13)(7, "div", 14);
     \u0275\u0275text(8);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(9, "p", 2);
+    \u0275\u0275elementStart(9, "p", 3);
     \u0275\u0275text(10, "C\xE2u \u0111\xFAng");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(11, "div", 12)(12, "div", 13);
+    \u0275\u0275elementStart(11, "div", 13)(12, "div", 14);
     \u0275\u0275text(13);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(14, "p", 2);
+    \u0275\u0275elementStart(14, "p", 3);
     \u0275\u0275text(15, "T\u1ED5ng c\xE2u");
     \u0275\u0275elementEnd()()();
   }
@@ -57997,60 +58876,151 @@ function PersonalPracticeResultComponent_section_13_Template(rf, ctx) {
     \u0275\u0275textInterpolate(ctx_r0.attempt.totalQuestions ?? ctx_r0.questions.length);
   }
 }
-function PersonalPracticeResultComponent_section_14_p_12_Template(rf, ctx) {
+function PersonalPracticeResultComponent_section_14_ng_container_10_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "p", 2);
+    \u0275\u0275elementContainerStart(0);
+    \u0275\u0275text(1);
+    \u0275\u0275elementContainerEnd();
+  }
+  if (rf & 2) {
+    const q_r2 = \u0275\u0275nextContext().$implicit;
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate1(" - ", ctx_r0.selectedAnswerText(q_r2));
+  }
+}
+function PersonalPracticeResultComponent_section_14_ng_container_13_ng_container_2_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementContainerStart(0);
+    \u0275\u0275text(1);
+    \u0275\u0275elementContainerEnd();
+  }
+  if (rf & 2) {
+    const q_r2 = \u0275\u0275nextContext(2).$implicit;
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate1(" - ", ctx_r0.correctAnswerText(q_r2));
+  }
+}
+function PersonalPracticeResultComponent_section_14_ng_container_13_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementContainerStart(0);
+    \u0275\u0275text(1);
+    \u0275\u0275template(2, PersonalPracticeResultComponent_section_14_ng_container_13_ng_container_2_Template, 2, 1, "ng-container", 19);
+    \u0275\u0275elementContainerEnd();
+  }
+  if (rf & 2) {
+    const q_r2 = \u0275\u0275nextContext().$implicit;
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate(ctx_r0.correctOption(q_r2));
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx_r0.correctAnswerText(q_r2));
+  }
+}
+function PersonalPracticeResultComponent_section_14_ng_template_14_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275text(0, "Ch\u01B0a c\xF3 \u0111\xE1p \xE1n \u0111\xFAng");
+  }
+}
+function PersonalPracticeResultComponent_section_14_p_16_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "p", 3);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
     const q_r2 = \u0275\u0275nextContext().$implicit;
+    const ctx_r0 = \u0275\u0275nextContext();
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(q_r2.explanation);
+    \u0275\u0275textInterpolate(ctx_r0.explanation(q_r2));
+  }
+}
+function PersonalPracticeResultComponent_section_14_div_17_div_1_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 25)(1, "span")(2, "b");
+    \u0275\u0275text(3);
+    \u0275\u0275elementEnd();
+    \u0275\u0275text(4);
+    \u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const option_r3 = ctx.$implicit;
+    const oi_r4 = ctx.index;
+    const q_r2 = \u0275\u0275nextContext(2).$implicit;
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275property("ngClass", ctx_r0.optionClass(q_r2, option_r3, oi_r4));
+    \u0275\u0275advance(3);
+    \u0275\u0275textInterpolate1("", ctx_r0.optionKey(option_r3, oi_r4), ".");
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate1(" ", ctx_r0.optionText(option_r3));
+  }
+}
+function PersonalPracticeResultComponent_section_14_div_17_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 23);
+    \u0275\u0275template(1, PersonalPracticeResultComponent_section_14_div_17_div_1_Template, 5, 3, "div", 24);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const q_r2 = \u0275\u0275nextContext().$implicit;
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275advance();
+    \u0275\u0275property("ngForOf", ctx_r0.options(q_r2));
   }
 }
 function PersonalPracticeResultComponent_section_14_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "section", 14)(1, "h3", 15);
+    \u0275\u0275elementStart(0, "section", 15)(1, "h3", 16);
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "p");
+    \u0275\u0275elementStart(3, "p", 17);
     \u0275\u0275text(4);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(5, "div", 16)(6, "b");
+    \u0275\u0275elementStart(5, "div", 18)(6, "b");
     \u0275\u0275text(7);
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(8, "span");
     \u0275\u0275text(9);
+    \u0275\u0275template(10, PersonalPracticeResultComponent_section_14_ng_container_10_Template, 2, 1, "ng-container", 19);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(10, "span");
-    \u0275\u0275text(11);
+    \u0275\u0275elementStart(11, "span");
+    \u0275\u0275text(12, "\u0110\xE1p \xE1n \u0111\xFAng: ");
+    \u0275\u0275template(13, PersonalPracticeResultComponent_section_14_ng_container_13_Template, 3, 2, "ng-container", 20);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(12, PersonalPracticeResultComponent_section_14_p_12_Template, 2, 1, "p", 17);
-    \u0275\u0275elementEnd()();
+    \u0275\u0275template(14, PersonalPracticeResultComponent_section_14_ng_template_14_Template, 1, 0, "ng-template", null, 0, \u0275\u0275templateRefExtractor)(16, PersonalPracticeResultComponent_section_14_p_16_Template, 2, 1, "p", 21);
+    \u0275\u0275elementEnd();
+    \u0275\u0275template(17, PersonalPracticeResultComponent_section_14_div_17_Template, 2, 1, "div", 22);
+    \u0275\u0275elementEnd();
   }
   if (rf & 2) {
     const q_r2 = ctx.$implicit;
-    const i_r3 = ctx.index;
+    const i_r5 = ctx.index;
+    const missingCorrect_r6 = \u0275\u0275reference(15);
+    const ctx_r0 = \u0275\u0275nextContext();
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate1("C\xE2u ", i_r3 + 1);
+    \u0275\u0275textInterpolate1("C\xE2u ", i_r5 + 1);
     \u0275\u0275advance(2);
     \u0275\u0275textInterpolate(q_r2.questionText || q_r2.content || q_r2.title);
     \u0275\u0275advance();
-    \u0275\u0275property("ngClass", q_r2.isCorrect ? "result-option-correct" : "result-option-wrong");
+    \u0275\u0275property("ngClass", ctx_r0.isCorrect(q_r2) ? "result-option-correct" : "result-option-wrong");
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(q_r2.isCorrect ? "\u0110\xFAng" : "Sai");
+    \u0275\u0275textInterpolate(ctx_r0.isCorrect(q_r2) ? "\u0110\xFAng" : "Sai");
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate1("\u0110\xE1p \xE1n \u0111\xE3 ch\u1ECDn: ", q_r2.selectedOptionLabel || q_r2.selectedAnswer || "Ch\u01B0a ch\u1ECDn");
-    \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate1("\u0110\xE1p \xE1n \u0111\xFAng: ", q_r2.correctOptionLabel || q_r2.correctAnswer || q_r2.correctOption || "-");
+    \u0275\u0275textInterpolate1("\u0110\xE1p \xE1n \u0111\xE3 ch\u1ECDn: ", ctx_r0.selectedOption(q_r2) || "Ch\u01B0a ch\u1ECDn");
     \u0275\u0275advance();
-    \u0275\u0275property("ngIf", q_r2.explanation);
+    \u0275\u0275property("ngIf", ctx_r0.selectedAnswerText(q_r2));
+    \u0275\u0275advance(3);
+    \u0275\u0275property("ngIf", ctx_r0.correctOption(q_r2))("ngIfElse", missingCorrect_r6);
+    \u0275\u0275advance(3);
+    \u0275\u0275property("ngIf", ctx_r0.explanation(q_r2));
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx_r0.options(q_r2).length);
   }
 }
 function PersonalPracticeResultComponent_div_15_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 18);
+    \u0275\u0275elementStart(0, "div", 26);
     \u0275\u0275text(1, "\u0110ang t\u1EA3i k\u1EBFt qu\u1EA3...");
     \u0275\u0275elementEnd();
   }
@@ -58078,7 +59048,78 @@ var _PersonalPracticeResultComponent = class _PersonalPracticeResultComponent {
     });
   }
   get questions() {
-    return this.attempt?.questions || this.attempt?.items || [];
+    const questions = this.attempt?.questions || this.attempt?.items || [];
+    return questions.length ? questions : this.attempt?.details || [];
+  }
+  questionId(q) {
+    return String(q.questionId || q.id);
+  }
+  detailFor(q) {
+    const id = this.questionId(q);
+    return (this.attempt?.details || []).find((x) => String(x.questionId || x.id) === id) || {};
+  }
+  value(q, fields) {
+    const detail = this.detailFor(q);
+    for (const field of fields) {
+      const value = q?.[field] ?? detail?.[field];
+      if (value !== void 0 && value !== null && String(value).trim() !== "")
+        return value;
+    }
+    return "";
+  }
+  options(q) {
+    const detail = this.detailFor(q);
+    return q?.options || detail?.options || [];
+  }
+  optionKey(option, index) {
+    return (option?.key || option?.label || option?.optionKey || option?.optionLabel || String.fromCharCode(65 + index)).toString().trim().toUpperCase();
+  }
+  optionText(option) {
+    return option?.content || option?.text || option?.optionText || option?.answerText || "";
+  }
+  selectedOption(q) {
+    const direct = this.value(q, ["selectedOption", "selectedOptionKey", "selectedOptionLabel", "selectedAnswer"]);
+    return direct ? String(direct).trim().toUpperCase() : "";
+  }
+  correctOption(q) {
+    const direct = this.value(q, ["correctOption", "correctOptionKey", "correctOptionLabel", "correctAnswer"]);
+    if (direct)
+      return String(direct).trim().toUpperCase();
+    const fromOptions = this.options(q).find((option, index) => option?.isCorrect === true || option?.correct === true);
+    return fromOptions ? this.optionKey(fromOptions, this.options(q).indexOf(fromOptions)) : "";
+  }
+  selectedAnswerText(q) {
+    const direct = this.value(q, ["selectedAnswerText"]);
+    if (direct)
+      return direct;
+    const selected = this.selectedOption(q);
+    const option = this.options(q).find((item, index) => this.optionKey(item, index) === selected);
+    return option ? this.optionText(option) : "";
+  }
+  correctAnswerText(q) {
+    const direct = this.value(q, ["correctAnswerText"]);
+    if (direct)
+      return direct;
+    const correct = this.correctOption(q);
+    const option = this.options(q).find((item, index) => this.optionKey(item, index) === correct);
+    return option ? this.optionText(option) : "";
+  }
+  explanation(q) {
+    return this.value(q, ["explanation"]) || "";
+  }
+  isCorrect(q) {
+    const detail = this.detailFor(q);
+    return q?.isCorrect === true || detail?.isCorrect === true;
+  }
+  optionClass(q, option, index) {
+    const key = this.optionKey(option, index);
+    const selected = this.selectedOption(q);
+    const correct = this.correctOption(q);
+    return {
+      "result-option-correct": key === correct,
+      "result-option-wrong": key === selected && key !== correct,
+      "result-option-selected": key === selected
+    };
   }
   retry() {
     const bankId = this.attempt?.bankId || this.attempt?.practiceBankId || this.attempt?.practiceBank?.id;
@@ -58089,24 +59130,24 @@ var _PersonalPracticeResultComponent = class _PersonalPracticeResultComponent {
 _PersonalPracticeResultComponent.\u0275fac = function PersonalPracticeResultComponent_Factory(__ngFactoryType__) {
   return new (__ngFactoryType__ || _PersonalPracticeResultComponent)(\u0275\u0275directiveInject(ActivatedRoute), \u0275\u0275directiveInject(Router), \u0275\u0275directiveInject(ApiService));
 };
-_PersonalPracticeResultComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _PersonalPracticeResultComponent, selectors: [["app-personal-practice-result"]], decls: 16, vars: 5, consts: [[1, "page"], [1, "page-head"], [1, "muted"], [1, "action-row"], ["type", "button", 1, "btn", "btn-primary", 3, "click"], ["routerLink", "/learner/practice-attempts", 1, "btn", "btn-outline"], ["class", "alert alert-error", "style", "white-space:pre-line", 4, "ngIf"], ["class", "grid grid-3", 4, "ngIf"], ["class", "card card-pad", "style", "margin-top:14px", 4, "ngFor", "ngForOf"], ["class", "empty-state", 4, "ngIf"], [1, "alert", "alert-error", 2, "white-space", "pre-line"], [1, "grid", "grid-3"], [1, "card", "card-pad", 2, "text-align", "center"], [1, "stat-value"], [1, "card", "card-pad", 2, "margin-top", "14px"], [2, "margin-top", "0"], [1, "result-option", 3, "ngClass"], ["class", "muted", 4, "ngIf"], [1, "empty-state"]], template: function PersonalPracticeResultComponent_Template(rf, ctx) {
+_PersonalPracticeResultComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _PersonalPracticeResultComponent, selectors: [["app-personal-practice-result"]], decls: 16, vars: 5, consts: [["missingCorrect", ""], [1, "page"], [1, "page-head"], [1, "muted"], [1, "action-row"], ["type", "button", 1, "btn", "btn-primary", 3, "click"], ["routerLink", "/learner/practice-attempts", 1, "btn", "btn-outline"], ["class", "alert alert-error", "style", "white-space:pre-line", 4, "ngIf"], ["class", "grid grid-3", 4, "ngIf"], ["class", "card card-pad", "style", "margin-top:14px", 4, "ngFor", "ngForOf"], ["class", "empty-state", 4, "ngIf"], [1, "alert", "alert-error", 2, "white-space", "pre-line"], [1, "grid", "grid-3"], [1, "card", "card-pad", 2, "text-align", "center"], [1, "stat-value"], [1, "card", "card-pad", 2, "margin-top", "14px"], [2, "margin-top", "0"], [2, "white-space", "pre-line"], [1, "result-option", 3, "ngClass"], [4, "ngIf"], [4, "ngIf", "ngIfElse"], ["class", "muted", 4, "ngIf"], ["style", "display:flex;flex-direction:column;gap:8px;margin-top:12px", 4, "ngIf"], [2, "display", "flex", "flex-direction", "column", "gap", "8px", "margin-top", "12px"], ["class", "quiz-option result-option", 3, "ngClass", 4, "ngFor", "ngForOf"], [1, "quiz-option", "result-option", 3, "ngClass"], [1, "empty-state"]], template: function PersonalPracticeResultComponent_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 0)(1, "div", 1)(2, "div")(3, "h1");
+    \u0275\u0275elementStart(0, "div", 1)(1, "div", 2)(2, "div")(3, "h1");
     \u0275\u0275text(4, "K\u1EBFt qu\u1EA3 t\u1EF1 luy\u1EC7n");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(5, "p", 2);
+    \u0275\u0275elementStart(5, "p", 3);
     \u0275\u0275text(6);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(7, "div", 3)(8, "button", 4);
+    \u0275\u0275elementStart(7, "div", 4)(8, "button", 5);
     \u0275\u0275listener("click", function PersonalPracticeResultComponent_Template_button_click_8_listener() {
       return ctx.retry();
     });
     \u0275\u0275text(9, "Luy\u1EC7n l\u1EA1i t\u1EEB bank n\xE0y");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(10, "a", 5);
+    \u0275\u0275elementStart(10, "a", 6);
     \u0275\u0275text(11, "L\u1ECBch s\u1EED");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275template(12, PersonalPracticeResultComponent_div_12_Template, 2, 1, "div", 6)(13, PersonalPracticeResultComponent_section_13_Template, 16, 3, "section", 7)(14, PersonalPracticeResultComponent_section_14_Template, 13, 7, "section", 8)(15, PersonalPracticeResultComponent_div_15_Template, 2, 0, "div", 9);
+    \u0275\u0275template(12, PersonalPracticeResultComponent_div_12_Template, 2, 1, "div", 7)(13, PersonalPracticeResultComponent_section_13_Template, 16, 3, "section", 8)(14, PersonalPracticeResultComponent_section_14_Template, 18, 10, "section", 9)(15, PersonalPracticeResultComponent_div_15_Template, 2, 0, "div", 10);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
@@ -58148,12 +59189,20 @@ var PersonalPracticeResultComponent = _PersonalPracticeResultComponent;
 
   <section class="card card-pad" *ngFor="let q of questions; let i=index" style="margin-top:14px">
     <h3 style="margin-top:0">C\xE2u {{i + 1}}</h3>
-    <p>{{q.questionText || q.content || q.title}}</p>
-    <div class="result-option" [ngClass]="q.isCorrect ? 'result-option-correct' : 'result-option-wrong'">
-      <b>{{q.isCorrect ? '\u0110\xFAng' : 'Sai'}}</b>
-      <span>\u0110\xE1p \xE1n \u0111\xE3 ch\u1ECDn: {{q.selectedOptionLabel || q.selectedAnswer || 'Ch\u01B0a ch\u1ECDn'}}</span>
-      <span>\u0110\xE1p \xE1n \u0111\xFAng: {{q.correctOptionLabel || q.correctAnswer || q.correctOption || '-'}}</span>
-      <p class="muted" *ngIf="q.explanation">{{q.explanation}}</p>
+    <p style="white-space:pre-line">{{q.questionText || q.content || q.title}}</p>
+
+    <div class="result-option" [ngClass]="isCorrect(q) ? 'result-option-correct' : 'result-option-wrong'">
+      <b>{{isCorrect(q) ? '\u0110\xFAng' : 'Sai'}}</b>
+      <span>\u0110\xE1p \xE1n \u0111\xE3 ch\u1ECDn: {{selectedOption(q) || 'Ch\u01B0a ch\u1ECDn'}}<ng-container *ngIf="selectedAnswerText(q)"> - {{selectedAnswerText(q)}}</ng-container></span>
+      <span>\u0110\xE1p \xE1n \u0111\xFAng: <ng-container *ngIf="correctOption(q); else missingCorrect">{{correctOption(q)}}<ng-container *ngIf="correctAnswerText(q)"> - {{correctAnswerText(q)}}</ng-container></ng-container></span>
+      <ng-template #missingCorrect>Ch\u01B0a c\xF3 \u0111\xE1p \xE1n \u0111\xFAng</ng-template>
+      <p class="muted" *ngIf="explanation(q)">{{explanation(q)}}</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px" *ngIf="options(q).length">
+      <div class="quiz-option result-option" *ngFor="let option of options(q); let oi=index" [ngClass]="optionClass(q, option, oi)">
+        <span><b>{{optionKey(option, oi)}}.</b> {{optionText(option)}}</span>
+      </div>
     </div>
   </section>
 
@@ -58323,6 +59372,7 @@ var routes = [
     { path: "problems", component: ProblemsComponent, data: { title: "Problems", subtitle: "Coding challenge library" } },
     { path: "problems/:id", component: ProblemDetailComponent, data: { title: "Problems", subtitle: "Coding challenge detail" } },
     { path: "problem-detail", component: ProblemDetailComponent, data: { title: "Problems", subtitle: "Coding challenge detail" } },
+    { path: "submissions", component: SubmissionsComponent, data: { title: "B\xE0i n\u1ED9p c\u1EE7a t\xF4i", subtitle: "L\u1ECBch s\u1EED Code Problems" } },
     { path: "submissions/:submissionId", component: SubmissionDetailComponent, data: { title: "Submission Detail", subtitle: "Code submission verdict and testcase results" } },
     { path: "leaderboard", component: LeaderboardComponent, data: { title: "Leaderboard", subtitle: "Top learners" } },
     { path: "notifications", component: NotificationsComponent, data: { title: "Notifications", subtitle: "System messages" } },

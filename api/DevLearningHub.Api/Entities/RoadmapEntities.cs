@@ -71,6 +71,7 @@ public sealed class RoadmapLesson
     public string Type { get; set; } = "Reading";
     public string? Content { get; set; }
     public string? VideoUrl { get; set; }
+    public long? VideoFileId { get; set; }
     public long? QuizSetId { get; set; }
     public long? CodingProblemId { get; set; }
     public int EstimatedMinutes { get; set; }

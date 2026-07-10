@@ -1,5 +1,6 @@
 using DevLearningHub.Api.Common;
 using DevLearningHub.Api.DTOs;
+using DevLearningHub.Api.Security;
 using DevLearningHub.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -150,7 +151,7 @@ public sealed class ForumController : BaseApiController
 
 [ApiController]
 [Route("api/v1/admin/forum")]
-[Authorize(Roles = "Admin,Moderator")]
+[RequirePermission("forum.moderate")]
 public sealed class AdminForumController : BaseApiController
 {
     private readonly IForumModuleService _forum;

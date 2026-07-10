@@ -3,6 +3,7 @@ using DevLearningHub.Api.Data;
 using DevLearningHub.Api.DTOs;
 using DevLearningHub.Api.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace DevLearningHub.Api.Services;
 
@@ -14,9 +15,11 @@ public interface ICodeJudgeService
     Task<ApiResponse<CodingProblemDetailResponse>> Problem(long? userId, long id, bool includeHidden, CancellationToken ct, long? lessonId = null);
     Task<ApiResponse<CodeSubmissionResponse>> Submit(long userId, long problemId, CodeSubmitRequest request, CancellationToken ct);
     Task<ApiResponse<List<CodeSubmissionResponse>>> MySubmissions(long userId, long? problemId, CancellationToken ct);
+    Task<ApiResponse<PagedResult<CodeSubmissionResponse>>> MySubmissions(long userId, CodeSubmissionListQuery query, CancellationToken ct);
     Task<ApiResponse<CodeSubmissionResponse>> SubmissionDetail(long userId, long submissionId, bool includeHiddenResults, CancellationToken ct);
     Task<ApiResponse<List<CodingProblemDetailResponse>>> AdminProblems(CancellationToken ct);
     Task<ApiResponse<CodingProblemDetailResponse>> AdminSaveProblem(long adminId, long? id, CodingProblemRequest request, CancellationToken ct);
+    Task<ApiResponse<CodingProblemImportResult>> AdminImportProblems(long adminId, List<CodingProblemImportRequest> requests, CancellationToken ct);
     Task<ApiResponse<object>> AdminDeleteProblem(long id, CancellationToken ct);
 }
 
@@ -39,18 +42,18 @@ public sealed class CodeJudgeService : ICodeJudgeService
     private readonly DevLearningHubDbContext _db;
     private readonly ICodeExecutionProvider _executionProvider;
     private readonly INotificationService _notifications;
-    private readonly IRoadmapService _roadmaps;
+    private readonly IRoadmapProgressService _roadmapProgress;
 
     public CodeJudgeService(
         DevLearningHubDbContext db,
         ICodeExecutionProvider executionProvider,
         INotificationService notifications,
-        IRoadmapService roadmaps)
+        IRoadmapProgressService roadmapProgress)
     {
         _db = db;
         _executionProvider = executionProvider;
         _notifications = notifications;
-        _roadmaps = roadmaps;
+        _roadmapProgress = roadmapProgress;
     }
 
     public List<SupportedLanguageResponse> Languages()
@@ -69,8 +72,8 @@ public sealed class CodeJudgeService : ICodeJudgeService
         if (lessonId.HasValue)
         {
             var access = request.CodingProblemId.HasValue
-                ? await _roadmaps.CanAccessCodeLessonAsync(userId, lessonId.Value, request.CodingProblemId.Value, ct)
-                : await _roadmaps.CanStartLessonAsync(userId, lessonId.Value, ct);
+                ? await _roadmapProgress.CanAccessCodeLessonAsync(userId, lessonId.Value, request.CodingProblemId.Value, ct)
+                : await _roadmapProgress.CanStartLessonAsync(userId, lessonId.Value, ct);
             if (!access.CanAccess)
                 return ApiResponse<CodeRunResponse>.Fail(access.Message ?? "Bài code practice đang bị khóa. Hãy hoàn thành bài học trước đó.");
         }
@@ -135,7 +138,7 @@ public sealed class CodeJudgeService : ICodeJudgeService
         if (lessonId.HasValue)
         {
             if (!userId.HasValue) return ApiResponse<CodingProblemDetailResponse>.Fail("Unauthorized");
-            var access = await _roadmaps.CanAccessCodeLessonAsync(userId.Value, lessonId.Value, id, ct);
+            var access = await _roadmapProgress.CanAccessCodeLessonAsync(userId.Value, lessonId.Value, id, ct);
             if (!access.CanAccess)
                 return ApiResponse<CodingProblemDetailResponse>.Fail(access.Message ?? "Bài code practice đang bị khóa. Hãy hoàn thành bài học trước đó.");
         }
@@ -157,7 +160,7 @@ public sealed class CodeJudgeService : ICodeJudgeService
         var lessonId = RoadmapContextLessonId(request.LessonId, request.RoadmapLessonId);
         if (lessonId.HasValue)
         {
-            var access = await _roadmaps.CanAccessCodeLessonAsync(userId, lessonId.Value, problem.Id, ct);
+            var access = await _roadmapProgress.CanAccessCodeLessonAsync(userId, lessonId.Value, problem.Id, ct);
             if (!access.CanAccess)
                 return ApiResponse<CodeSubmissionResponse>.Fail(access.Message ?? "Bài code practice đang bị khóa. Hãy hoàn thành bài học trước đó.");
         }
@@ -231,9 +234,9 @@ public sealed class CodeJudgeService : ICodeJudgeService
         if (submission.IsAccepted)
         {
             if (lessonId.HasValue)
-                await _roadmaps.CompleteCodeLessonIfAcceptedAsync(userId, lessonId.Value, problem.Id, submission.Id, ct);
+                await _roadmapProgress.CompleteCodeLessonIfAcceptedAsync(userId, lessonId.Value, problem.Id, submission.Id, ct);
             else
-                await _roadmaps.CompleteCodeLessonIfAcceptedAsync(userId, problem.Id, submission.Id, ct);
+                await _roadmapProgress.CompleteCodeLessonIfAcceptedAsync(userId, problem.Id, submission.Id, ct);
             await _notifications.CreateAsync(
                 userId,
                 "code.accepted",
@@ -245,7 +248,7 @@ public sealed class CodeJudgeService : ICodeJudgeService
         }
 
         var saved = await _db.CodeSubmissions.AsNoTracking().Include(x => x.Problem).Include(x => x.TestCaseResults).FirstAsync(x => x.Id == submission.Id, ct);
-        return ApiResponse<CodeSubmissionResponse>.Ok(MapSubmission(saved, includeHiddenResults: false), submission.IsAccepted ? JudgeVerdict.Accepted : submission.Verdict);
+        return ApiResponse<CodeSubmissionResponse>.Ok(MapSubmission(saved, includeHiddenResults: false, includeSourceCode: true), submission.IsAccepted ? JudgeVerdict.Accepted : submission.Verdict);
     }
 
     public async Task<ApiResponse<List<CodeSubmissionResponse>>> MySubmissions(long userId, long? problemId, CancellationToken ct)
@@ -253,7 +256,33 @@ public sealed class CodeJudgeService : ICodeJudgeService
         var query = _db.CodeSubmissions.AsNoTracking().Include(x => x.Problem).Where(x => x.UserId == userId);
         if (problemId.HasValue) query = query.Where(x => x.ProblemId == problemId.Value);
         var rows = await query.OrderByDescending(x => x.CreatedAt).Take(50).ToListAsync(ct);
-        return ApiResponse<List<CodeSubmissionResponse>>.Ok(rows.Select(x => MapSubmission(x, false)).ToList());
+        return ApiResponse<List<CodeSubmissionResponse>>.Ok(rows.Select(x => MapSubmission(x, false, includeSourceCode: false)).ToList());
+    }
+
+    public async Task<ApiResponse<PagedResult<CodeSubmissionResponse>>> MySubmissions(long userId, CodeSubmissionListQuery request, CancellationToken ct)
+    {
+        var query = _db.CodeSubmissions.AsNoTracking().Include(x => x.Problem).Where(x => x.UserId == userId);
+        if (request.ProblemId.HasValue) query = query.Where(x => x.ProblemId == request.ProblemId.Value);
+        if (!string.IsNullOrWhiteSpace(request.Verdict))
+        {
+            var verdict = request.Verdict.Trim();
+            query = query.Where(x => x.Verdict == verdict || x.Status == verdict);
+        }
+        if (!string.IsNullOrWhiteSpace(request.Language))
+        {
+            var language = NormalizeLanguage(request.Language);
+            query = query.Where(x => x.Language == language);
+        }
+
+        var pageIndex = Math.Max(1, request.PageIndex);
+        var pageSize = Math.Clamp(request.PageSize, 1, 100);
+        var total = await query.CountAsync(ct);
+        var rows = await query.OrderByDescending(x => x.CreatedAt)
+            .Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(ct);
+        var items = rows.Select(x => MapSubmission(x, false, includeSourceCode: false)).ToList();
+        return ApiResponse<PagedResult<CodeSubmissionResponse>>.Ok(PagedResult<CodeSubmissionResponse>.Create(items, pageIndex, pageSize, total));
     }
 
     public async Task<ApiResponse<CodeSubmissionResponse>> SubmissionDetail(long userId, long submissionId, bool includeHiddenResults, CancellationToken ct)
@@ -264,7 +293,7 @@ public sealed class CodeJudgeService : ICodeJudgeService
             .FirstOrDefaultAsync(x => x.Id == submissionId, ct);
         if (submission == null) return ApiResponse<CodeSubmissionResponse>.Fail("Submission not found");
         if (!includeHiddenResults && submission.UserId != userId) return ApiResponse<CodeSubmissionResponse>.Fail("Submission not found");
-        return ApiResponse<CodeSubmissionResponse>.Ok(MapSubmission(submission, includeHiddenResults));
+        return ApiResponse<CodeSubmissionResponse>.Ok(MapSubmission(submission, includeHiddenResults, includeSourceCode: true));
     }
 
     public async Task<ApiResponse<List<CodingProblemDetailResponse>>> AdminProblems(CancellationToken ct)
@@ -297,7 +326,7 @@ public sealed class CodeJudgeService : ICodeJudgeService
 
         problem.Title = request.Title.Trim();
         problem.Slug = slug;
-        problem.Description = request.Description.Trim();
+        problem.Description = string.IsNullOrWhiteSpace(request.Description) ? request.Title.Trim() : request.Description.Trim();
         problem.InputFormat = request.InputFormat;
         problem.OutputFormat = request.OutputFormat;
         problem.Constraints = request.Constraints;
@@ -338,6 +367,51 @@ public sealed class CodeJudgeService : ICodeJudgeService
         return ApiResponse<object>.Ok(new { id }, "Coding problem deleted");
     }
 
+    public async Task<ApiResponse<CodingProblemImportResult>> AdminImportProblems(long adminId, List<CodingProblemImportRequest> requests, CancellationToken ct)
+    {
+        var rows = requests ?? new List<CodingProblemImportRequest>();
+        var result = new CodingProblemImportResult { Total = rows.Count };
+        for (var i = 0; i < rows.Count; i++)
+        {
+            var row = rows[i];
+            var request = ToProblemRequest(row);
+            var slug = string.IsNullOrWhiteSpace(request.Slug) ? Slugify(request.Title) : Slugify(request.Slug);
+            if (string.IsNullOrWhiteSpace(row.Title))
+            {
+                result.Skipped++;
+                result.Errors.Add($"Row {i + 1}: title is required");
+                continue;
+            }
+            if (string.IsNullOrWhiteSpace(slug))
+            {
+                result.Skipped++;
+                result.Errors.Add($"Row {i + 1}: slug is invalid");
+                continue;
+            }
+
+            var existingId = await _db.CodingProblems.AsNoTracking()
+                .Where(x => x.Slug == slug && !x.IsDeleted)
+                .Select(x => (long?)x.Id)
+                .FirstOrDefaultAsync(ct);
+
+            var save = await AdminSaveProblem(adminId, existingId, request, ct);
+            if (!save.Success)
+            {
+                result.Skipped++;
+                var details = save.Errors?.Count > 0
+                    ? string.Join("; ", save.Errors.Select(x => $"{x.Field}: {x.Message}"))
+                    : save.Message;
+                result.Errors.Add($"Row {i + 1} ({slug}): {details}");
+                continue;
+            }
+
+            if (existingId.HasValue) result.Updated++;
+            else result.Created++;
+        }
+
+        return ApiResponse<CodingProblemImportResult>.Ok(result, "Coding problem import completed");
+    }
+
     private static long? RoadmapContextLessonId(long? lessonId, long? roadmapLessonId)
         => lessonId ?? roadmapLessonId;
 
@@ -371,11 +445,54 @@ public sealed class CodeJudgeService : ICodeJudgeService
     private static List<ApiError> ValidateProblem(CodingProblemRequest r)
     {
         var errors = new List<ApiError>();
-        if (string.IsNullOrWhiteSpace(r.Title) || r.Title.Trim().Length < 5) errors.Add(new ApiError { Field = "title", Message = "Title must be at least 5 characters" });
-        if (string.IsNullOrWhiteSpace(r.Description) || r.Description.Trim().Length < 20) errors.Add(new ApiError { Field = "description", Message = "Description must be at least 20 characters" });
+        if (string.IsNullOrWhiteSpace(r.Title)) errors.Add(new ApiError { Field = "title", Message = "Title is required" });
         if (r.TestCases == null || r.TestCases.Count < 1) errors.Add(new ApiError { Field = "testCases", Message = "At least one test case is required" });
         if (r.TestCases != null && r.TestCases.Any(x => x.ExpectedOutput == null)) errors.Add(new ApiError { Field = "expectedOutput", Message = "Expected output is required" });
         return errors;
+    }
+
+    private static CodingProblemRequest ToProblemRequest(CodingProblemImportRequest row) => new()
+    {
+        Title = row.Title,
+        Slug = row.Slug,
+        Description = string.IsNullOrWhiteSpace(row.Description) ? row.Title : row.Description,
+        InputFormat = row.InputFormat,
+        OutputFormat = row.OutputFormat,
+        Constraints = row.Constraints,
+        ExamplesJson = row.ExamplesJson,
+        Tags = TagsToText(row.Tags),
+        StarterCodeJavaScript = row.StarterCodeJavaScript,
+        StarterCodePython = row.StarterCodePython,
+        StarterCodeTypeScript = row.StarterCodeTypeScript,
+        StarterCodeJava = row.StarterCodeJava,
+        StarterCodeC = row.StarterCodeC,
+        StarterCodeCpp = row.StarterCodeCpp,
+        StarterCodeCsharp = row.StarterCodeCsharp,
+        StarterCodeGo = row.StarterCodeGo,
+        Difficulty = row.Difficulty is >= 1 and <= 3 ? row.Difficulty : (byte)1,
+        Status = row.Status,
+        TimeLimitMs = row.TimeLimitMs <= 0 ? 2000 : row.TimeLimitMs,
+        MemoryLimitKb = row.MemoryLimitKb <= 0 ? 131072 : row.MemoryLimitKb,
+        TestCases = row.TestCases ?? new List<CodingTestCaseRequest>()
+    };
+
+    private static string? TagsToText(object? tags)
+    {
+        if (tags == null) return null;
+        if (tags is string text) return text;
+        if (tags is JsonElement element)
+        {
+            if (element.ValueKind == JsonValueKind.String) return element.GetString();
+            if (element.ValueKind == JsonValueKind.Array)
+            {
+                return string.Join(", ", element.EnumerateArray()
+                    .Select(x => x.ValueKind == JsonValueKind.String ? x.GetString() : x.ToString())
+                    .Where(x => !string.IsNullOrWhiteSpace(x)));
+            }
+            return element.ToString();
+        }
+        if (tags is IEnumerable<string> values) return string.Join(", ", values.Where(x => !string.IsNullOrWhiteSpace(x)));
+        return tags.ToString();
     }
 
     private static CodingProblemSummaryResponse MapSummary(CodingProblem p, bool solved) => new()
@@ -433,22 +550,34 @@ public sealed class CodeJudgeService : ICodeJudgeService
         }).ToList()
     };
 
-    private static CodeSubmissionResponse MapSubmission(CodeSubmission s, bool includeHiddenResults) => new()
+    private static CodeSubmissionResponse MapSubmission(CodeSubmission s, bool includeHiddenResults, bool includeSourceCode = true) => new()
     {
         Id = s.Id,
         ProblemId = s.ProblemId,
         ProblemTitle = s.Problem?.Title ?? "Playground Run",
         Language = s.Language,
+        SourceCode = includeSourceCode ? s.SourceCode ?? string.Empty : string.Empty,
+        Code = includeSourceCode ? s.SourceCode ?? string.Empty : string.Empty,
+        SubmittedCode = includeSourceCode ? s.SourceCode ?? string.Empty : string.Empty,
+        UserCode = includeSourceCode ? s.SourceCode ?? string.Empty : string.Empty,
+        Stdin = s.Stdin,
         Status = s.Status,
         Verdict = s.Verdict,
         Output = s.Output ?? string.Empty,
+        Stdout = s.Output ?? string.Empty,
         Error = s.Error ?? string.Empty,
+        Stderr = s.Error ?? string.Empty,
+        CompileOutput = string.Empty,
+        Score = SubmissionScore(s),
         ExecutionTimeMs = s.ExecutionTimeMs,
+        RuntimeMs = s.ExecutionTimeMs,
         MemoryUsedKb = s.MemoryUsedKb,
+        MemoryKb = s.MemoryUsedKb,
         PassedTestCases = s.PassedTestCases,
         TotalTestCases = s.TotalTestCases,
         IsAccepted = s.IsAccepted,
         CreatedAt = s.CreatedAt,
+        SubmittedAt = s.CreatedAt,
         TestCaseResults = s.TestCaseResults.OrderBy(x => x.DisplayOrder).Select(x => new CodeTestCaseResultResponse
         {
             Id = x.Id,
@@ -460,9 +589,19 @@ public sealed class CodeJudgeService : ICodeJudgeService
             Error = x.Error,
             Status = x.Status,
             Passed = x.Passed,
-            ExecutionTimeMs = x.ExecutionTimeMs
+            IsHidden = x.TestCase?.IsHidden == true || x.Input == "[hidden]",
+            ExecutionTimeMs = x.ExecutionTimeMs,
+            RuntimeMs = x.ExecutionTimeMs
         }).ToList()
     };
+
+    private static decimal? SubmissionScore(CodeSubmission s)
+    {
+        if (s.TotalTestCases > 0)
+            return Math.Round(s.PassedTestCases * 100m / s.TotalTestCases, 2);
+
+        return s.IsAccepted ? 100 : null;
+    }
 
     private static SupportedLanguageResponse MapLanguage(CodeLanguageDefinition language) => new()
     {

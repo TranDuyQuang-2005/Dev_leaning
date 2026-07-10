@@ -73,6 +73,7 @@ BEGIN
         Type NVARCHAR(50) NOT NULL CONSTRAINT DF_RoadmapLessons_Type DEFAULT 'Reading',
         Content NVARCHAR(MAX) NULL,
         VideoUrl NVARCHAR(500) NULL,
+        VideoFileId BIGINT NULL,
         QuizSetId BIGINT NULL,
         CodingProblemId BIGINT NULL,
         EstimatedMinutes INT NOT NULL CONSTRAINT DF_RoadmapLessons_EstimatedMinutes DEFAULT 0,
@@ -90,6 +91,9 @@ BEGIN
         CONSTRAINT FK_RoadmapLessons_CodingProblems_CodingProblemId FOREIGN KEY (CodingProblemId) REFERENCES dbo.CodingProblems(Id)
     );
 END;
+
+IF OBJECT_ID('dbo.RoadmapLessons', 'U') IS NOT NULL AND COL_LENGTH('dbo.RoadmapLessons', 'VideoFileId') IS NULL
+    ALTER TABLE dbo.RoadmapLessons ADD VideoFileId BIGINT NULL;
 
 IF OBJECT_ID('dbo.UserLessonProgresses', 'U') IS NULL
 BEGIN
@@ -122,6 +126,11 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_RoadmapLessons_QuizSet
     CREATE INDEX IX_RoadmapLessons_QuizSetId ON dbo.RoadmapLessons(QuizSetId);
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_RoadmapLessons_CodingProblemId' AND object_id = OBJECT_ID('dbo.RoadmapLessons'))
     CREATE INDEX IX_RoadmapLessons_CodingProblemId ON dbo.RoadmapLessons(CodingProblemId);
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_RoadmapLessons_VideoFileId' AND object_id = OBJECT_ID('dbo.RoadmapLessons'))
+    CREATE INDEX IX_RoadmapLessons_VideoFileId ON dbo.RoadmapLessons(VideoFileId);
+IF OBJECT_ID('dbo.Files', 'U') IS NOT NULL
+   AND NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_RoadmapLessons_Files_VideoFileId' AND parent_object_id = OBJECT_ID('dbo.RoadmapLessons'))
+    ALTER TABLE dbo.RoadmapLessons ADD CONSTRAINT FK_RoadmapLessons_Files_VideoFileId FOREIGN KEY (VideoFileId) REFERENCES dbo.Files(Id);
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_UserLessonProgresses_UserId_LessonId' AND object_id = OBJECT_ID('dbo.UserLessonProgresses'))
     CREATE UNIQUE INDEX IX_UserLessonProgresses_UserId_LessonId ON dbo.UserLessonProgresses(UserId, LessonId);
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_UserLessonProgresses_Status' AND object_id = OBJECT_ID('dbo.UserLessonProgresses'))

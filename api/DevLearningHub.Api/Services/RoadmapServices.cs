@@ -42,6 +42,7 @@ public interface IRoadmapService
     Task<ApiResponse<object>> AdminDeleteModule(long moduleId, CancellationToken ct);
     Task<ApiResponse<RoadmapLessonResponse>> AdminCreateLesson(long moduleId, RoadmapLessonRequest request, CancellationToken ct);
     Task<ApiResponse<RoadmapLessonResponse>> AdminUpdateLesson(long lessonId, RoadmapLessonRequest request, CancellationToken ct);
+    Task<ApiResponse<FileUploadResponse>> AdminUploadLessonVideo(long adminId, long lessonId, IFormFile file, CancellationToken ct);
     Task<ApiResponse<object>> AdminDeleteLesson(long lessonId, CancellationToken ct);
 }
 
@@ -53,10 +54,16 @@ public sealed class RoadmapService : IRoadmapService
     private static readonly string[] CourseLevels = { "Beginner", "Intermediate", "Advanced" };
     private static readonly string[] LessonTypes = { "Reading", "Video", "Quiz", "CodePractice", "Assignment" };
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private const long MaxRoadmapVideoBytes = 500L * 1024 * 1024;
 
     private readonly DevLearningHubDbContext _db;
+    private readonly IWebHostEnvironment _env;
 
-    public RoadmapService(DevLearningHubDbContext db) => _db = db;
+    public RoadmapService(DevLearningHubDbContext db, IWebHostEnvironment env)
+    {
+        _db = db;
+        _env = env;
+    }
 
     public async Task<ApiResponse<List<LearningTrackResponse>>> GetTracks(long? userId, bool includeUnpublished, CancellationToken ct)
     {
@@ -539,6 +546,75 @@ public sealed class RoadmapService : IRoadmapService
         return ApiResponse<RoadmapLessonResponse>.Ok(MapAdminLesson(lesson), "Cập nhật bài học thành công");
     }
 
+    public async Task<ApiResponse<FileUploadResponse>> AdminUploadLessonVideo(long adminId, long lessonId, IFormFile file, CancellationToken ct)
+    {
+        var lesson = await _db.RoadmapLessons.FirstOrDefaultAsync(x => x.Id == lessonId && !x.IsDeleted, ct);
+        if (lesson == null) return ApiResponse<FileUploadResponse>.Fail("Roadmap lesson not found");
+        if (!lesson.Type.Equals("Video", StringComparison.OrdinalIgnoreCase))
+            return ApiResponse<FileUploadResponse>.Fail("Video upload is only available for Video lessons");
+
+        var validation = ValidateVideoFile(file);
+        if (validation.Count > 0) return ApiResponse<FileUploadResponse>.Fail("Video file is invalid", validation);
+
+        var uploadedFile = await SaveRoadmapVideo(adminId, file, ct);
+
+        lesson.VideoFileId = uploadedFile.FileId;
+        lesson.UpdatedAt = DateTime.UtcNow;
+        _db.FileReferences.Add(new FileReference
+        {
+            FileId = uploadedFile.FileId,
+            OwnerService = "Roadmap",
+            OwnerType = "RoadmapLessonVideo",
+            OwnerId = lesson.Id,
+            CreatedAt = DateTime.UtcNow
+        });
+        await _db.SaveChangesAsync(ct);
+
+        return ApiResponse<FileUploadResponse>.Ok(new FileUploadResponse
+        {
+            FileId = uploadedFile.FileId,
+            FileUrl = VideoFileUrl(uploadedFile.FileId),
+            OriginalFileName = uploadedFile.OriginalFileName
+        }, "Roadmap lesson video uploaded");
+    }
+
+    private async Task<FileUploadResponse> SaveRoadmapVideo(long adminId, IFormFile file, CancellationToken ct)
+    {
+        const string fileType = "roadmap-videos";
+        var root = Path.Combine(_env.ContentRootPath, "uploads", fileType);
+        Directory.CreateDirectory(root);
+
+        var ext = Path.GetExtension(file.FileName);
+        var stored = $"{Guid.NewGuid():N}{ext}";
+        var path = Path.Combine(root, stored);
+        await using (var fs = File.Create(path))
+        {
+            await file.CopyToAsync(fs, ct);
+        }
+
+        var entity = new AppFile
+        {
+            UploadedByUserId = adminId,
+            OriginalFileName = file.FileName,
+            StoredFileName = stored,
+            FileUrl = $"/uploads/{fileType}/{stored}",
+            MimeType = file.ContentType,
+            FileSizeBytes = file.Length,
+            FileType = fileType,
+            StorageProvider = "Local",
+            CreatedAt = DateTime.UtcNow
+        };
+        _db.Files.Add(entity);
+        await _db.SaveChangesAsync(ct);
+
+        return new FileUploadResponse
+        {
+            FileId = entity.Id,
+            FileUrl = entity.FileUrl,
+            OriginalFileName = entity.OriginalFileName
+        };
+    }
+
     public async Task<ApiResponse<object>> AdminDeleteLesson(long lessonId, CancellationToken ct)
     {
         var lesson = await _db.RoadmapLessons.Include(x => x.Module).FirstOrDefaultAsync(x => x.Id == lessonId && !x.IsDeleted, ct);
@@ -933,6 +1009,8 @@ public sealed class RoadmapService : IRoadmapService
             Type = lesson.Type,
             Content = lesson.Content,
             VideoUrl = lesson.VideoUrl,
+            VideoFileId = lesson.VideoFileId,
+            VideoFileUrl = lesson.VideoFileId.HasValue ? VideoFileUrl(lesson.VideoFileId.Value) : null,
             QuizSetId = lesson.QuizSetId,
             CodingProblemId = lesson.CodingProblemId,
             EstimatedMinutes = lesson.EstimatedMinutes,
@@ -1086,7 +1164,8 @@ public sealed class RoadmapService : IRoadmapService
         lesson.Title = request.Title.Trim();
         lesson.Type = NormalizeLessonType(request.Type);
         lesson.Content = request.Content;
-        lesson.VideoUrl = request.VideoUrl;
+        lesson.VideoUrl = lesson.Type == "Video" ? request.VideoUrl : null;
+        lesson.VideoFileId = lesson.Type == "Video" ? request.VideoFileId : null;
         lesson.QuizSetId = lesson.Type == "Quiz" ? request.QuizSetId : null;
         lesson.CodingProblemId = lesson.Type == "CodePractice" ? request.CodingProblemId : null;
         lesson.EstimatedMinutes = Math.Max(0, request.EstimatedMinutes);
@@ -1158,6 +1237,32 @@ public sealed class RoadmapService : IRoadmapService
         return errors;
     }
 
+    private static List<ApiError> ValidateVideoFile(IFormFile file)
+    {
+        var errors = new List<ApiError>();
+        if (file == null || file.Length == 0)
+        {
+            errors.Add(new ApiError { Field = "file", Message = "File is required" });
+            return errors;
+        }
+
+        if (file.Length > MaxRoadmapVideoBytes)
+            errors.Add(new ApiError { Field = "file", Message = "Video file must be 500MB or less" });
+
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (ext is not ".mp4" and not ".webm" and not ".mov")
+            errors.Add(new ApiError { Field = "file", Message = "Only mp4, webm and mov videos are supported" });
+
+        if (!string.IsNullOrWhiteSpace(file.ContentType)
+            && !file.ContentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase)
+            && !file.ContentType.Equals("application/octet-stream", StringComparison.OrdinalIgnoreCase))
+            errors.Add(new ApiError { Field = "file", Message = "File MIME type is not a video" });
+
+        return errors;
+    }
+
+    private static string VideoFileUrl(long fileId) => $"/api/v1/files/{fileId}/view";
+
     private static RoadmapModuleResponse MapAdminModule(RoadmapModule module) => new()
     {
         Id = module.Id,
@@ -1180,6 +1285,8 @@ public sealed class RoadmapService : IRoadmapService
         Type = lesson.Type,
         Content = lesson.Content,
         VideoUrl = lesson.VideoUrl,
+        VideoFileId = lesson.VideoFileId,
+        VideoFileUrl = lesson.VideoFileId.HasValue ? VideoFileUrl(lesson.VideoFileId.Value) : null,
         QuizSetId = lesson.QuizSetId,
         CodingProblemId = lesson.CodingProblemId,
         EstimatedMinutes = lesson.EstimatedMinutes,

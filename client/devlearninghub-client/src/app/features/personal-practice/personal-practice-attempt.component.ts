@@ -67,7 +67,7 @@ export class PersonalPracticeAttemptComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('attemptId') || '';
     const answers = this.questions
       .filter(q => this.selected[this.questionId(q)])
-      .map(q => ({ questionId: Number(this.questionId(q)), selectedOptionLabel: this.selected[this.questionId(q)] }));
+      .map(q => ({ questionId: Number(this.questionId(q)), selectedOptionKey: this.selected[this.questionId(q)] }));
 
     this.submitting = true;
     this.api.submitPracticeAttempt(id, { answers }).subscribe({

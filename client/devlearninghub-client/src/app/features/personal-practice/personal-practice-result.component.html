@@ -20,12 +20,20 @@
 
   <section class="card card-pad" *ngFor="let q of questions; let i=index" style="margin-top:14px">
     <h3 style="margin-top:0">Câu {{i + 1}}</h3>
-    <p>{{q.questionText || q.content || q.title}}</p>
-    <div class="result-option" [ngClass]="q.isCorrect ? 'result-option-correct' : 'result-option-wrong'">
-      <b>{{q.isCorrect ? 'Đúng' : 'Sai'}}</b>
-      <span>Đáp án đã chọn: {{q.selectedOptionLabel || q.selectedAnswer || 'Chưa chọn'}}</span>
-      <span>Đáp án đúng: {{q.correctOptionLabel || q.correctAnswer || q.correctOption || '-'}}</span>
-      <p class="muted" *ngIf="q.explanation">{{q.explanation}}</p>
+    <p style="white-space:pre-line">{{q.questionText || q.content || q.title}}</p>
+
+    <div class="result-option" [ngClass]="isCorrect(q) ? 'result-option-correct' : 'result-option-wrong'">
+      <b>{{isCorrect(q) ? 'Đúng' : 'Sai'}}</b>
+      <span>Đáp án đã chọn: {{selectedOption(q) || 'Chưa chọn'}}<ng-container *ngIf="selectedAnswerText(q)"> - {{selectedAnswerText(q)}}</ng-container></span>
+      <span>Đáp án đúng: <ng-container *ngIf="correctOption(q); else missingCorrect">{{correctOption(q)}}<ng-container *ngIf="correctAnswerText(q)"> - {{correctAnswerText(q)}}</ng-container></ng-container></span>
+      <ng-template #missingCorrect>Chưa có đáp án đúng</ng-template>
+      <p class="muted" *ngIf="explanation(q)">{{explanation(q)}}</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px" *ngIf="options(q).length">
+      <div class="quiz-option result-option" *ngFor="let option of options(q); let oi=index" [ngClass]="optionClass(q, option, oi)">
+        <span><b>{{optionKey(option, oi)}}.</b> {{optionText(option)}}</span>
+      </div>
     </div>
   </section>
 

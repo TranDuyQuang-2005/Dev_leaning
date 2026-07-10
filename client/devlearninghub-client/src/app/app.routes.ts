@@ -25,6 +25,7 @@ import { ResetPasswordComponent } from './features/reset-password.component';
 import { VerifyEmailComponent } from './features/verify-email.component';
 import { ResendVerificationComponent } from './features/resend-verification.component';
 import { SubmissionDetailComponent } from './features/submission-detail.component';
+import { SubmissionsComponent } from './features/submissions.component';
 import { PersonalPracticeComponent } from './features/personal-practice/personal-practice.component';
 import { PersonalPracticeDetailComponent } from './features/personal-practice/personal-practice-detail.component';
 import { PersonalPracticeAttemptComponent } from './features/personal-practice/personal-practice-attempt.component';
@@ -68,6 +69,7 @@ export const routes: Routes = [
   { path:'problems', component:ProblemsComponent, data:{title:'Problems',subtitle:'Coding challenge library'} },
   { path:'problems/:id', component:ProblemDetailComponent, data:{title:'Problems',subtitle:'Coding challenge detail'} },
   { path:'problem-detail', component:ProblemDetailComponent, data:{title:'Problems',subtitle:'Coding challenge detail'} },
+  { path:'submissions', component:SubmissionsComponent, data:{title:'Bài nộp của tôi',subtitle:'Lịch sử Code Problems'} },
   { path:'submissions/:submissionId', component:SubmissionDetailComponent, data:{title:'Submission Detail',subtitle:'Code submission verdict and testcase results'} },
   { path:'leaderboard', component:LeaderboardComponent, data:{title:'Leaderboard',subtitle:'Top learners'} },
   { path:'notifications', component:NotificationsComponent, data:{title:'Notifications',subtitle:'System messages'} },

@@ -27,6 +27,27 @@
 
     <ng-container *ngIf="tab==='problems'">
       <section class="card card-pad" style="margin-top:18px">
+        <div class="filters">
+          <div>
+            <h3 style="margin:0">Import Problems</h3>
+            <p class="muted" style="margin:6px 0 0">Upload JSON first for nested test cases; CSV is supported for flat imports.</p>
+          </div>
+          <button class="btn btn-outline" type="button" (click)="downloadSampleJson()">Download Sample JSON</button>
+        </div>
+        <div class="action-row" style="margin-top:12px">
+          <input class="input" type="file" accept=".json,.csv,application/json,text/csv" (change)="pickImportFile($event)">
+          <button class="btn btn-primary" type="button" [disabled]="importing" (click)="importProblems()">{{importing ? 'Importing...' : 'Upload JSON/CSV'}}</button>
+        </div>
+        <div class="example" *ngIf="importResult" style="margin-top:12px">
+          <b>Total {{importResult.total || 0}}</b>
+          <span class="badge badge-green">Created {{importResult.created || 0}}</span>
+          <span class="badge badge-blue">Updated {{importResult.updated || 0}}</span>
+          <span class="badge badge-yellow">Skipped {{importResult.skipped || 0}}</span>
+          <pre class="output-box" *ngIf="importResult.errors?.length">{{importResult.errors.join('\n')}}</pre>
+        </div>
+      </section>
+
+      <section class="card card-pad" style="margin-top:18px">
         <h3>{{editingId ? 'Edit Problem' : 'Create Problem'}}</h3>
         <form (ngSubmit)="save()">
           <div class="grid grid-2">
@@ -121,11 +142,12 @@
           <div><b>Status</b><p class="muted">{{submissionDetail.status || submissionDetail.verdict}}</p></div>
           <div><b>Score</b><p class="muted">{{submissionDetail.score ?? '-'}}</p></div>
           <div><b>Runtime</b><p class="muted">{{submissionDetail.runtimeMs || submissionDetail.executionTimeMs || '-'}} ms</p></div>
-          <div><b>Memory</b><p class="muted">{{submissionDetail.memoryKb || '-'}} KB</p></div>
-          <div><b>Submitted At</b><p class="muted">{{submissionDetail.submittedAt | date:'short'}}</p></div>
+          <div><b>Memory</b><p class="muted">{{submissionMemoryText}}</p></div>
+          <div><b>Submitted At</b><p class="muted">{{(submissionDetail.submittedAt || submissionDetail.createdAt) | date:'short'}}</p></div>
         </div>
         <h4>Source Code</h4>
-        <pre class="output-box">{{submissionDetail.sourceCode}}</pre>
+        <pre class="output-box" *ngIf="submissionSourceCode; else noAdminSource"><code>{{submissionSourceCode}}</code></pre>
+        <ng-template #noAdminSource><div class="alert">Không có source code được lưu cho submission này.</div></ng-template>
         <h4>Testcase Results</h4>
         <div class="example" *ngFor="let tc of submissionTests; let i=index" style="margin-bottom:12px">
           <b>#{{tc.displayOrder || i + 1}} {{tc.status || tc.verdict}}</b>

@@ -255,6 +255,14 @@ SET Language = pl.Code
 FROM dbo.CodeSubmissions cs
 JOIN dbo.ProgrammingLanguages pl ON cs.ProgrammingLanguageId = pl.Id
 WHERE (cs.Language IS NULL OR LTRIM(RTRIM(cs.Language)) = N'''');');
+IF COL_LENGTH('dbo.CodeSubmissions', 'Code') IS NOT NULL
+    EXEC(N'UPDATE dbo.CodeSubmissions SET SourceCode = COALESCE(NULLIF(SourceCode, N''''), CONVERT(NVARCHAR(MAX), Code), N'''') WHERE SourceCode IS NULL OR LTRIM(RTRIM(SourceCode)) = N'''';');
+IF COL_LENGTH('dbo.CodeSubmissions', 'SubmittedCode') IS NOT NULL
+    EXEC(N'UPDATE dbo.CodeSubmissions SET SourceCode = COALESCE(NULLIF(SourceCode, N''''), CONVERT(NVARCHAR(MAX), SubmittedCode), N'''') WHERE SourceCode IS NULL OR LTRIM(RTRIM(SourceCode)) = N'''';');
+IF COL_LENGTH('dbo.CodeSubmissions', 'UserCode') IS NOT NULL
+    EXEC(N'UPDATE dbo.CodeSubmissions SET SourceCode = COALESCE(NULLIF(SourceCode, N''''), CONVERT(NVARCHAR(MAX), UserCode), N'''') WHERE SourceCode IS NULL OR LTRIM(RTRIM(SourceCode)) = N'''';');
+IF COL_LENGTH('dbo.CodeSubmissions', 'Content') IS NOT NULL
+    EXEC(N'UPDATE dbo.CodeSubmissions SET SourceCode = COALESCE(NULLIF(SourceCode, N''''), CONVERT(NVARCHAR(MAX), Content), N'''') WHERE SourceCode IS NULL OR LTRIM(RTRIM(SourceCode)) = N'''';');
 UPDATE dbo.CodeSubmissions SET Language = N'javascript' WHERE Language IS NULL OR LTRIM(RTRIM(Language)) = N'';
 UPDATE dbo.CodeSubmissions SET Verdict = CASE WHEN IsAccepted = 1 THEN N'Accepted' ELSE COALESCE(NULLIF(Verdict, N''), Status, N'Pending') END;
 UPDATE dbo.CodeSubmissions SET ExecutionTimeMs = COALESCE(ExecutionTimeMs, 0), MemoryUsedKb = COALESCE(MemoryUsedKb, 0);
@@ -391,4 +399,19 @@ GO
 SELECT Code, DisplayName, Version, FileExtension, IsActive, SortOrder
 FROM dbo.ProgrammingLanguages
 ORDER BY SortOrder, Code;
+GO
+
+SELECT TOP 20
+    Id,
+    ProblemId,
+    Language,
+    LEN(SourceCode) AS SourceCodeLength,
+    Status,
+    Verdict,
+    ExecutionTimeMs,
+    MemoryUsedKb,
+    CreatedAt,
+    CASE WHEN COL_LENGTH('dbo.CodeSubmissions', 'SubmittedAt') IS NULL THEN NULL ELSE CreatedAt END AS SubmittedAtFallback
+FROM dbo.CodeSubmissions
+ORDER BY Id DESC;
 GO

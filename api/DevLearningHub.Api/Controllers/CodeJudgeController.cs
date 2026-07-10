@@ -73,6 +73,14 @@ public sealed class CodeJudgeController : BaseApiController
         return Ok(await _service.MySubmissions(CurrentUserId.Value, problemId, ct));
     }
 
+    [HttpGet("submissions/mine")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse<PagedResult<CodeSubmissionResponse>>>> Mine([FromQuery] CodeSubmissionListQuery query, CancellationToken ct)
+    {
+        if (CurrentUserId is null) return Unauthorized();
+        return Ok(await _service.MySubmissions(CurrentUserId.Value, query, ct));
+    }
+
     [HttpGet("submissions/{submissionId:long}")]
     [Authorize]
     public async Task<ActionResult<ApiResponse<CodeSubmissionResponse>>> Submission(long submissionId, CancellationToken ct)

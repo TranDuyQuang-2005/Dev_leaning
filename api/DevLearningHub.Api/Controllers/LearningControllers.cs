@@ -1,5 +1,6 @@
 using DevLearningHub.Api.Common;
 using DevLearningHub.Api.DTOs;
+using DevLearningHub.Api.Security;
 using DevLearningHub.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,17 +20,17 @@ public sealed class CategoriesController : ControllerBase
         => Ok(await _service.GetCategories(keyword, pageIndex, pageSize, ct));
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [RequirePermission("category.manage")]
     public async Task<ActionResult<ApiResponse<CategoryResponse>>> Post(CategoryRequest request, CancellationToken ct)
         => Ok(await _service.CreateCategory(request, ct));
 
     [HttpPut("{id:long}")]
-    [Authorize(Roles = "Admin")]
+    [RequirePermission("category.manage")]
     public async Task<ActionResult<ApiResponse<CategoryResponse>>> Put(long id, CategoryRequest request, CancellationToken ct)
         => Ok(await _service.UpdateCategory(id, request, ct));
 
     [HttpDelete("{id:long}")]
-    [Authorize(Roles = "Admin")]
+    [RequirePermission("category.manage")]
     public async Task<ActionResult<ApiResponse<object>>> Delete(long id, CancellationToken ct)
         => Ok(await _service.DeleteCategory(id, ct));
 }
@@ -48,7 +49,7 @@ public sealed class QuestionsController : BaseApiController
         => Ok(await _service.GetQuestions(categoryId, pageIndex, pageSize, ct));
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [RequirePermission("question.manage")]
     public async Task<ActionResult<ApiResponse<QuestionResponse>>> Post(QuestionRequest request, CancellationToken ct)
     {
         if (CurrentUserId is null) return Unauthorized();
@@ -56,17 +57,17 @@ public sealed class QuestionsController : BaseApiController
     }
 
     [HttpPut("{id:long}")]
-    [Authorize(Roles = "Admin")]
+    [RequirePermission("question.manage")]
     public async Task<ActionResult<ApiResponse<QuestionResponse>>> Put(long id, QuestionRequest request, CancellationToken ct)
         => Ok(await _service.UpdateQuestion(id, request, ct));
 
     [HttpDelete("{id:long}")]
-    [Authorize(Roles = "Admin")]
+    [RequirePermission("question.manage")]
     public async Task<ActionResult<ApiResponse<object>>> Delete(long id, CancellationToken ct)
         => Ok(await _service.DeleteQuestion(id, ct));
 
     [HttpPost("import-csv")]
-    [Authorize(Roles = "Admin")]
+    [RequirePermission("question.manage")]
     public async Task<ActionResult<ApiResponse<ImportQuestionResult>>> ImportCsv(IFormFile file, CancellationToken ct)
     {
         if (CurrentUserId is null) return Unauthorized();
@@ -74,7 +75,7 @@ public sealed class QuestionsController : BaseApiController
     }
 
     [HttpPost("import-json")]
-    [Authorize(Roles = "Admin")]
+    [RequirePermission("question.manage")]
     public async Task<ActionResult<ApiResponse<ImportQuestionResult>>> ImportJson(IFormFile file, CancellationToken ct)
     {
         if (CurrentUserId is null) return Unauthorized();
@@ -100,7 +101,7 @@ public sealed class QuizSetsController : BaseApiController
         => Ok(await _service.GetQuizSet(id, ct));
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [RequirePermission("quiz.manage")]
     public async Task<ActionResult<ApiResponse<QuizSetResponse>>> Post(QuizSetRequest request, CancellationToken ct)
     {
         if (CurrentUserId is null) return Unauthorized();
@@ -108,12 +109,12 @@ public sealed class QuizSetsController : BaseApiController
     }
 
     [HttpPut("{id:long}")]
-    [Authorize(Roles = "Admin")]
+    [RequirePermission("quiz.manage")]
     public async Task<ActionResult<ApiResponse<QuizSetResponse>>> Put(long id, QuizSetRequest request, CancellationToken ct)
         => Ok(await _service.UpdateQuizSet(id, request, ct));
 
     [HttpDelete("{id:long}")]
-    [Authorize(Roles = "Admin")]
+    [RequirePermission("quiz.manage")]
     public async Task<ActionResult<ApiResponse<object>>> Delete(long id, CancellationToken ct)
         => Ok(await _service.DeleteQuizSet(id, ct));
 }

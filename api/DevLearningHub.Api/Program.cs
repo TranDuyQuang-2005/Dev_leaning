@@ -4,8 +4,10 @@ using DevLearningHub.Api.Common;
 using DevLearningHub.Api.Configurations;
 using DevLearningHub.Api.Data;
 using DevLearningHub.Api.Middlewares;
+using DevLearningHub.Api.Security;
 using DevLearningHub.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
@@ -32,6 +34,7 @@ builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserModuleService, UserModuleService>();
+builder.Services.AddScoped<IRoadmapProgressService, RoadmapProgressService>();
 builder.Services.AddScoped<ILearningModuleService, LearningModuleService>();
 builder.Services.AddScoped<IFileModuleService, FileModuleService>();
 builder.Services.AddScoped<IPersonalPracticeService, PersonalPracticeService>();
@@ -90,6 +93,8 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero
     };
 });
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 builder.Services.AddAuthorization();
 builder.Services.AddRateLimiter(options =>
 {

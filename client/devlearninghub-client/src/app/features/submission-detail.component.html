@@ -1,5 +1,9 @@
 <div class="page">
-  <a class="btn btn-outline" routerLink="/learner/problems">← Quay lại Problems</a>
+  <div class="action-row">
+    <a class="btn btn-outline" routerLink="/learner/submissions">← Bài nộp của tôi</a>
+    <a class="btn btn-outline" routerLink="/learner/problems">Problems</a>
+  </div>
+
   <div class="alert alert-error" *ngIf="error" style="white-space:pre-line">{{error}}</div>
   <div class="empty-state" *ngIf="loading">Đang tải submission...</div>
 
@@ -9,31 +13,48 @@
         <h1>Submission #{{submission.id || submission.submissionId}}</h1>
         <p class="muted">{{submission.problemTitle || ('Problem #' + submission.problemId)}}</p>
       </div>
-      <span class="badge badge-gray">{{submission.status || submission.verdict}}</span>
+      <span class="badge" [ngClass]="submission.isAccepted ? 'badge-green' : 'badge-gray'">{{verdictText}}</span>
     </div>
+
     <div class="grid grid-4">
-      <div><b>Ngôn ngữ</b><p class="muted">{{submission.language}}</p></div>
-      <div><b>Điểm</b><p class="muted">{{submission.score ?? '-'}}</p></div>
-      <div><b>Runtime</b><p class="muted">{{submission.runtimeMs || submission.executionTimeMs || '-'}} ms</p></div>
-      <div><b>Memory</b><p class="muted">{{submission.memoryKb || '-'}} KB</p></div>
+      <div><b>Ngôn ngữ</b><p class="muted">{{submission.language || '-'}}</p></div>
+      <div><b>Điểm</b><p class="muted">{{scoreText}}</p></div>
+      <div><b>Runtime</b><p class="muted">{{runtimeText}}</p></div>
+      <div><b>Memory</b><p class="muted">{{memoryText}}</p></div>
     </div>
-    <p class="muted">Nộp lúc: {{submission.submittedAt | date:'short'}}</p>
-    <h3>Source Code</h3>
-    <pre class="output-box">{{submission.sourceCode}}</pre>
+    <p class="muted">Nộp lúc: {{submittedAt ? (submittedAt | date:'short') : '-'}}</p>
+
+    <div class="filters">
+      <h3 style="margin:0">Source Code</h3>
+      <button class="btn btn-outline" type="button" *ngIf="sourceCode" (click)="copyCode()">{{copied ? 'Đã copy' : 'Copy code'}}</button>
+    </div>
+    <pre class="output-box" *ngIf="sourceCode; else noSource"><code>{{sourceCode}}</code></pre>
+    <ng-template #noSource><div class="alert">Không có source code được lưu cho submission này.</div></ng-template>
+  </section>
+
+  <section class="card card-pad" *ngIf="submission && (outputText || errorText || compileOutputText)" style="margin-top:18px">
+    <h3>Output / Error</h3>
+    <div *ngIf="outputText"><b>Output</b><pre class="output-box">{{outputText}}</pre></div>
+    <div *ngIf="errorText"><b>Error</b><pre class="output-box">{{errorText}}</pre></div>
+    <div *ngIf="compileOutputText"><b>Compile Output</b><pre class="output-box">{{compileOutputText}}</pre></div>
   </section>
 
   <section class="card card-pad" *ngIf="submission" style="margin-top:18px">
     <h3>Testcase Results</h3>
-    <div class="example" *ngFor="let tc of tests; let i=index" style="margin-bottom:12px">
-      <b>#{{tc.displayOrder || i + 1}} {{tc.status || tc.verdict}}</b>
-      <span class="badge" [ngClass]="tc.passed ? 'badge-green' : 'badge-red'">{{tc.passed ? 'Passed' : 'Failed'}}</span>
-      <ng-container *ngIf="tc.input || tc.expectedOutput; else hiddenCase">
-        <small class="muted">Input</small><pre class="output-box">{{tc.input}}</pre>
-        <small class="muted">Expected</small><pre class="output-box">{{tc.expectedOutput}}</pre>
-      </ng-container>
-      <ng-template #hiddenCase><p class="muted">Hidden testcase</p></ng-template>
-      <small class="muted">Actual</small><pre class="output-box">{{tc.actualOutput || '(no output)'}}</pre>
-      <pre class="output-box" *ngIf="tc.error">{{tc.error}}</pre>
-    </div>
+    <div class="empty-state" *ngIf="!tests.length">Submission này không có testcase result.</div>
+    <table class="table" *ngIf="tests.length">
+      <thead><tr><th>#</th><th>Input</th><th>Expected</th><th>Actual</th><th>Status</th><th>Runtime</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let tc of tests; let i=index">
+          <td>{{tc.displayOrder || i + 1}}</td>
+          <td><pre class="output-box">{{tc.input || '-'}}</pre></td>
+          <td><pre class="output-box">{{tc.expectedOutput || '-'}}</pre></td>
+          <td><pre class="output-box">{{tc.actualOutput || '(no output)'}}</pre><pre class="output-box" *ngIf="tc.error">{{tc.error}}</pre></td>
+          <td><span class="badge" [ngClass]="tc.passed ? 'badge-green' : 'badge-red'">{{tc.status || (tc.passed ? 'Passed' : 'Failed')}}</span></td>
+          <td>{{tc.runtimeMs || tc.executionTimeMs || 0}} ms</td>
+          <td>{{tc.isHidden ? 'hidden' : 'public'}}</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 </div>

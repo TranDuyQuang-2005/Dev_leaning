@@ -22,6 +22,9 @@ export class CodeManagementComponent implements OnInit {
   loading = false;
   submissionId = '';
   submissionDetail: any = null;
+  importFile?: File;
+  importResult: any = null;
+  importing = false;
 
   constructor(private api: ApiService, public auth: AuthService) {}
 
@@ -100,6 +103,72 @@ export class CodeManagementComponent implements OnInit {
     });
   }
 
+  pickImportFile(e: Event): void {
+    this.importFile = (e.target as HTMLInputElement).files?.[0];
+    this.importResult = null;
+  }
+
+  importProblems(): void {
+    this.message = '';
+    this.error = '';
+    if (!this.importFile) {
+      this.error = 'Choose a JSON or CSV file first.';
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('file', this.importFile);
+    this.importing = true;
+    this.api.upload<any>('/api/v1/admin/code/problems/import', fd).subscribe({
+      next: r => {
+        this.importResult = r.data;
+        this.importing = false;
+        this.message = 'Problem import completed.';
+        this.load();
+      },
+      error: e => {
+        this.importResult = e?.error?.data;
+        this.importing = false;
+        this.error = this.api.errorMessage(e, 'Problem import failed.');
+      }
+    });
+  }
+
+  downloadSampleJson(): void {
+    const sample = [
+      {
+        title: 'Hello World',
+        slug: 'hello-world',
+        description: 'Print Hello, World!',
+        difficulty: 1,
+        tags: ['basic', 'output'],
+        inputFormat: 'No input',
+        outputFormat: 'Print Hello, World!',
+        constraints: '',
+        starterCodePython: 'print("Hello, World!")',
+        starterCodeJavaScript: 'console.log("Hello, World!");',
+        starterCodeCpp: '#include <bits/stdc++.h>\nusing namespace std;\nint main(){ cout << "Hello, World!"; return 0; }',
+        timeLimitMs: 2000,
+        memoryLimitKb: 131072,
+        testCases: [
+          {
+            input: '',
+            expectedOutput: 'Hello, World!',
+            isHidden: false,
+            displayOrder: 1
+          }
+        ]
+      }
+    ];
+    const blob = new Blob([JSON.stringify(sample, null, 2)], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'coding-problems-sample.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   loadSubmission(): void {
     this.message = '';
     this.error = '';
@@ -116,6 +185,16 @@ export class CodeManagementComponent implements OnInit {
 
   get submissionTests(): any[] {
     return this.submissionDetail?.testcaseResults || this.submissionDetail?.testCaseResults || [];
+  }
+
+  get submissionSourceCode(): string {
+    const s = this.submissionDetail || {};
+    return s.sourceCode || s.code || s.submittedCode || s.userCode || s.content || '';
+  }
+
+  get submissionMemoryText(): string {
+    const memory = this.submissionDetail?.memoryUsedKb ?? this.submissionDetail?.memoryKb;
+    return memory === null || memory === undefined || memory === '' ? '-' : `${memory} KB`;
   }
 
   difficultyText(d: any): string { return Number(d) === 3 ? 'Hard' : Number(d) === 2 ? 'Medium' : 'Easy'; }

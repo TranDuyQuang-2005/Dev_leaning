@@ -25,7 +25,7 @@
             <h3 style="margin:0">{{ item.title }}</h3>
             <span class="badge badge-solid" *ngIf="!item.isRead">New</span>
           </div>
-          <p>{{ item.message }}</p>
+          <p>{{ item.message || item.content }}</p>
           <span class="muted">{{ date(item.createdAt) }}</span>
 
           <div class="action-row" style="margin-top:10px">

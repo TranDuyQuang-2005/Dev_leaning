@@ -1,5 +1,6 @@
 using DevLearningHub.Api.Common;
 using DevLearningHub.Api.DTOs;
+using DevLearningHub.Api.Security;
 using DevLearningHub.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -75,7 +76,7 @@ public sealed class RoadmapLessonsController : BaseApiController
 
 [ApiController]
 [Route("api/v1/admin/roadmaps")]
-[Authorize(Roles = "Admin")]
+[RequirePermission("roadmap.manage")]
 public sealed class AdminRoadmapsController : ControllerBase
 {
     private readonly IRoadmapService _service;
@@ -100,7 +101,7 @@ public sealed class AdminRoadmapsController : ControllerBase
 
 [ApiController]
 [Route("api/v1/admin/courses")]
-[Authorize(Roles = "Admin")]
+[RequirePermission("roadmap.manage")]
 public sealed class AdminRoadmapCoursesController : ControllerBase
 {
     private readonly IRoadmapService _service;
@@ -133,7 +134,7 @@ public sealed class AdminRoadmapCoursesController : ControllerBase
 
 [ApiController]
 [Route("api/v1/admin/modules")]
-[Authorize(Roles = "Admin")]
+[RequirePermission("roadmap.manage")]
 public sealed class AdminRoadmapModulesController : ControllerBase
 {
     private readonly IRoadmapService _service;
@@ -154,7 +155,7 @@ public sealed class AdminRoadmapModulesController : ControllerBase
 
 [ApiController]
 [Route("api/v1/admin/lessons")]
-[Authorize(Roles = "Admin")]
+[RequirePermission("roadmap.manage")]
 public sealed class AdminRoadmapLessonsController : ControllerBase
 {
     private readonly IRoadmapService _service;
@@ -163,6 +164,18 @@ public sealed class AdminRoadmapLessonsController : ControllerBase
     [HttpPut("{lessonId:long}")]
     public async Task<ActionResult<ApiResponse<RoadmapLessonResponse>>> Put(long lessonId, RoadmapLessonRequest request, CancellationToken ct)
         => Ok(await _service.AdminUpdateLesson(lessonId, request, ct));
+
+    [HttpPost("{lessonId:long}/video")]
+    [HttpPost("/api/v1/admin/roadmap/lessons/{lessonId:long}/video")]
+    public async Task<ActionResult<ApiResponse<FileUploadResponse>>> UploadVideo(long lessonId, IFormFile file, CancellationToken ct)
+    {
+        if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value is not { } rawUserId
+            || !long.TryParse(rawUserId, out var adminId))
+            return Unauthorized(ApiResponse<object>.Fail("Invalid token"));
+
+        var res = await _service.AdminUploadLessonVideo(adminId, lessonId, file, ct);
+        return res.Success ? Ok(res) : BadRequest(res);
+    }
 
     [HttpDelete("{lessonId:long}")]
     public async Task<ActionResult<ApiResponse<object>>> Delete(long lessonId, CancellationToken ct)

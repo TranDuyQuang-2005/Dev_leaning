@@ -5766,6 +5766,14 @@ html[data-theme=dark] .icon-reaction-pro.active-dislike {
     grid-template-columns: 1fr;
   }
 }
+.lesson-video-player {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border: 0;
+  border-radius: 12px;
+  background: #0f172a;
+}
 @media (max-width: 720px) {
   .roadmap-hero,
   .course-card-head,

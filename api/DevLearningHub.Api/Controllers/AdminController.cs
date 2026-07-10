@@ -2,6 +2,7 @@ using DevLearningHub.Api.Common;
 using DevLearningHub.Api.Data;
 using DevLearningHub.Api.DTOs;
 using DevLearningHub.Api.Entities;
+using DevLearningHub.Api.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,13 +11,14 @@ namespace DevLearningHub.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/admin")]
-[Authorize(Roles = "Admin")]
+[Authorize]
 public sealed class AdminController : BaseApiController
 {
     private readonly DevLearningHubDbContext _db;
     public AdminController(DevLearningHubDbContext db) => _db = db;
 
     [HttpGet("users")]
+    [RequirePermission("user.manage")]
     public async Task<ActionResult<ApiResponse<List<AdminUserResponse>>>> Users(CancellationToken ct)
     {
         var users = await _db.Users.AsNoTracking()
@@ -30,6 +32,7 @@ public sealed class AdminController : BaseApiController
     }
 
     [HttpGet("roles")]
+    [RequirePermission("user.manage", "permission.manage")]
     public async Task<ActionResult<ApiResponse<List<AdminRoleResponse>>>> Roles(CancellationToken ct)
     {
         var roles = await _db.Roles.AsNoTracking()
@@ -40,6 +43,7 @@ public sealed class AdminController : BaseApiController
     }
 
     [HttpGet("permissions")]
+    [RequirePermission("user.manage", "permission.manage")]
     public async Task<ActionResult<ApiResponse<List<AdminPermissionOptionResponse>>>> Permissions(CancellationToken ct)
     {
         var permissions = await _db.Permissions.AsNoTracking()
@@ -61,6 +65,7 @@ public sealed class AdminController : BaseApiController
     }
 
     [HttpGet("users/{userId:long}/roles")]
+    [RequirePermission("user.manage")]
     public async Task<ActionResult<ApiResponse<AdminUserRolesResponse>>> UserRoles(long userId, CancellationToken ct)
     {
         var response = await BuildUserRolesResponse(userId, ct);
@@ -69,6 +74,7 @@ public sealed class AdminController : BaseApiController
     }
 
     [HttpPut("users/{userId:long}/roles")]
+    [RequirePermission("user.manage")]
     public async Task<ActionResult<ApiResponse<AdminUserRolesResponse>>> UpdateUserRoles(long userId, UpdateUserRolesRequest request, CancellationToken ct)
     {
         var user = await _db.Users.Include(x => x.UserRoles).FirstOrDefaultAsync(x => x.Id == userId && !x.IsDeleted, ct);
@@ -111,6 +117,7 @@ public sealed class AdminController : BaseApiController
     }
 
     [HttpGet("users/{userId:long}/permissions")]
+    [RequirePermission("user.manage")]
     public async Task<ActionResult<ApiResponse<AdminUserPermissionsResponse>>> UserPermissions(long userId, CancellationToken ct)
     {
         var response = await BuildUserPermissionsResponse(userId, ct);
@@ -119,6 +126,7 @@ public sealed class AdminController : BaseApiController
     }
 
     [HttpPut("users/{userId:long}/permissions")]
+    [RequirePermission("user.manage")]
     public async Task<ActionResult<ApiResponse<AdminUserPermissionsResponse>>> UpdateUserPermissions(long userId, UpdateUserPermissionsRequest request, CancellationToken ct)
     {
         var user = await _db.Users.Include(x => x.UserPermissions).FirstOrDefaultAsync(x => x.Id == userId && !x.IsDeleted, ct);
@@ -172,6 +180,7 @@ public sealed class AdminController : BaseApiController
     }
 
     [HttpPost("users/assign-role")]
+    [RequirePermission("user.manage")]
     public async Task<ActionResult<ApiResponse<object>>> AssignRole(RoleAssignRequest request, CancellationToken ct)
     {
         var exists = await _db.UserRoles.AnyAsync(x => x.UserId == request.UserId && x.RoleId == request.RoleId, ct);

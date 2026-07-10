@@ -7,6 +7,7 @@ type NotificationItem = {
   id: number;
   type: string;
   title: string;
+  content?: string;
   message: string;
   linkUrl?: string;
   isRead: boolean;

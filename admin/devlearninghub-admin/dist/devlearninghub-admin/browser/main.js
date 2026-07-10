@@ -46555,6 +46555,18 @@ var _AuthService = class _AuthService {
   hasRole(role) {
     return this.currentUser()?.roles?.includes(role) || false;
   }
+  hasPermission(permission) {
+    const user = this.currentUser();
+    const permissions = [...user?.permissions || [], ...user?.effectivePermissions || []];
+    return permissions.some((p) => p.toLowerCase() === permission.toLowerCase());
+  }
+  hasAnyPermission(permissions) {
+    return permissions.some((permission) => this.hasPermission(permission));
+  }
+  canAccessAdmin() {
+    const user = this.currentUser();
+    return !!user?.isAdminPortalAllowed || this.hasRole("Admin") || this.hasRole("Moderator") || this.hasPermission("admin.access");
+  }
   openUserApp(target = "/learner/forum") {
     const url = this.buildUserAppSsoUrl(target);
     window.open(url, "_blank", "noopener,noreferrer");
@@ -46644,13 +46656,19 @@ var _LoginComponent = class _LoginComponent {
     this.auth.login(this.emailOrUserName, this.password).subscribe({
       next: (r) => {
         this.loading = false;
-        const roles = r.data.user.roles || [];
-        if (roles.includes("Admin"))
-          this.router.navigate(["/dashboard"]);
-        else if (roles.includes("Moderator"))
+        const user = r.data.user || {};
+        const roles = user.roles || [];
+        const permissions = [...user.permissions || [], ...user.effectivePermissions || []];
+        const canAccessAdmin = !!user.isAdminPortalAllowed || roles.includes("Admin") || roles.includes("Moderator") || permissions.includes("admin.access");
+        if (!canAccessAdmin) {
+          this.error = "T\xE0i kho\u1EA3n ch\u01B0a c\xF3 quy\u1EC1n truy c\u1EADp trang qu\u1EA3n tr\u1ECB.";
+          return;
+        }
+        if (permissions.includes("forum.moderate") && !permissions.includes("dashboard.view") && !roles.includes("Admin")) {
           this.router.navigate(["/forum"]);
-        else
-          this.error = "T\xE0i kho\u1EA3n n\xE0y kh\xF4ng c\xF3 quy\u1EC1n Admin/Moderator";
+          return;
+        }
+        this.router.navigate(["/dashboard"]);
       },
       error: (e) => {
         this.loading = false;
@@ -46736,9 +46754,16 @@ var LoginComponent = _LoginComponent;
 })();
 
 // src/app/features/dashboard.component.ts
-function DashboardComponent_div_53_Template(rf, ctx) {
+function DashboardComponent_a_8_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 142);
+    \u0275\u0275elementStart(0, "a", 143);
+    \u0275\u0275text(1, "Code Judge");
+    \u0275\u0275elementEnd();
+  }
+}
+function DashboardComponent_div_52_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 144);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -46748,9 +46773,9 @@ function DashboardComponent_div_53_Template(rf, ctx) {
     \u0275\u0275textInterpolate(ctx_r0.message);
   }
 }
-function DashboardComponent_div_54_Template(rf, ctx) {
+function DashboardComponent_div_53_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 143);
+    \u0275\u0275elementStart(0, "div", 145);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -46760,83 +46785,250 @@ function DashboardComponent_div_54_Template(rf, ctx) {
     \u0275\u0275textInterpolate(ctx_r0.error);
   }
 }
-function DashboardComponent_option_86_Template(rf, ctx) {
+function DashboardComponent_button_58_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "option", 43);
-    \u0275\u0275text(1);
+    const _r2 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "button", 146);
+    \u0275\u0275listener("click", function DashboardComponent_button_58_Template_button_click_0_listener() {
+      \u0275\u0275restoreView(_r2);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.setTab("questions"));
+    });
+    \u0275\u0275text(1, "Questions");
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const c_r2 = ctx.$implicit;
-    \u0275\u0275property("ngValue", c_r2.id);
-    \u0275\u0275advance();
-    \u0275\u0275textInterpolate(c_r2.name);
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275classProp("active", ctx_r0.tab === "questions");
   }
 }
-function DashboardComponent_form_91_option_8_Template(rf, ctx) {
+function DashboardComponent_button_59_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "option", 43);
-    \u0275\u0275text(1);
+    const _r3 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "button", 146);
+    \u0275\u0275listener("click", function DashboardComponent_button_59_Template_button_click_0_listener() {
+      \u0275\u0275restoreView(_r3);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.setTab("categories"));
+    });
+    \u0275\u0275text(1, "Categories");
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const c_r4 = ctx.$implicit;
-    \u0275\u0275property("ngValue", c_r4.id);
-    \u0275\u0275advance();
-    \u0275\u0275textInterpolate(c_r4.name);
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275classProp("active", ctx_r0.tab === "categories");
   }
 }
-function DashboardComponent_form_91_div_32_Template(rf, ctx) {
+function DashboardComponent_button_60_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r4 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "button", 146);
+    \u0275\u0275listener("click", function DashboardComponent_button_60_Template_button_click_0_listener() {
+      \u0275\u0275restoreView(_r4);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.setTab("quizsets"));
+    });
+    \u0275\u0275text(1, "Quiz Sets");
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275classProp("active", ctx_r0.tab === "quizsets");
+  }
+}
+function DashboardComponent_button_61_Template(rf, ctx) {
   if (rf & 1) {
     const _r5 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "div", 148)(1, "label");
+    \u0275\u0275elementStart(0, "button", 146);
+    \u0275\u0275listener("click", function DashboardComponent_button_61_Template_button_click_0_listener() {
+      \u0275\u0275restoreView(_r5);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.setTab("users"));
+    });
+    \u0275\u0275text(1, "Users");
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275classProp("active", ctx_r0.tab === "users");
+  }
+}
+function DashboardComponent_button_62_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r6 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "button", 146);
+    \u0275\u0275listener("click", function DashboardComponent_button_62_Template_button_click_0_listener() {
+      \u0275\u0275restoreView(_r6);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.setTab("access"));
+    });
+    \u0275\u0275text(1, "Access Control");
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275classProp("active", ctx_r0.tab === "access");
+  }
+}
+function DashboardComponent_button_63_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r7 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "button", 146);
+    \u0275\u0275listener("click", function DashboardComponent_button_63_Template_button_click_0_listener() {
+      \u0275\u0275restoreView(_r7);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.setTab("roadmaps"));
+    });
+    \u0275\u0275text(1, "Roadmaps");
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275classProp("active", ctx_r0.tab === "roadmaps");
+  }
+}
+function DashboardComponent_button_64_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r8 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "button", 146);
+    \u0275\u0275listener("click", function DashboardComponent_button_64_Template_button_click_0_listener() {
+      \u0275\u0275restoreView(_r8);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.setTab("audit"));
+    });
+    \u0275\u0275text(1, "Audit Logs");
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275classProp("active", ctx_r0.tab === "audit");
+  }
+}
+function DashboardComponent_button_65_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r9 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "button", 146);
+    \u0275\u0275listener("click", function DashboardComponent_button_65_Template_button_click_0_listener() {
+      \u0275\u0275restoreView(_r9);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.setTab("analytics"));
+    });
+    \u0275\u0275text(1, "Quiz Analytics");
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275classProp("active", ctx_r0.tab === "analytics");
+  }
+}
+function DashboardComponent_button_66_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r10 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "button", 146);
+    \u0275\u0275listener("click", function DashboardComponent_button_66_Template_button_click_0_listener() {
+      \u0275\u0275restoreView(_r10);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.setTab("import"));
+    });
+    \u0275\u0275text(1, "Import Questions");
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275classProp("active", ctx_r0.tab === "import");
+  }
+}
+function DashboardComponent_a_67_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "a", 147);
+    \u0275\u0275text(1, "Forum Management");
+    \u0275\u0275elementEnd();
+  }
+}
+function DashboardComponent_div_68_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 148);
+    \u0275\u0275text(1, "T\xE0i kho\u1EA3n \u0111\xE3 c\xF3 quy\u1EC1n v\xE0o Admin Portal nh\u01B0ng ch\u01B0a \u0111\u01B0\u1EE3c g\xE1n quy\u1EC1n qu\u1EA3n tr\u1ECB ch\u1EE9c n\u0103ng.");
+    \u0275\u0275elementEnd();
+  }
+}
+function DashboardComponent_option_76_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "option", 43);
+    \u0275\u0275text(1);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const c_r11 = ctx.$implicit;
+    \u0275\u0275property("ngValue", c_r11.id);
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate(c_r11.name);
+  }
+}
+function DashboardComponent_form_81_option_8_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "option", 43);
+    \u0275\u0275text(1);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const c_r13 = ctx.$implicit;
+    \u0275\u0275property("ngValue", c_r13.id);
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate(c_r13.name);
+  }
+}
+function DashboardComponent_form_81_div_32_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r14 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "div", 153)(1, "label");
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "input", 149);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_form_91_div_32_Template_input_ngModelChange_3_listener($event) {
-      const o_r6 = \u0275\u0275restoreView(_r5).$implicit;
-      \u0275\u0275twoWayBindingSet(o_r6.content, $event) || (o_r6.content = $event);
+    \u0275\u0275elementStart(3, "input", 154);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_form_81_div_32_Template_input_ngModelChange_3_listener($event) {
+      const o_r15 = \u0275\u0275restoreView(_r14).$implicit;
+      \u0275\u0275twoWayBindingSet(o_r15.content, $event) || (o_r15.content = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(4, "label", 150)(5, "input", 151);
-    \u0275\u0275listener("change", function DashboardComponent_form_91_div_32_Template_input_change_5_listener() {
-      const i_r7 = \u0275\u0275restoreView(_r5).index;
+    \u0275\u0275elementStart(4, "label", 155)(5, "input", 156);
+    \u0275\u0275listener("change", function DashboardComponent_form_81_div_32_Template_input_change_5_listener() {
+      const i_r16 = \u0275\u0275restoreView(_r14).index;
       const ctx_r0 = \u0275\u0275nextContext(2);
-      return \u0275\u0275resetView(ctx_r0.markCorrect(i_r7));
+      return \u0275\u0275resetView(ctx_r0.markCorrect(i_r16));
     });
     \u0275\u0275elementEnd();
     \u0275\u0275text(6, " Correct answer");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(7, "input", 152);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_form_91_div_32_Template_input_ngModelChange_7_listener($event) {
-      const o_r6 = \u0275\u0275restoreView(_r5).$implicit;
-      \u0275\u0275twoWayBindingSet(o_r6.explanation, $event) || (o_r6.explanation = $event);
+    \u0275\u0275elementStart(7, "input", 157);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_form_81_div_32_Template_input_ngModelChange_7_listener($event) {
+      const o_r15 = \u0275\u0275restoreView(_r14).$implicit;
+      \u0275\u0275twoWayBindingSet(o_r15.explanation, $event) || (o_r15.explanation = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
-    const o_r6 = ctx.$implicit;
-    const i_r7 = ctx.index;
+    const o_r15 = ctx.$implicit;
+    const i_r16 = ctx.index;
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate1("Option ", i_r7 + 1);
+    \u0275\u0275textInterpolate1("Option ", i_r16 + 1);
     \u0275\u0275advance();
-    \u0275\u0275twoWayProperty("ngModel", o_r6.content);
-    \u0275\u0275property("name", "op" + i_r7);
+    \u0275\u0275twoWayProperty("ngModel", o_r15.content);
+    \u0275\u0275property("name", "op" + i_r16);
     \u0275\u0275advance(2);
-    \u0275\u0275property("checked", o_r6.isCorrect);
+    \u0275\u0275property("checked", o_r15.isCorrect);
     \u0275\u0275advance(2);
-    \u0275\u0275twoWayProperty("ngModel", o_r6.explanation);
-    \u0275\u0275property("name", "opex" + i_r7);
+    \u0275\u0275twoWayProperty("ngModel", o_r15.explanation);
+    \u0275\u0275property("name", "opex" + i_r16);
   }
 }
-function DashboardComponent_form_91_Template(rf, ctx) {
+function DashboardComponent_form_81_Template(rf, ctx) {
   if (rf & 1) {
-    const _r3 = \u0275\u0275getCurrentView();
+    const _r12 = \u0275\u0275getCurrentView();
     \u0275\u0275elementStart(0, "form", 37);
-    \u0275\u0275listener("ngSubmit", function DashboardComponent_form_91_Template_form_ngSubmit_0_listener() {
-      \u0275\u0275restoreView(_r3);
+    \u0275\u0275listener("ngSubmit", function DashboardComponent_form_81_Template_form_ngSubmit_0_listener() {
+      \u0275\u0275restoreView(_r12);
       const ctx_r0 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r0.createOrUpdateQuestion());
     });
@@ -46847,20 +47039,20 @@ function DashboardComponent_form_91_Template(rf, ctx) {
     \u0275\u0275text(6, "Category");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(7, "select", 48);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_form_91_Template_select_ngModelChange_7_listener($event) {
-      \u0275\u0275restoreView(_r3);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_form_81_Template_select_ngModelChange_7_listener($event) {
+      \u0275\u0275restoreView(_r12);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.questionForm.categoryId, $event) || (ctx_r0.questionForm.categoryId = $event);
       return \u0275\u0275resetView($event);
     });
-    \u0275\u0275template(8, DashboardComponent_form_91_option_8_Template, 2, 2, "option", 30);
+    \u0275\u0275template(8, DashboardComponent_form_81_option_8_Template, 2, 2, "option", 31);
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(9, "div", 39)(10, "label");
     \u0275\u0275text(11, "Title");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(12, "input", 144);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_form_91_Template_input_ngModelChange_12_listener($event) {
-      \u0275\u0275restoreView(_r3);
+    \u0275\u0275elementStart(12, "input", 149);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_form_81_Template_input_ngModelChange_12_listener($event) {
+      \u0275\u0275restoreView(_r12);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.questionForm.title, $event) || (ctx_r0.questionForm.title = $event);
       return \u0275\u0275resetView($event);
@@ -46870,8 +47062,8 @@ function DashboardComponent_form_91_Template(rf, ctx) {
     \u0275\u0275text(15, "Difficulty");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(16, "select", 51);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_form_91_Template_select_ngModelChange_16_listener($event) {
-      \u0275\u0275restoreView(_r3);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_form_81_Template_select_ngModelChange_16_listener($event) {
+      \u0275\u0275restoreView(_r12);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.questionForm.difficulty, $event) || (ctx_r0.questionForm.difficulty = $event);
       return \u0275\u0275resetView($event);
@@ -46888,9 +47080,9 @@ function DashboardComponent_form_91_Template(rf, ctx) {
     \u0275\u0275elementStart(23, "div", 39)(24, "label");
     \u0275\u0275text(25, "Question content");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(26, "textarea", 145);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_form_91_Template_textarea_ngModelChange_26_listener($event) {
-      \u0275\u0275restoreView(_r3);
+    \u0275\u0275elementStart(26, "textarea", 150);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_form_81_Template_textarea_ngModelChange_26_listener($event) {
+      \u0275\u0275restoreView(_r12);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.questionForm.content, $event) || (ctx_r0.questionForm.content = $event);
       return \u0275\u0275resetView($event);
@@ -46899,23 +47091,23 @@ function DashboardComponent_form_91_Template(rf, ctx) {
     \u0275\u0275elementStart(27, "div", 39)(28, "label");
     \u0275\u0275text(29, "Question explanation");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(30, "textarea", 146);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_form_91_Template_textarea_ngModelChange_30_listener($event) {
-      \u0275\u0275restoreView(_r3);
+    \u0275\u0275elementStart(30, "textarea", 151);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_form_81_Template_textarea_ngModelChange_30_listener($event) {
+      \u0275\u0275restoreView(_r12);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.questionForm.explanation, $event) || (ctx_r0.questionForm.explanation = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(31, "div", 44);
-    \u0275\u0275template(32, DashboardComponent_form_91_div_32_Template, 8, 6, "div", 147);
+    \u0275\u0275template(32, DashboardComponent_form_81_div_32_Template, 8, 6, "div", 152);
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(33, "div", 4)(34, "button", 47);
     \u0275\u0275text(35);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(36, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_form_91_Template_button_click_36_listener() {
-      \u0275\u0275restoreView(_r3);
+    \u0275\u0275elementStart(36, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_form_81_Template_button_click_36_listener() {
+      \u0275\u0275restoreView(_r12);
       const ctx_r0 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r0.cancelQuestionEdit());
     });
@@ -46950,79 +47142,79 @@ function DashboardComponent_form_91_Template(rf, ctx) {
     \u0275\u0275textInterpolate(ctx_r0.editingQuestionId ? "Update Question" : "Save Question");
   }
 }
-function DashboardComponent_tr_108_div_6_Template(rf, ctx) {
+function DashboardComponent_tr_98_div_6_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 12);
     \u0275\u0275text(1, "C\xF3 explanation");
     \u0275\u0275elementEnd();
   }
 }
-function DashboardComponent_tr_108_Template(rf, ctx) {
+function DashboardComponent_tr_98_Template(rf, ctx) {
   if (rf & 1) {
-    const _r8 = \u0275\u0275getCurrentView();
+    const _r17 = \u0275\u0275getCurrentView();
     \u0275\u0275elementStart(0, "tr")(1, "td");
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(3, "td")(4, "b");
     \u0275\u0275text(5);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(6, DashboardComponent_tr_108_div_6_Template, 2, 0, "div", 153);
+    \u0275\u0275template(6, DashboardComponent_tr_98_div_6_Template, 2, 0, "div", 158);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(7, "td")(8, "span", 154);
+    \u0275\u0275elementStart(7, "td")(8, "span", 159);
     \u0275\u0275text(9);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(10, "td")(11, "span", 155);
+    \u0275\u0275elementStart(10, "td")(11, "span", 160);
     \u0275\u0275text(12);
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(13, "td");
     \u0275\u0275text(14);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(15, "td", 4)(16, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_tr_108_Template_button_click_16_listener() {
-      const q_r9 = \u0275\u0275restoreView(_r8).$implicit;
+    \u0275\u0275elementStart(15, "td", 4)(16, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_tr_98_Template_button_click_16_listener() {
+      const q_r18 = \u0275\u0275restoreView(_r17).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.editQuestion(q_r9));
+      return \u0275\u0275resetView(ctx_r0.editQuestion(q_r18));
     });
     \u0275\u0275text(17, "Edit");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(18, "button", 7);
-    \u0275\u0275listener("click", function DashboardComponent_tr_108_Template_button_click_18_listener() {
-      const q_r9 = \u0275\u0275restoreView(_r8).$implicit;
+    \u0275\u0275listener("click", function DashboardComponent_tr_98_Template_button_click_18_listener() {
+      const q_r18 = \u0275\u0275restoreView(_r17).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.deleteQuestion(q_r9));
+      return \u0275\u0275resetView(ctx_r0.deleteQuestion(q_r18));
     });
     \u0275\u0275text(19, "Delete");
     \u0275\u0275elementEnd()()();
   }
   if (rf & 2) {
-    const q_r9 = ctx.$implicit;
+    const q_r18 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext();
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(q_r9.id);
+    \u0275\u0275textInterpolate(q_r18.id);
     \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(q_r9.title || q_r9.content);
+    \u0275\u0275textInterpolate(q_r18.title || q_r18.content);
     \u0275\u0275advance();
-    \u0275\u0275property("ngIf", q_r9.explanation);
+    \u0275\u0275property("ngIf", q_r18.explanation);
     \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(ctx_r0.categoryName(q_r9.categoryId));
+    \u0275\u0275textInterpolate(ctx_r0.categoryName(q_r18.categoryId));
     \u0275\u0275advance(2);
-    \u0275\u0275property("ngClass", ctx_r0.difficultyBadge(q_r9.difficulty));
+    \u0275\u0275property("ngClass", ctx_r0.difficultyBadge(q_r18.difficulty));
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(ctx_r0.difficultyText(q_r9.difficulty));
+    \u0275\u0275textInterpolate(ctx_r0.difficultyText(q_r18.difficulty));
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate((q_r9.options == null ? null : q_r9.options.length) || 0);
+    \u0275\u0275textInterpolate((q_r18.options == null ? null : q_r18.options.length) || 0);
   }
 }
-function DashboardComponent_div_109_Template(rf, ctx) {
+function DashboardComponent_div_99_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 156);
+    \u0275\u0275elementStart(0, "div", 148);
     \u0275\u0275text(1, "Ch\u01B0a c\xF3 c\xE2u h\u1ECFi trong CSDL.");
     \u0275\u0275elementEnd();
   }
 }
-function DashboardComponent_tr_161_Template(rf, ctx) {
+function DashboardComponent_tr_151_Template(rf, ctx) {
   if (rf & 1) {
-    const _r10 = \u0275\u0275getCurrentView();
+    const _r19 = \u0275\u0275getCurrentView();
     \u0275\u0275elementStart(0, "tr")(1, "td");
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
@@ -47035,77 +47227,77 @@ function DashboardComponent_tr_161_Template(rf, ctx) {
     \u0275\u0275elementStart(7, "td");
     \u0275\u0275text(8);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(9, "td")(10, "span", 155);
+    \u0275\u0275elementStart(9, "td")(10, "span", 160);
     \u0275\u0275text(11);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(12, "td", 4)(13, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_tr_161_Template_button_click_13_listener() {
-      const c_r11 = \u0275\u0275restoreView(_r10).$implicit;
+    \u0275\u0275elementStart(12, "td", 4)(13, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_tr_151_Template_button_click_13_listener() {
+      const c_r20 = \u0275\u0275restoreView(_r19).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.editCategory(c_r11));
+      return \u0275\u0275resetView(ctx_r0.editCategory(c_r20));
     });
     \u0275\u0275text(14, "Edit");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(15, "button", 7);
-    \u0275\u0275listener("click", function DashboardComponent_tr_161_Template_button_click_15_listener() {
-      const c_r11 = \u0275\u0275restoreView(_r10).$implicit;
+    \u0275\u0275listener("click", function DashboardComponent_tr_151_Template_button_click_15_listener() {
+      const c_r20 = \u0275\u0275restoreView(_r19).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.deleteCategory(c_r11));
+      return \u0275\u0275resetView(ctx_r0.deleteCategory(c_r20));
     });
     \u0275\u0275text(16, "Delete");
     \u0275\u0275elementEnd()()();
   }
   if (rf & 2) {
-    const c_r11 = ctx.$implicit;
+    const c_r20 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext();
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(c_r11.id);
+    \u0275\u0275textInterpolate(c_r20.id);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(c_r11.name);
+    \u0275\u0275textInterpolate(c_r20.name);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(c_r11.slug);
+    \u0275\u0275textInterpolate(c_r20.slug);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(c_r11.description || "Kh\xF4ng c\xF3 m\xF4 t\u1EA3");
+    \u0275\u0275textInterpolate(c_r20.description || "Kh\xF4ng c\xF3 m\xF4 t\u1EA3");
     \u0275\u0275advance(2);
-    \u0275\u0275property("ngClass", ctx_r0.statusBadge(c_r11.status));
+    \u0275\u0275property("ngClass", ctx_r0.statusBadge(c_r20.status));
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(ctx_r0.statusText(c_r11.status));
+    \u0275\u0275textInterpolate(ctx_r0.statusText(c_r20.status));
   }
 }
-function DashboardComponent_option_171_Template(rf, ctx) {
+function DashboardComponent_option_161_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "option", 43);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const c_r12 = ctx.$implicit;
-    \u0275\u0275property("ngValue", c_r12.id);
+    const c_r21 = ctx.$implicit;
+    \u0275\u0275property("ngValue", c_r21.id);
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(c_r12.name);
+    \u0275\u0275textInterpolate(c_r21.name);
   }
 }
-function DashboardComponent_option_230_Template(rf, ctx) {
+function DashboardComponent_option_220_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "option", 43);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const c_r13 = ctx.$implicit;
-    \u0275\u0275property("ngValue", c_r13.id);
+    const c_r22 = ctx.$implicit;
+    \u0275\u0275property("ngValue", c_r22.id);
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(c_r13.name);
+    \u0275\u0275textInterpolate(c_r22.name);
   }
 }
-function DashboardComponent_label_234_Template(rf, ctx) {
+function DashboardComponent_label_224_Template(rf, ctx) {
   if (rf & 1) {
-    const _r14 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "label", 157)(1, "input", 158);
-    \u0275\u0275listener("change", function DashboardComponent_label_234_Template_input_change_1_listener($event) {
-      const q_r15 = \u0275\u0275restoreView(_r14).$implicit;
+    const _r23 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "label", 161)(1, "input", 162);
+    \u0275\u0275listener("change", function DashboardComponent_label_224_Template_input_change_1_listener($event) {
+      const q_r24 = \u0275\u0275restoreView(_r23).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.toggleQuestion(q_r15, $event.target.checked));
+      return \u0275\u0275resetView(ctx_r0.toggleQuestion(q_r24, $event.target.checked));
     });
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(2, "b");
@@ -47114,50 +47306,50 @@ function DashboardComponent_label_234_Template(rf, ctx) {
     \u0275\u0275elementStart(4, "span", 12);
     \u0275\u0275text(5);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(6, "input", 159);
-    \u0275\u0275listener("ngModelChange", function DashboardComponent_label_234_Template_input_ngModelChange_6_listener($event) {
-      const q_r15 = \u0275\u0275restoreView(_r14).$implicit;
+    \u0275\u0275elementStart(6, "input", 163);
+    \u0275\u0275listener("ngModelChange", function DashboardComponent_label_224_Template_input_ngModelChange_6_listener($event) {
+      const q_r24 = \u0275\u0275restoreView(_r23).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.setQuestionScore(q_r15.id, $event));
+      return \u0275\u0275resetView(ctx_r0.setQuestionScore(q_r24.id, $event));
     });
     \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
-    const q_r15 = ctx.$implicit;
+    const q_r24 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext();
     \u0275\u0275advance();
-    \u0275\u0275property("checked", ctx_r0.isQuestionSelected(q_r15.id));
+    \u0275\u0275property("checked", ctx_r0.isQuestionSelected(q_r24.id));
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate2("#", q_r15.id, " ", q_r15.title || q_r15.content);
+    \u0275\u0275textInterpolate2("#", q_r24.id, " ", q_r24.title || q_r24.content);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate2("", ctx_r0.categoryName(q_r15.categoryId), " \xB7 ", ctx_r0.difficultyText(q_r15.difficulty));
+    \u0275\u0275textInterpolate2("", ctx_r0.categoryName(q_r24.categoryId), " \xB7 ", ctx_r0.difficultyText(q_r24.difficulty));
     \u0275\u0275advance();
-    \u0275\u0275property("ngModel", ctx_r0.selectedQuestionScore(q_r15.id))("name", "score" + q_r15.id);
+    \u0275\u0275property("ngModel", ctx_r0.selectedQuestionScore(q_r24.id))("name", "score" + q_r24.id);
   }
 }
-function DashboardComponent_div_235_Template(rf, ctx) {
+function DashboardComponent_div_225_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 134);
+    \u0275\u0275elementStart(0, "div", 135);
     \u0275\u0275text(1, "Category n\xE0y ch\u01B0a c\xF3 c\xE2u h\u1ECFi. H\xE3y import CSV/Excel ho\u1EB7c t\u1EA1o c\xE2u h\u1ECFi th\u1EE7 c\xF4ng tr\u01B0\u1EDBc.");
     \u0275\u0275elementEnd();
   }
 }
-function DashboardComponent_option_247_Template(rf, ctx) {
+function DashboardComponent_option_237_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "option", 43);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const c_r16 = ctx.$implicit;
-    \u0275\u0275property("ngValue", c_r16.id);
+    const c_r25 = ctx.$implicit;
+    \u0275\u0275property("ngValue", c_r25.id);
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(c_r16.name);
+    \u0275\u0275textInterpolate(c_r25.name);
   }
 }
-function DashboardComponent_tr_268_Template(rf, ctx) {
+function DashboardComponent_tr_258_Template(rf, ctx) {
   if (rf & 1) {
-    const _r17 = \u0275\u0275getCurrentView();
+    const _r26 = \u0275\u0275getCurrentView();
     \u0275\u0275elementStart(0, "tr")(1, "td");
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
@@ -47179,73 +47371,73 @@ function DashboardComponent_tr_268_Template(rf, ctx) {
     \u0275\u0275elementStart(14, "td");
     \u0275\u0275text(15);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(16, "td")(17, "span", 155);
+    \u0275\u0275elementStart(16, "td")(17, "span", 160);
     \u0275\u0275text(18);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(19, "td", 4)(20, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_tr_268_Template_button_click_20_listener() {
-      const q_r18 = \u0275\u0275restoreView(_r17).$implicit;
+    \u0275\u0275elementStart(19, "td", 4)(20, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_tr_258_Template_button_click_20_listener() {
+      const q_r27 = \u0275\u0275restoreView(_r26).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.editQuizSet(q_r18));
+      return \u0275\u0275resetView(ctx_r0.editQuizSet(q_r27));
     });
     \u0275\u0275text(21, "Edit");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(22, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_tr_268_Template_button_click_22_listener() {
-      const q_r18 = \u0275\u0275restoreView(_r17).$implicit;
+    \u0275\u0275elementStart(22, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_tr_258_Template_button_click_22_listener() {
+      const q_r27 = \u0275\u0275restoreView(_r26).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.exportQuiz(q_r18));
+      return \u0275\u0275resetView(ctx_r0.exportQuiz(q_r27));
     });
     \u0275\u0275text(23, "Export Quiz CSV");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(24, "button", 7);
-    \u0275\u0275listener("click", function DashboardComponent_tr_268_Template_button_click_24_listener() {
-      const q_r18 = \u0275\u0275restoreView(_r17).$implicit;
+    \u0275\u0275listener("click", function DashboardComponent_tr_258_Template_button_click_24_listener() {
+      const q_r27 = \u0275\u0275restoreView(_r26).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.deleteQuizSet(q_r18));
+      return \u0275\u0275resetView(ctx_r0.deleteQuizSet(q_r27));
     });
     \u0275\u0275text(25, "Delete");
     \u0275\u0275elementEnd()()();
   }
   if (rf & 2) {
-    const q_r18 = ctx.$implicit;
+    const q_r27 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext();
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(q_r18.id);
+    \u0275\u0275textInterpolate(q_r27.id);
     \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(q_r18.title);
+    \u0275\u0275textInterpolate(q_r27.title);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(q_r18.slug);
+    \u0275\u0275textInterpolate(q_r27.slug);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(ctx_r0.categoryName(q_r18.categoryId));
+    \u0275\u0275textInterpolate(ctx_r0.categoryName(q_r27.categoryId));
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(q_r18.questionCount);
+    \u0275\u0275textInterpolate(q_r27.questionCount);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate1("", q_r18.timeLimitMinutes || "-", " min");
+    \u0275\u0275textInterpolate1("", q_r27.timeLimitMinutes || "-", " min");
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(q_r18.maxAttempts || "\u221E");
+    \u0275\u0275textInterpolate(q_r27.maxAttempts || "\u221E");
     \u0275\u0275advance(2);
-    \u0275\u0275property("ngClass", ctx_r0.statusBadge(q_r18.status));
+    \u0275\u0275property("ngClass", ctx_r0.statusBadge(q_r27.status));
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(ctx_r0.statusText(q_r18.status));
+    \u0275\u0275textInterpolate(ctx_r0.statusText(q_r27.status));
   }
 }
-function DashboardComponent_option_324_Template(rf, ctx) {
+function DashboardComponent_option_314_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "option", 43);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const t_r19 = ctx.$implicit;
-    \u0275\u0275property("ngValue", t_r19.id);
+    const t_r28 = ctx.$implicit;
+    \u0275\u0275property("ngValue", t_r28.id);
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(t_r19.title);
+    \u0275\u0275textInterpolate(t_r28.title);
   }
 }
-function DashboardComponent_tr_339_Template(rf, ctx) {
+function DashboardComponent_tr_329_Template(rf, ctx) {
   if (rf & 1) {
-    const _r20 = \u0275\u0275getCurrentView();
+    const _r29 = \u0275\u0275getCurrentView();
     \u0275\u0275elementStart(0, "tr")(1, "td");
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
@@ -47258,58 +47450,58 @@ function DashboardComponent_tr_339_Template(rf, ctx) {
     \u0275\u0275elementStart(8, "td");
     \u0275\u0275text(9);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(10, "td")(11, "span", 155);
+    \u0275\u0275elementStart(10, "td")(11, "span", 160);
     \u0275\u0275text(12);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(13, "td", 4)(14, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_tr_339_Template_button_click_14_listener() {
-      const t_r21 = \u0275\u0275restoreView(_r20).$implicit;
+    \u0275\u0275elementStart(13, "td", 4)(14, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_tr_329_Template_button_click_14_listener() {
+      const t_r30 = \u0275\u0275restoreView(_r29).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.editRoadmapTrack(t_r21));
+      return \u0275\u0275resetView(ctx_r0.editRoadmapTrack(t_r30));
     });
     \u0275\u0275text(15, "Edit");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(16, "button", 7);
-    \u0275\u0275listener("click", function DashboardComponent_tr_339_Template_button_click_16_listener() {
-      const t_r21 = \u0275\u0275restoreView(_r20).$implicit;
+    \u0275\u0275listener("click", function DashboardComponent_tr_329_Template_button_click_16_listener() {
+      const t_r30 = \u0275\u0275restoreView(_r29).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.deleteRoadmapTrack(t_r21));
+      return \u0275\u0275resetView(ctx_r0.deleteRoadmapTrack(t_r30));
     });
     \u0275\u0275text(17, "Delete");
     \u0275\u0275elementEnd()()();
   }
   if (rf & 2) {
-    const t_r21 = ctx.$implicit;
+    const t_r30 = ctx.$implicit;
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(t_r21.id);
+    \u0275\u0275textInterpolate(t_r30.id);
     \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(t_r21.title);
+    \u0275\u0275textInterpolate(t_r30.title);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(t_r21.slug);
+    \u0275\u0275textInterpolate(t_r30.slug);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(t_r21.courseCount || (t_r21.courses == null ? null : t_r21.courses.length) || 0);
+    \u0275\u0275textInterpolate(t_r30.courseCount || (t_r30.courses == null ? null : t_r30.courses.length) || 0);
     \u0275\u0275advance(2);
-    \u0275\u0275property("ngClass", t_r21.isPublished ? "badge-green" : "badge-gray");
+    \u0275\u0275property("ngClass", t_r30.isPublished ? "badge-green" : "badge-gray");
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(t_r21.isPublished ? "Published" : "Draft");
+    \u0275\u0275textInterpolate(t_r30.isPublished ? "Published" : "Draft");
   }
 }
-function DashboardComponent_option_349_Template(rf, ctx) {
+function DashboardComponent_option_339_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "option", 43);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const t_r22 = ctx.$implicit;
-    \u0275\u0275property("ngValue", t_r22.id);
+    const t_r31 = ctx.$implicit;
+    \u0275\u0275property("ngValue", t_r31.id);
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(t_r22.title);
+    \u0275\u0275textInterpolate(t_r31.title);
   }
 }
-function DashboardComponent_tr_430_Template(rf, ctx) {
+function DashboardComponent_tr_420_Template(rf, ctx) {
   if (rf & 1) {
-    const _r23 = \u0275\u0275getCurrentView();
+    const _r32 = \u0275\u0275getCurrentView();
     \u0275\u0275elementStart(0, "tr")(1, "td");
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
@@ -47322,56 +47514,56 @@ function DashboardComponent_tr_430_Template(rf, ctx) {
     \u0275\u0275elementStart(8, "td");
     \u0275\u0275text(9);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(10, "td")(11, "span", 155);
+    \u0275\u0275elementStart(10, "td")(11, "span", 160);
     \u0275\u0275text(12);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(13, "td", 4)(14, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_tr_430_Template_button_click_14_listener() {
-      const c_r24 = \u0275\u0275restoreView(_r23).$implicit;
+    \u0275\u0275elementStart(13, "td", 4)(14, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_tr_420_Template_button_click_14_listener() {
+      const c_r33 = \u0275\u0275restoreView(_r32).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      ctx_r0.selectedRoadmapCourseId = c_r24.id;
-      return \u0275\u0275resetView(ctx_r0.selectedRoadmapModuleId = (c_r24.modules == null ? null : c_r24.modules[0] == null ? null : c_r24.modules[0].id) || "");
+      ctx_r0.selectedRoadmapCourseId = c_r33.id;
+      return \u0275\u0275resetView(ctx_r0.selectedRoadmapModuleId = (c_r33.modules == null ? null : c_r33.modules[0] == null ? null : c_r33.modules[0].id) || "");
     });
     \u0275\u0275text(15, "Open");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(16, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_tr_430_Template_button_click_16_listener() {
-      const c_r24 = \u0275\u0275restoreView(_r23).$implicit;
+    \u0275\u0275elementStart(16, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_tr_420_Template_button_click_16_listener() {
+      const c_r33 = \u0275\u0275restoreView(_r32).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.editRoadmapCourse(c_r24));
+      return \u0275\u0275resetView(ctx_r0.editRoadmapCourse(c_r33));
     });
     \u0275\u0275text(17, "Edit");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(18, "button", 7);
-    \u0275\u0275listener("click", function DashboardComponent_tr_430_Template_button_click_18_listener() {
-      const c_r24 = \u0275\u0275restoreView(_r23).$implicit;
+    \u0275\u0275listener("click", function DashboardComponent_tr_420_Template_button_click_18_listener() {
+      const c_r33 = \u0275\u0275restoreView(_r32).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.deleteRoadmapCourse(c_r24));
+      return \u0275\u0275resetView(ctx_r0.deleteRoadmapCourse(c_r33));
     });
     \u0275\u0275text(19, "Delete");
     \u0275\u0275elementEnd()()();
   }
   if (rf & 2) {
-    const c_r24 = ctx.$implicit;
+    const c_r33 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext();
-    \u0275\u0275classProp("active-row", ctx_r0.selectedRoadmapCourseId === c_r24.id);
+    \u0275\u0275classProp("active-row", ctx_r0.selectedRoadmapCourseId === c_r33.id);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(c_r24.id);
+    \u0275\u0275textInterpolate(c_r33.id);
     \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(c_r24.title);
+    \u0275\u0275textInterpolate(c_r33.title);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(c_r24.slug);
+    \u0275\u0275textInterpolate(c_r33.slug);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate((c_r24.modules == null ? null : c_r24.modules.length) || c_r24.totalModules || 0);
+    \u0275\u0275textInterpolate((c_r33.modules == null ? null : c_r33.modules.length) || c_r33.totalModules || 0);
     \u0275\u0275advance(2);
-    \u0275\u0275property("ngClass", c_r24.isPublished ? "badge-green" : "badge-gray");
+    \u0275\u0275property("ngClass", c_r33.isPublished ? "badge-green" : "badge-gray");
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(c_r24.isPublished ? "Published" : "Draft");
+    \u0275\u0275textInterpolate(c_r33.isPublished ? "Published" : "Draft");
   }
 }
-function DashboardComponent_tr_485_Template(rf, ctx) {
+function DashboardComponent_tr_475_Template(rf, ctx) {
   if (rf & 1) {
-    const _r25 = \u0275\u0275getCurrentView();
+    const _r34 = \u0275\u0275getCurrentView();
     \u0275\u0275elementStart(0, "tr")(1, "td");
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
@@ -47381,63 +47573,66 @@ function DashboardComponent_tr_485_Template(rf, ctx) {
     \u0275\u0275elementStart(6, "td");
     \u0275\u0275text(7);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(8, "td")(9, "span", 155);
+    \u0275\u0275elementStart(8, "td")(9, "span", 160);
     \u0275\u0275text(10);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(11, "td", 4)(12, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_tr_485_Template_button_click_12_listener() {
-      const m_r26 = \u0275\u0275restoreView(_r25).$implicit;
+    \u0275\u0275elementStart(11, "td", 4)(12, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_tr_475_Template_button_click_12_listener() {
+      const m_r35 = \u0275\u0275restoreView(_r34).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.selectedRoadmapModuleId = m_r26.id);
+      return \u0275\u0275resetView(ctx_r0.selectedRoadmapModuleId = m_r35.id);
     });
     \u0275\u0275text(13, "Open");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(14, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_tr_485_Template_button_click_14_listener() {
-      const m_r26 = \u0275\u0275restoreView(_r25).$implicit;
+    \u0275\u0275elementStart(14, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_tr_475_Template_button_click_14_listener() {
+      const m_r35 = \u0275\u0275restoreView(_r34).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.editRoadmapModule(m_r26));
+      return \u0275\u0275resetView(ctx_r0.editRoadmapModule(m_r35));
     });
     \u0275\u0275text(15, "Edit");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(16, "button", 7);
-    \u0275\u0275listener("click", function DashboardComponent_tr_485_Template_button_click_16_listener() {
-      const m_r26 = \u0275\u0275restoreView(_r25).$implicit;
+    \u0275\u0275listener("click", function DashboardComponent_tr_475_Template_button_click_16_listener() {
+      const m_r35 = \u0275\u0275restoreView(_r34).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.deleteRoadmapModule(m_r26));
+      return \u0275\u0275resetView(ctx_r0.deleteRoadmapModule(m_r35));
     });
     \u0275\u0275text(17, "Delete");
     \u0275\u0275elementEnd()()();
   }
   if (rf & 2) {
-    const m_r26 = ctx.$implicit;
+    const m_r35 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext();
-    \u0275\u0275classProp("active-row", ctx_r0.selectedRoadmapModuleId === m_r26.id);
+    \u0275\u0275classProp("active-row", ctx_r0.selectedRoadmapModuleId === m_r35.id);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(m_r26.id);
+    \u0275\u0275textInterpolate(m_r35.id);
     \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(m_r26.title);
+    \u0275\u0275textInterpolate(m_r35.title);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate((m_r26.lessons == null ? null : m_r26.lessons.length) || 0);
+    \u0275\u0275textInterpolate((m_r35.lessons == null ? null : m_r35.lessons.length) || 0);
     \u0275\u0275advance(2);
-    \u0275\u0275property("ngClass", m_r26.isPublished ? "badge-green" : "badge-gray");
+    \u0275\u0275property("ngClass", m_r35.isPublished ? "badge-green" : "badge-gray");
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(m_r26.isPublished ? "Published" : "Draft");
+    \u0275\u0275textInterpolate(m_r35.isPublished ? "Published" : "Draft");
   }
 }
-function DashboardComponent_div_519_Template(rf, ctx) {
+function DashboardComponent_div_509_Template(rf, ctx) {
   if (rf & 1) {
-    const _r27 = \u0275\u0275getCurrentView();
+    const _r36 = \u0275\u0275getCurrentView();
     \u0275\u0275elementStart(0, "div", 39)(1, "label");
     \u0275\u0275text(2, "Video URL");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "input", 160);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_div_519_Template_input_ngModelChange_3_listener($event) {
-      \u0275\u0275restoreView(_r27);
+    \u0275\u0275elementStart(3, "input", 164);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_div_509_Template_input_ngModelChange_3_listener($event) {
+      \u0275\u0275restoreView(_r36);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.roadmapLessonForm.videoUrl, $event) || (ctx_r0.roadmapLessonForm.videoUrl = $event);
       return \u0275\u0275resetView($event);
     });
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(4, "small", 12);
+    \u0275\u0275text(5, "Paste a YouTube URL or upload an mp4/webm video file.");
     \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
@@ -47446,28 +47641,76 @@ function DashboardComponent_div_519_Template(rf, ctx) {
     \u0275\u0275twoWayProperty("ngModel", ctx_r0.roadmapLessonForm.videoUrl);
   }
 }
-function DashboardComponent_div_520_option_6_Template(rf, ctx) {
+function DashboardComponent_div_510_small_4_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "small", 12);
+    \u0275\u0275text(1);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext(2);
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate1("Selected: ", ctx_r0.roadmapVideoFile.name);
+  }
+}
+function DashboardComponent_div_510_small_5_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "small", 12);
+    \u0275\u0275text(1);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext(2);
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate1("Current file #", ctx_r0.roadmapLessonForm.videoFileId);
+  }
+}
+function DashboardComponent_div_510_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r37 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "div", 39)(1, "label");
+    \u0275\u0275text(2, "Upload Video File");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(3, "input", 165);
+    \u0275\u0275listener("change", function DashboardComponent_div_510_Template_input_change_3_listener($event) {
+      \u0275\u0275restoreView(_r37);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.pickRoadmapVideo($event));
+    });
+    \u0275\u0275elementEnd();
+    \u0275\u0275template(4, DashboardComponent_div_510_small_4_Template, 2, 1, "small", 158)(5, DashboardComponent_div_510_small_5_Template, 2, 1, "small", 158);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275advance(4);
+    \u0275\u0275property("ngIf", ctx_r0.roadmapVideoFile);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", !ctx_r0.roadmapVideoFile && ctx_r0.roadmapLessonForm.videoFileId);
+  }
+}
+function DashboardComponent_div_511_option_6_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "option", 43);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const q_r29 = ctx.$implicit;
-    \u0275\u0275property("ngValue", q_r29.id);
+    const q_r39 = ctx.$implicit;
+    \u0275\u0275property("ngValue", q_r39.id);
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate2("#", q_r29.id, " ", q_r29.title);
+    \u0275\u0275textInterpolate2("#", q_r39.id, " ", q_r39.title);
   }
 }
-function DashboardComponent_div_520_Template(rf, ctx) {
+function DashboardComponent_div_511_Template(rf, ctx) {
   if (rf & 1) {
-    const _r28 = \u0275\u0275getCurrentView();
+    const _r38 = \u0275\u0275getCurrentView();
     \u0275\u0275elementStart(0, "div", 39)(1, "label");
     \u0275\u0275text(2, "Quiz set");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "select", 161);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_div_520_Template_select_ngModelChange_3_listener($event) {
-      \u0275\u0275restoreView(_r28);
+    \u0275\u0275elementStart(3, "select", 166);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_div_511_Template_select_ngModelChange_3_listener($event) {
+      \u0275\u0275restoreView(_r38);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.roadmapLessonForm.quizSetId, $event) || (ctx_r0.roadmapLessonForm.quizSetId = $event);
       return \u0275\u0275resetView($event);
@@ -47475,7 +47718,7 @@ function DashboardComponent_div_520_Template(rf, ctx) {
     \u0275\u0275elementStart(4, "option", 43);
     \u0275\u0275text(5, "Choose quiz set");
     \u0275\u0275elementEnd();
-    \u0275\u0275template(6, DashboardComponent_div_520_option_6_Template, 2, 3, "option", 30);
+    \u0275\u0275template(6, DashboardComponent_div_511_option_6_Template, 2, 3, "option", 31);
     \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
@@ -47488,15 +47731,15 @@ function DashboardComponent_div_520_Template(rf, ctx) {
     \u0275\u0275property("ngForOf", ctx_r0.quizSets);
   }
 }
-function DashboardComponent_div_521_Template(rf, ctx) {
+function DashboardComponent_div_512_Template(rf, ctx) {
   if (rf & 1) {
-    const _r30 = \u0275\u0275getCurrentView();
+    const _r40 = \u0275\u0275getCurrentView();
     \u0275\u0275elementStart(0, "div", 39)(1, "label");
     \u0275\u0275text(2, "Coding problem ID");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "input", 162);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_div_521_Template_input_ngModelChange_3_listener($event) {
-      \u0275\u0275restoreView(_r30);
+    \u0275\u0275elementStart(3, "input", 167);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_div_512_Template_input_ngModelChange_3_listener($event) {
+      \u0275\u0275restoreView(_r40);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.roadmapLessonForm.codingProblemId, $event) || (ctx_r0.roadmapLessonForm.codingProblemId = $event);
       return \u0275\u0275resetView($event);
@@ -47509,23 +47752,23 @@ function DashboardComponent_div_521_Template(rf, ctx) {
     \u0275\u0275twoWayProperty("ngModel", ctx_r0.roadmapLessonForm.codingProblemId);
   }
 }
-function DashboardComponent_tr_565_span_12_Template(rf, ctx) {
+function DashboardComponent_tr_556_span_12_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 154);
+    \u0275\u0275elementStart(0, "span", 159);
     \u0275\u0275text(1, "Preview");
     \u0275\u0275elementEnd();
   }
 }
-function DashboardComponent_tr_565_span_13_Template(rf, ctx) {
+function DashboardComponent_tr_556_span_13_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 166);
+    \u0275\u0275elementStart(0, "span", 171);
     \u0275\u0275text(1, "Sequential");
     \u0275\u0275elementEnd();
   }
 }
-function DashboardComponent_tr_565_Template(rf, ctx) {
+function DashboardComponent_tr_556_Template(rf, ctx) {
   if (rf & 1) {
-    const _r31 = \u0275\u0275getCurrentView();
+    const _r41 = \u0275\u0275getCurrentView();
     \u0275\u0275elementStart(0, "tr")(1, "td");
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
@@ -47535,67 +47778,67 @@ function DashboardComponent_tr_565_Template(rf, ctx) {
     \u0275\u0275elementStart(6, "div", 12);
     \u0275\u0275text(7);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(8, "td")(9, "span", 163);
+    \u0275\u0275elementStart(8, "td")(9, "span", 168);
     \u0275\u0275text(10);
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(11, "td");
-    \u0275\u0275template(12, DashboardComponent_tr_565_span_12_Template, 2, 0, "span", 164)(13, DashboardComponent_tr_565_span_13_Template, 2, 0, "span", 165);
+    \u0275\u0275template(12, DashboardComponent_tr_556_span_12_Template, 2, 0, "span", 169)(13, DashboardComponent_tr_556_span_13_Template, 2, 0, "span", 170);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(14, "td", 4)(15, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_tr_565_Template_button_click_15_listener() {
-      const l_r32 = \u0275\u0275restoreView(_r31).$implicit;
+    \u0275\u0275elementStart(14, "td", 4)(15, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_tr_556_Template_button_click_15_listener() {
+      const l_r42 = \u0275\u0275restoreView(_r41).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.editRoadmapLesson(l_r32));
+      return \u0275\u0275resetView(ctx_r0.editRoadmapLesson(l_r42));
     });
     \u0275\u0275text(16, "Edit");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(17, "button", 7);
-    \u0275\u0275listener("click", function DashboardComponent_tr_565_Template_button_click_17_listener() {
-      const l_r32 = \u0275\u0275restoreView(_r31).$implicit;
+    \u0275\u0275listener("click", function DashboardComponent_tr_556_Template_button_click_17_listener() {
+      const l_r42 = \u0275\u0275restoreView(_r41).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.deleteRoadmapLesson(l_r32));
+      return \u0275\u0275resetView(ctx_r0.deleteRoadmapLesson(l_r42));
     });
     \u0275\u0275text(18, "Delete");
     \u0275\u0275elementEnd()()();
   }
   if (rf & 2) {
-    const l_r32 = ctx.$implicit;
+    const l_r42 = ctx.$implicit;
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(l_r32.id);
+    \u0275\u0275textInterpolate(l_r42.id);
     \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(l_r32.title);
+    \u0275\u0275textInterpolate(l_r42.title);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate2("Order ", l_r32.sortOrder, " \xB7 ", l_r32.estimatedMinutes, " min");
+    \u0275\u0275textInterpolate2("Order ", l_r42.sortOrder, " \xB7 ", l_r42.estimatedMinutes, " min");
     \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(l_r32.type);
+    \u0275\u0275textInterpolate(l_r42.type);
     \u0275\u0275advance(2);
-    \u0275\u0275property("ngIf", l_r32.isPreview);
+    \u0275\u0275property("ngIf", l_r42.isPreview);
     \u0275\u0275advance();
-    \u0275\u0275property("ngIf", l_r32.requiresPreviousLessonCompletion);
+    \u0275\u0275property("ngIf", l_r42.requiresPreviousLessonCompletion);
   }
 }
-function DashboardComponent_tr_589_span_11_Template(rf, ctx) {
+function DashboardComponent_tr_580_span_11_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 154);
+    \u0275\u0275elementStart(0, "span", 159);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const r_r34 = ctx.$implicit;
+    const r_r44 = ctx.$implicit;
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(r_r34.name);
+    \u0275\u0275textInterpolate(r_r44.name);
   }
 }
-function DashboardComponent_tr_589_span_12_Template(rf, ctx) {
+function DashboardComponent_tr_580_span_12_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "span", 12);
     \u0275\u0275text(1, "Ch\u01B0a c\xF3 role");
     \u0275\u0275elementEnd();
   }
 }
-function DashboardComponent_tr_589_Template(rf, ctx) {
+function DashboardComponent_tr_580_Template(rf, ctx) {
   if (rf & 1) {
-    const _r33 = \u0275\u0275getCurrentView();
+    const _r43 = \u0275\u0275getCurrentView();
     \u0275\u0275elementStart(0, "tr")(1, "td");
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
@@ -47609,178 +47852,178 @@ function DashboardComponent_tr_589_Template(rf, ctx) {
     \u0275\u0275text(9);
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(10, "td");
-    \u0275\u0275template(11, DashboardComponent_tr_589_span_11_Template, 2, 1, "span", 167)(12, DashboardComponent_tr_589_span_12_Template, 2, 0, "span", 153);
+    \u0275\u0275template(11, DashboardComponent_tr_580_span_11_Template, 2, 1, "span", 172)(12, DashboardComponent_tr_580_span_12_Template, 2, 0, "span", 158);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(13, "td")(14, "span", 154);
+    \u0275\u0275elementStart(13, "td")(14, "span", 159);
     \u0275\u0275text(15);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(16, "td", 4)(17, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_tr_589_Template_button_click_17_listener() {
-      const u_r35 = \u0275\u0275restoreView(_r33).$implicit;
+    \u0275\u0275elementStart(16, "td", 4)(17, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_tr_580_Template_button_click_17_listener() {
+      const u_r45 = \u0275\u0275restoreView(_r43).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.openPermissionPanel(u_r35));
+      return \u0275\u0275resetView(ctx_r0.openPermissionPanel(u_r45));
     });
     \u0275\u0275text(18, "Ph\xE2n quy\u1EC1n l\u1EBB");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(19, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_tr_589_Template_button_click_19_listener() {
-      const u_r35 = \u0275\u0275restoreView(_r33).$implicit;
+    \u0275\u0275elementStart(19, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_tr_580_Template_button_click_19_listener() {
+      const u_r45 = \u0275\u0275restoreView(_r43).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.openAssignGroups(u_r35));
+      return \u0275\u0275resetView(ctx_r0.openAssignGroups(u_r45));
     });
     \u0275\u0275text(20, "G\xE1n nh\xF3m quy\u1EC1n");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(21, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_tr_589_Template_button_click_21_listener() {
-      const u_r35 = \u0275\u0275restoreView(_r33).$implicit;
+    \u0275\u0275elementStart(21, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_tr_580_Template_button_click_21_listener() {
+      const u_r45 = \u0275\u0275restoreView(_r43).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.viewEffectivePermissions(u_r35));
+      return \u0275\u0275resetView(ctx_r0.viewEffectivePermissions(u_r45));
     });
     \u0275\u0275text(22, "Xem quy\u1EC1n hi\u1EC7u l\u1EF1c");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(23, "button", 7);
-    \u0275\u0275listener("click", function DashboardComponent_tr_589_Template_button_click_23_listener() {
-      const u_r35 = \u0275\u0275restoreView(_r33).$implicit;
+    \u0275\u0275listener("click", function DashboardComponent_tr_580_Template_button_click_23_listener() {
+      const u_r45 = \u0275\u0275restoreView(_r43).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.openLockUser(u_r35));
+      return \u0275\u0275resetView(ctx_r0.openLockUser(u_r45));
     });
     \u0275\u0275text(24, "Kh\xF3a");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(25, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_tr_589_Template_button_click_25_listener() {
-      const u_r35 = \u0275\u0275restoreView(_r33).$implicit;
+    \u0275\u0275elementStart(25, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_tr_580_Template_button_click_25_listener() {
+      const u_r45 = \u0275\u0275restoreView(_r43).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.unlockUser(u_r35));
+      return \u0275\u0275resetView(ctx_r0.unlockUser(u_r45));
     });
     \u0275\u0275text(26, "M\u1EDF kh\xF3a");
     \u0275\u0275elementEnd()()();
   }
   if (rf & 2) {
-    const u_r35 = ctx.$implicit;
+    const u_r45 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext();
-    \u0275\u0275classProp("active-row", (ctx_r0.userPermissionDetail == null ? null : ctx_r0.userPermissionDetail.user == null ? null : ctx_r0.userPermissionDetail.user.id) === u_r35.id);
+    \u0275\u0275classProp("active-row", (ctx_r0.userPermissionDetail == null ? null : ctx_r0.userPermissionDetail.user == null ? null : ctx_r0.userPermissionDetail.user.id) === u_r45.id);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(u_r35.id);
+    \u0275\u0275textInterpolate(u_r45.id);
     \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(u_r35.fullName);
+    \u0275\u0275textInterpolate(u_r45.fullName);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(u_r35.userName);
+    \u0275\u0275textInterpolate(u_r45.userName);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(u_r35.email);
+    \u0275\u0275textInterpolate(u_r45.email);
     \u0275\u0275advance(2);
-    \u0275\u0275property("ngForOf", u_r35.roles);
+    \u0275\u0275property("ngForOf", u_r45.roles);
     \u0275\u0275advance();
-    \u0275\u0275property("ngIf", !(u_r35.roles == null ? null : u_r35.roles.length));
+    \u0275\u0275property("ngIf", !(u_r45.roles == null ? null : u_r45.roles.length));
     \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(ctx_r0.userStatus(u_r35));
+    \u0275\u0275textInterpolate(ctx_r0.userStatus(u_r45));
   }
 }
-function DashboardComponent_div_590_div_12_label_3_span_8_Template(rf, ctx) {
+function DashboardComponent_div_581_div_12_label_3_span_8_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 181);
+    \u0275\u0275elementStart(0, "span", 186);
     \u0275\u0275text(1, "C\xF3 hi\u1EC7u l\u1EF1c");
     \u0275\u0275elementEnd();
   }
 }
-function DashboardComponent_div_590_div_12_label_3_span_9_Template(rf, ctx) {
+function DashboardComponent_div_581_div_12_label_3_span_9_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 182);
+    \u0275\u0275elementStart(0, "span", 187);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const permission_r38 = \u0275\u0275nextContext().$implicit;
+    const permission_r48 = \u0275\u0275nextContext().$implicit;
     const ctx_r0 = \u0275\u0275nextContext(3);
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate1("T\u1EEB role: ", ctx_r0.sourceRoleText(permission_r38));
+    \u0275\u0275textInterpolate1("T\u1EEB role: ", ctx_r0.sourceRoleText(permission_r48));
   }
 }
-function DashboardComponent_div_590_div_12_label_3_Template(rf, ctx) {
+function DashboardComponent_div_581_div_12_label_3_Template(rf, ctx) {
   if (rf & 1) {
-    const _r37 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "label", 175)(1, "div", 176)(2, "input", 177);
-    \u0275\u0275listener("change", function DashboardComponent_div_590_div_12_label_3_Template_input_change_2_listener($event) {
-      const permission_r38 = \u0275\u0275restoreView(_r37).$implicit;
+    const _r47 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "label", 180)(1, "div", 181)(2, "input", 182);
+    \u0275\u0275listener("change", function DashboardComponent_div_581_div_12_label_3_Template_input_change_2_listener($event) {
+      const permission_r48 = \u0275\u0275restoreView(_r47).$implicit;
       const ctx_r0 = \u0275\u0275nextContext(3);
-      return \u0275\u0275resetView(ctx_r0.toggleUserPermission(permission_r38, $event.target.checked));
+      return \u0275\u0275resetView(ctx_r0.toggleUserPermission(permission_r48, $event.target.checked));
     });
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(3, "div")(4, "b");
     \u0275\u0275text(5);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(6, "span", 178);
+    \u0275\u0275elementStart(6, "span", 183);
     \u0275\u0275text(7);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(8, DashboardComponent_div_590_div_12_label_3_span_8_Template, 2, 0, "span", 179)(9, DashboardComponent_div_590_div_12_label_3_span_9_Template, 2, 1, "span", 180);
+    \u0275\u0275template(8, DashboardComponent_div_581_div_12_label_3_span_8_Template, 2, 0, "span", 184)(9, DashboardComponent_div_581_div_12_label_3_span_9_Template, 2, 1, "span", 185);
     \u0275\u0275elementStart(10, "div", 12);
     \u0275\u0275text(11);
     \u0275\u0275elementEnd()()()();
   }
   if (rf & 2) {
-    const permission_r38 = ctx.$implicit;
+    const permission_r48 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext(3);
     \u0275\u0275advance(2);
-    \u0275\u0275property("checked", permission_r38.assigned)("disabled", ctx_r0.permissionSaving);
+    \u0275\u0275property("checked", permission_r48.assigned)("disabled", ctx_r0.permissionSaving);
     \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(permission_r38.name);
+    \u0275\u0275textInterpolate(permission_r48.name);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(permission_r38.code);
+    \u0275\u0275textInterpolate(permission_r48.code);
     \u0275\u0275advance();
-    \u0275\u0275property("ngIf", permission_r38.effective);
+    \u0275\u0275property("ngIf", permission_r48.effective);
     \u0275\u0275advance();
-    \u0275\u0275property("ngIf", permission_r38.inheritedFromRole);
+    \u0275\u0275property("ngIf", permission_r48.inheritedFromRole);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(permission_r38.description || "Kh\xF4ng c\xF3 m\xF4 t\u1EA3");
+    \u0275\u0275textInterpolate(permission_r48.description || "Kh\xF4ng c\xF3 m\xF4 t\u1EA3");
   }
 }
-function DashboardComponent_div_590_div_12_Template(rf, ctx) {
+function DashboardComponent_div_581_div_12_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 172)(1, "h4", 173);
+    \u0275\u0275elementStart(0, "div", 177)(1, "h4", 178);
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(3, DashboardComponent_div_590_div_12_label_3_Template, 12, 7, "label", 174);
+    \u0275\u0275template(3, DashboardComponent_div_581_div_12_label_3_Template, 12, 7, "label", 179);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const module_r39 = ctx.$implicit;
+    const module_r49 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext(2);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(module_r39);
+    \u0275\u0275textInterpolate(module_r49);
     \u0275\u0275advance();
-    \u0275\u0275property("ngForOf", ctx_r0.permissionsForModule(module_r39));
+    \u0275\u0275property("ngForOf", ctx_r0.permissionsForModule(module_r49));
   }
 }
-function DashboardComponent_div_590_div_13_Template(rf, ctx) {
+function DashboardComponent_div_581_div_13_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 183);
+    \u0275\u0275elementStart(0, "div", 188);
     \u0275\u0275text(1, "\u0110ang c\u1EADp nh\u1EADt quy\u1EC1n l\u1EBB...");
     \u0275\u0275elementEnd();
   }
 }
-function DashboardComponent_div_590_Template(rf, ctx) {
+function DashboardComponent_div_581_Template(rf, ctx) {
   if (rf & 1) {
-    const _r36 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "div", 20)(1, "div", 25)(2, "div")(3, "h3", 59);
+    const _r46 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "div", 20)(1, "div", 26)(2, "div")(3, "h3", 59);
     \u0275\u0275text(4, "Permission Assignment");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(5, "p", 168);
+    \u0275\u0275elementStart(5, "p", 173);
     \u0275\u0275text(6);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(7, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_div_590_Template_button_click_7_listener() {
-      \u0275\u0275restoreView(_r36);
+    \u0275\u0275elementStart(7, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_div_581_Template_button_click_7_listener() {
+      \u0275\u0275restoreView(_r46);
       const ctx_r0 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r0.closePermissionPanel());
     });
     \u0275\u0275text(8, "Close");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(9, "div", 134);
+    \u0275\u0275elementStart(9, "div", 135);
     \u0275\u0275text(10, "\u0110\xE2y l\xE0 ph\xE2n quy\u1EC1n theo t\u1EEBng quy\u1EC1n l\u1EBB. Quy\u1EC1n l\u1EBB c\xF3 th\u1EC3 g\xE1n tr\u1EF1c ti\u1EBFp cho user ho\u1EB7c \u0111\u01B0a v\xE0o nh\xF3m quy\u1EC1n.");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(11, "div", 169);
-    \u0275\u0275template(12, DashboardComponent_div_590_div_12_Template, 4, 2, "div", 170);
+    \u0275\u0275elementStart(11, "div", 174);
+    \u0275\u0275template(12, DashboardComponent_div_581_div_12_Template, 4, 2, "div", 175);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(13, DashboardComponent_div_590_div_13_Template, 2, 0, "div", 171);
+    \u0275\u0275template(13, DashboardComponent_div_581_div_13_Template, 2, 0, "div", 176);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
@@ -47793,12 +48036,12 @@ function DashboardComponent_div_590_Template(rf, ctx) {
     \u0275\u0275property("ngIf", ctx_r0.permissionSaving);
   }
 }
-function DashboardComponent_div_591_div_5_Template(rf, ctx) {
+function DashboardComponent_div_582_div_5_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 185)(1, "b");
+    \u0275\u0275elementStart(0, "div", 190)(1, "b");
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "span", 178);
+    \u0275\u0275elementStart(3, "span", 183);
     \u0275\u0275text(4);
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(5, "div", 12);
@@ -47806,16 +48049,16 @@ function DashboardComponent_div_591_div_5_Template(rf, ctx) {
     \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
-    const p_r40 = ctx.$implicit;
+    const p_r50 = ctx.$implicit;
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(p_r40.name);
+    \u0275\u0275textInterpolate(p_r50.name);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(p_r40.code);
+    \u0275\u0275textInterpolate(p_r50.code);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate2("", p_r40.module, " \xB7 ", p_r40.description || "Kh\xF4ng c\xF3 m\xF4 t\u1EA3");
+    \u0275\u0275textInterpolate2("", p_r50.module, " \xB7 ", p_r50.description || "Kh\xF4ng c\xF3 m\xF4 t\u1EA3");
   }
 }
-function DashboardComponent_div_591_Template(rf, ctx) {
+function DashboardComponent_div_582_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 20)(1, "h3");
     \u0275\u0275text(2, "Permission Guide");
@@ -47823,7 +48066,7 @@ function DashboardComponent_div_591_Template(rf, ctx) {
     \u0275\u0275elementStart(3, "p", 12);
     \u0275\u0275text(4, "Quy\u1EC1n l\u1EBB c\xF3 th\u1EC3 g\xE1n tr\u1EF1c ti\u1EBFp cho user ho\u1EB7c \u0111\u01B0a v\xE0o nh\xF3m quy\u1EC1n.");
     \u0275\u0275elementEnd();
-    \u0275\u0275template(5, DashboardComponent_div_591_div_5_Template, 7, 4, "div", 184);
+    \u0275\u0275template(5, DashboardComponent_div_582_div_5_Template, 7, 4, "div", 189);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
@@ -47832,85 +48075,85 @@ function DashboardComponent_div_591_Template(rf, ctx) {
     \u0275\u0275property("ngForOf", ctx_r0.permissions);
   }
 }
-function DashboardComponent_label_613_Template(rf, ctx) {
+function DashboardComponent_label_604_Template(rf, ctx) {
   if (rf & 1) {
-    const _r41 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "label", 186)(1, "input", 158);
-    \u0275\u0275listener("change", function DashboardComponent_label_613_Template_input_change_1_listener($event) {
-      const p_r42 = \u0275\u0275restoreView(_r41).$implicit;
+    const _r51 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "label", 191)(1, "input", 162);
+    \u0275\u0275listener("change", function DashboardComponent_label_604_Template_input_change_1_listener($event) {
+      const p_r52 = \u0275\u0275restoreView(_r51).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.toggleArrayValue(ctx_r0.groupForm.permissionIds, p_r42.id, $event.target.checked));
+      return \u0275\u0275resetView(ctx_r0.toggleArrayValue(ctx_r0.groupForm.permissionIds, p_r52.id, $event.target.checked));
     });
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(2, "b");
     \u0275\u0275text(3);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(4, "span", 154);
+    \u0275\u0275elementStart(4, "span", 159);
     \u0275\u0275text(5);
     \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
-    const p_r42 = ctx.$implicit;
+    const p_r52 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext();
     \u0275\u0275advance();
-    \u0275\u0275property("checked", ctx_r0.groupForm.permissionIds.includes(p_r42.id));
+    \u0275\u0275property("checked", ctx_r0.groupForm.permissionIds.includes(p_r52.id));
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(p_r42.name);
+    \u0275\u0275textInterpolate(p_r52.name);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(p_r42.code);
+    \u0275\u0275textInterpolate(p_r52.code);
   }
 }
-function DashboardComponent_option_628_Template(rf, ctx) {
+function DashboardComponent_option_619_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "option", 43);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const role_r43 = ctx.$implicit;
-    \u0275\u0275property("ngValue", role_r43.id);
+    const role_r53 = ctx.$implicit;
+    \u0275\u0275property("ngValue", role_r53.id);
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(role_r43.name);
+    \u0275\u0275textInterpolate(role_r53.name);
   }
 }
-function DashboardComponent_label_630_Template(rf, ctx) {
+function DashboardComponent_label_621_Template(rf, ctx) {
   if (rf & 1) {
-    const _r44 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "label", 186)(1, "input", 158);
-    \u0275\u0275listener("change", function DashboardComponent_label_630_Template_input_change_1_listener($event) {
-      const g_r45 = \u0275\u0275restoreView(_r44).$implicit;
+    const _r54 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "label", 191)(1, "input", 162);
+    \u0275\u0275listener("change", function DashboardComponent_label_621_Template_input_change_1_listener($event) {
+      const g_r55 = \u0275\u0275restoreView(_r54).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.toggleArrayValue(ctx_r0.selectedRoleGroupIds, g_r45.id, $event.target.checked));
+      return \u0275\u0275resetView(ctx_r0.toggleArrayValue(ctx_r0.selectedRoleGroupIds, g_r55.id, $event.target.checked));
     });
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(2, "b");
     \u0275\u0275text(3);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(4, "span", 154);
+    \u0275\u0275elementStart(4, "span", 159);
     \u0275\u0275text(5);
     \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
-    const g_r45 = ctx.$implicit;
+    const g_r55 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext();
     \u0275\u0275advance();
-    \u0275\u0275property("checked", ctx_r0.selectedRoleGroupIds.includes(g_r45.id));
+    \u0275\u0275property("checked", ctx_r0.selectedRoleGroupIds.includes(g_r55.id));
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(g_r45.name);
+    \u0275\u0275textInterpolate(g_r55.name);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(g_r45.code);
+    \u0275\u0275textInterpolate(g_r55.code);
   }
 }
-function DashboardComponent_tr_654_Template(rf, ctx) {
+function DashboardComponent_tr_645_Template(rf, ctx) {
   if (rf & 1) {
-    const _r46 = \u0275\u0275getCurrentView();
+    const _r56 = \u0275\u0275getCurrentView();
     \u0275\u0275elementStart(0, "tr")(1, "td");
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(3, "td")(4, "b");
     \u0275\u0275text(5);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(6, "td")(7, "span", 154);
+    \u0275\u0275elementStart(6, "td")(7, "span", 159);
     \u0275\u0275text(8);
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(9, "td");
@@ -47922,97 +48165,97 @@ function DashboardComponent_tr_654_Template(rf, ctx) {
     \u0275\u0275elementStart(13, "td");
     \u0275\u0275text(14);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(15, "td", 4)(16, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_tr_654_Template_button_click_16_listener() {
-      const group_r47 = \u0275\u0275restoreView(_r46).$implicit;
+    \u0275\u0275elementStart(15, "td", 4)(16, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_tr_645_Template_button_click_16_listener() {
+      const group_r57 = \u0275\u0275restoreView(_r56).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.editPermissionGroup(group_r47));
+      return \u0275\u0275resetView(ctx_r0.editPermissionGroup(group_r57));
     });
     \u0275\u0275text(17, "Edit");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(18, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_tr_654_Template_button_click_18_listener() {
-      const group_r47 = \u0275\u0275restoreView(_r46).$implicit;
+    \u0275\u0275elementStart(18, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_tr_645_Template_button_click_18_listener() {
+      const group_r57 = \u0275\u0275restoreView(_r56).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.openManageGroup(group_r47));
+      return \u0275\u0275resetView(ctx_r0.openManageGroup(group_r57));
     });
     \u0275\u0275text(19, "Manage Permissions");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(20, "button", 187);
-    \u0275\u0275listener("click", function DashboardComponent_tr_654_Template_button_click_20_listener() {
-      const group_r47 = \u0275\u0275restoreView(_r46).$implicit;
+    \u0275\u0275elementStart(20, "button", 192);
+    \u0275\u0275listener("click", function DashboardComponent_tr_645_Template_button_click_20_listener() {
+      const group_r57 = \u0275\u0275restoreView(_r56).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.deletePermissionGroup(group_r47));
+      return \u0275\u0275resetView(ctx_r0.deletePermissionGroup(group_r57));
     });
     \u0275\u0275text(21, "Delete");
     \u0275\u0275elementEnd()()();
   }
   if (rf & 2) {
-    const group_r47 = ctx.$implicit;
+    const group_r57 = ctx.$implicit;
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(group_r47.id);
+    \u0275\u0275textInterpolate(group_r57.id);
     \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(group_r47.name);
+    \u0275\u0275textInterpolate(group_r57.name);
     \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(group_r47.code);
+    \u0275\u0275textInterpolate(group_r57.code);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(group_r47.description || "Kh\xF4ng c\xF3 m\xF4 t\u1EA3");
+    \u0275\u0275textInterpolate(group_r57.description || "Kh\xF4ng c\xF3 m\xF4 t\u1EA3");
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(group_r47.isSystem ? "Yes" : "No");
+    \u0275\u0275textInterpolate(group_r57.isSystem ? "Yes" : "No");
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate((group_r47.permissions == null ? null : group_r47.permissions.length) || group_r47.permissionCount || 0);
+    \u0275\u0275textInterpolate((group_r57.permissions == null ? null : group_r57.permissions.length) || group_r57.permissionCount || 0);
     \u0275\u0275advance(6);
-    \u0275\u0275property("disabled", group_r47.isSystem);
+    \u0275\u0275property("disabled", group_r57.isSystem);
   }
 }
-function DashboardComponent_div_655_label_7_Template(rf, ctx) {
+function DashboardComponent_div_646_label_7_Template(rf, ctx) {
   if (rf & 1) {
-    const _r49 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "label", 157)(1, "input", 158);
-    \u0275\u0275listener("change", function DashboardComponent_div_655_label_7_Template_input_change_1_listener($event) {
-      const p_r50 = \u0275\u0275restoreView(_r49).$implicit;
+    const _r59 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "label", 161)(1, "input", 162);
+    \u0275\u0275listener("change", function DashboardComponent_div_646_label_7_Template_input_change_1_listener($event) {
+      const p_r60 = \u0275\u0275restoreView(_r59).$implicit;
       const ctx_r0 = \u0275\u0275nextContext(2);
-      return \u0275\u0275resetView(ctx_r0.toggleArrayValue(ctx_r0.selectedGroupPermissionIds, p_r50.id, $event.target.checked));
+      return \u0275\u0275resetView(ctx_r0.toggleArrayValue(ctx_r0.selectedGroupPermissionIds, p_r60.id, $event.target.checked));
     });
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(2, "b");
     \u0275\u0275text(3);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(4, "span", 154);
+    \u0275\u0275elementStart(4, "span", 159);
     \u0275\u0275text(5);
     \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
-    const p_r50 = ctx.$implicit;
+    const p_r60 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext(2);
     \u0275\u0275advance();
-    \u0275\u0275property("checked", ctx_r0.selectedGroupPermissionIds.includes(p_r50.id));
+    \u0275\u0275property("checked", ctx_r0.selectedGroupPermissionIds.includes(p_r60.id));
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(p_r50.name);
+    \u0275\u0275textInterpolate(p_r60.name);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(p_r50.code);
+    \u0275\u0275textInterpolate(p_r60.code);
   }
 }
-function DashboardComponent_div_655_Template(rf, ctx) {
+function DashboardComponent_div_646_Template(rf, ctx) {
   if (rf & 1) {
-    const _r48 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "div", 119)(1, "div", 25)(2, "h3", 59);
+    const _r58 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "div", 120)(1, "div", 26)(2, "h3", 59);
     \u0275\u0275text(3);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(4, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_div_655_Template_button_click_4_listener() {
-      \u0275\u0275restoreView(_r48);
+    \u0275\u0275elementStart(4, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_div_646_Template_button_click_4_listener() {
+      \u0275\u0275restoreView(_r58);
       const ctx_r0 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r0.managingGroup = null);
     });
     \u0275\u0275text(5, "Close");
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(6, "div", 44);
-    \u0275\u0275template(7, DashboardComponent_div_655_label_7_Template, 6, 3, "label", 62);
+    \u0275\u0275template(7, DashboardComponent_div_646_label_7_Template, 6, 3, "label", 62);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(8, "button", 31);
-    \u0275\u0275listener("click", function DashboardComponent_div_655_Template_button_click_8_listener() {
-      \u0275\u0275restoreView(_r48);
+    \u0275\u0275elementStart(8, "button", 32);
+    \u0275\u0275listener("click", function DashboardComponent_div_646_Template_button_click_8_listener() {
+      \u0275\u0275restoreView(_r58);
       const ctx_r0 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r0.saveGroupPermissions());
     });
@@ -48027,54 +48270,54 @@ function DashboardComponent_div_655_Template(rf, ctx) {
     \u0275\u0275property("ngForOf", ctx_r0.permissions);
   }
 }
-function DashboardComponent_div_656_label_7_Template(rf, ctx) {
+function DashboardComponent_div_647_label_7_Template(rf, ctx) {
   if (rf & 1) {
-    const _r52 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "label", 157)(1, "input", 158);
-    \u0275\u0275listener("change", function DashboardComponent_div_656_label_7_Template_input_change_1_listener($event) {
-      const g_r53 = \u0275\u0275restoreView(_r52).$implicit;
+    const _r62 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "label", 161)(1, "input", 162);
+    \u0275\u0275listener("change", function DashboardComponent_div_647_label_7_Template_input_change_1_listener($event) {
+      const g_r63 = \u0275\u0275restoreView(_r62).$implicit;
       const ctx_r0 = \u0275\u0275nextContext(2);
-      return \u0275\u0275resetView(ctx_r0.toggleArrayValue(ctx_r0.selectedUserGroupIds, g_r53.id, $event.target.checked));
+      return \u0275\u0275resetView(ctx_r0.toggleArrayValue(ctx_r0.selectedUserGroupIds, g_r63.id, $event.target.checked));
     });
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(2, "b");
     \u0275\u0275text(3);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(4, "span", 154);
+    \u0275\u0275elementStart(4, "span", 159);
     \u0275\u0275text(5);
     \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
-    const g_r53 = ctx.$implicit;
+    const g_r63 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext(2);
     \u0275\u0275advance();
-    \u0275\u0275property("checked", ctx_r0.selectedUserGroupIds.includes(g_r53.id));
+    \u0275\u0275property("checked", ctx_r0.selectedUserGroupIds.includes(g_r63.id));
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(g_r53.name);
+    \u0275\u0275textInterpolate(g_r63.name);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(g_r53.code);
+    \u0275\u0275textInterpolate(g_r63.code);
   }
 }
-function DashboardComponent_div_656_Template(rf, ctx) {
+function DashboardComponent_div_647_Template(rf, ctx) {
   if (rf & 1) {
-    const _r51 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "div", 119)(1, "div", 25)(2, "h3", 59);
+    const _r61 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "div", 120)(1, "div", 26)(2, "h3", 59);
     \u0275\u0275text(3);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(4, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_div_656_Template_button_click_4_listener() {
-      \u0275\u0275restoreView(_r51);
+    \u0275\u0275elementStart(4, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_div_647_Template_button_click_4_listener() {
+      \u0275\u0275restoreView(_r61);
       const ctx_r0 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r0.selectedUserForGroups = null);
     });
     \u0275\u0275text(5, "Close");
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(6, "div", 44);
-    \u0275\u0275template(7, DashboardComponent_div_656_label_7_Template, 6, 3, "label", 62);
+    \u0275\u0275template(7, DashboardComponent_div_647_label_7_Template, 6, 3, "label", 62);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(8, "button", 31);
-    \u0275\u0275listener("click", function DashboardComponent_div_656_Template_button_click_8_listener() {
-      \u0275\u0275restoreView(_r51);
+    \u0275\u0275elementStart(8, "button", 32);
+    \u0275\u0275listener("click", function DashboardComponent_div_647_Template_button_click_8_listener() {
+      \u0275\u0275restoreView(_r61);
       const ctx_r0 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r0.saveUserGroups());
     });
@@ -48089,80 +48332,80 @@ function DashboardComponent_div_656_Template(rf, ctx) {
     \u0275\u0275property("ngForOf", ctx_r0.permissionGroups);
   }
 }
-function DashboardComponent_div_657_span_8_Template(rf, ctx) {
+function DashboardComponent_div_648_span_8_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 154);
+    \u0275\u0275elementStart(0, "span", 159);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const p_r55 = ctx.$implicit;
+    const p_r65 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext(2);
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(ctx_r0.permissionCode(p_r55));
+    \u0275\u0275textInterpolate(ctx_r0.permissionCode(p_r65));
   }
 }
-function DashboardComponent_div_657_span_11_Template(rf, ctx) {
+function DashboardComponent_div_648_span_11_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 190);
+    \u0275\u0275elementStart(0, "span", 195);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const p_r56 = ctx.$implicit;
+    const p_r66 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext(2);
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(ctx_r0.permissionCode(p_r56));
+    \u0275\u0275textInterpolate(ctx_r0.permissionCode(p_r66));
   }
 }
-function DashboardComponent_div_657_span_14_Template(rf, ctx) {
+function DashboardComponent_div_648_span_14_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 166);
+    \u0275\u0275elementStart(0, "span", 171);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const p_r57 = ctx.$implicit;
+    const p_r67 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext(2);
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(ctx_r0.permissionCode(p_r57));
+    \u0275\u0275textInterpolate(ctx_r0.permissionCode(p_r67));
   }
 }
-function DashboardComponent_div_657_span_17_Template(rf, ctx) {
+function DashboardComponent_div_648_span_17_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 166);
+    \u0275\u0275elementStart(0, "span", 171);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const p_r58 = ctx.$implicit;
+    const p_r68 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext(2);
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(ctx_r0.permissionCode(p_r58));
+    \u0275\u0275textInterpolate(ctx_r0.permissionCode(p_r68));
   }
 }
-function DashboardComponent_div_657_span_20_Template(rf, ctx) {
+function DashboardComponent_div_648_span_20_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 190);
+    \u0275\u0275elementStart(0, "span", 195);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const p_r59 = ctx.$implicit;
+    const p_r69 = ctx.$implicit;
     const ctx_r0 = \u0275\u0275nextContext(2);
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(ctx_r0.permissionCode(p_r59));
+    \u0275\u0275textInterpolate(ctx_r0.permissionCode(p_r69));
   }
 }
-function DashboardComponent_div_657_Template(rf, ctx) {
+function DashboardComponent_div_648_Template(rf, ctx) {
   if (rf & 1) {
-    const _r54 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "div", 119)(1, "div", 25)(2, "h3", 59);
+    const _r64 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "div", 120)(1, "div", 26)(2, "h3", 59);
     \u0275\u0275text(3);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(4, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_div_657_Template_button_click_4_listener() {
-      \u0275\u0275restoreView(_r54);
+    \u0275\u0275elementStart(4, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_div_648_Template_button_click_4_listener() {
+      \u0275\u0275restoreView(_r64);
       const ctx_r0 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r0.effectivePermissions = null);
     });
@@ -48171,23 +48414,23 @@ function DashboardComponent_div_657_Template(rf, ctx) {
     \u0275\u0275elementStart(6, "h4");
     \u0275\u0275text(7, "Direct permissions");
     \u0275\u0275elementEnd();
-    \u0275\u0275template(8, DashboardComponent_div_657_span_8_Template, 2, 1, "span", 167);
+    \u0275\u0275template(8, DashboardComponent_div_648_span_8_Template, 2, 1, "span", 172);
     \u0275\u0275elementStart(9, "h4");
     \u0275\u0275text(10, "Role permissions");
     \u0275\u0275elementEnd();
-    \u0275\u0275template(11, DashboardComponent_div_657_span_11_Template, 2, 1, "span", 188);
+    \u0275\u0275template(11, DashboardComponent_div_648_span_11_Template, 2, 1, "span", 193);
     \u0275\u0275elementStart(12, "h4");
     \u0275\u0275text(13, "Role permission groups");
     \u0275\u0275elementEnd();
-    \u0275\u0275template(14, DashboardComponent_div_657_span_14_Template, 2, 1, "span", 189);
+    \u0275\u0275template(14, DashboardComponent_div_648_span_14_Template, 2, 1, "span", 194);
     \u0275\u0275elementStart(15, "h4");
     \u0275\u0275text(16, "User permission groups");
     \u0275\u0275elementEnd();
-    \u0275\u0275template(17, DashboardComponent_div_657_span_17_Template, 2, 1, "span", 189);
+    \u0275\u0275template(17, DashboardComponent_div_648_span_17_Template, 2, 1, "span", 194);
     \u0275\u0275elementStart(18, "h4");
     \u0275\u0275text(19, "Effective permissions");
     \u0275\u0275elementEnd();
-    \u0275\u0275template(20, DashboardComponent_div_657_span_20_Template, 2, 1, "span", 188);
+    \u0275\u0275template(20, DashboardComponent_div_648_span_20_Template, 2, 1, "span", 193);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
@@ -48206,9 +48449,9 @@ function DashboardComponent_div_657_Template(rf, ctx) {
     \u0275\u0275property("ngForOf", ctx_r0.permissionArray(ctx_r0.effectivePermissions.effectivePermissions));
   }
 }
-function DashboardComponent_tr_707_Template(rf, ctx) {
+function DashboardComponent_tr_698_Template(rf, ctx) {
   if (rf & 1) {
-    const _r60 = \u0275\u0275getCurrentView();
+    const _r70 = \u0275\u0275getCurrentView();
     \u0275\u0275elementStart(0, "tr")(1, "td");
     \u0275\u0275text(2);
     \u0275\u0275pipe(3, "date");
@@ -48216,7 +48459,7 @@ function DashboardComponent_tr_707_Template(rf, ctx) {
     \u0275\u0275elementStart(4, "td");
     \u0275\u0275text(5);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(6, "td")(7, "span", 154);
+    \u0275\u0275elementStart(6, "td")(7, "span", 159);
     \u0275\u0275text(8);
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(9, "td");
@@ -48228,40 +48471,40 @@ function DashboardComponent_tr_707_Template(rf, ctx) {
     \u0275\u0275elementStart(13, "td");
     \u0275\u0275text(14);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(15, "td")(16, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_tr_707_Template_button_click_16_listener() {
-      const log_r61 = \u0275\u0275restoreView(_r60).$implicit;
+    \u0275\u0275elementStart(15, "td")(16, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_tr_698_Template_button_click_16_listener() {
+      const log_r71 = \u0275\u0275restoreView(_r70).$implicit;
       const ctx_r0 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r0.auditDetail = log_r61);
+      return \u0275\u0275resetView(ctx_r0.auditDetail = log_r71);
     });
     \u0275\u0275text(17, "Xem chi ti\u1EBFt");
     \u0275\u0275elementEnd()()();
   }
   if (rf & 2) {
-    const log_r61 = ctx.$implicit;
+    const log_r71 = ctx.$implicit;
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(\u0275\u0275pipeBind2(3, 7, log_r61.createdAt, "short"));
+    \u0275\u0275textInterpolate(\u0275\u0275pipeBind2(3, 7, log_r71.createdAt, "short"));
     \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(log_r61.actorUserName || log_r61.actorUserId);
+    \u0275\u0275textInterpolate(log_r71.actorUserName || log_r71.actorUserId);
     \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(log_r61.action);
+    \u0275\u0275textInterpolate(log_r71.action);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate2("", log_r61.targetType, " #", log_r61.targetId);
+    \u0275\u0275textInterpolate2("", log_r71.targetType, " #", log_r71.targetId);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(log_r61.ipAddress);
+    \u0275\u0275textInterpolate(log_r71.ipAddress);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(log_r61.userAgent);
+    \u0275\u0275textInterpolate(log_r71.userAgent);
   }
 }
-function DashboardComponent_div_708_Template(rf, ctx) {
+function DashboardComponent_div_699_Template(rf, ctx) {
   if (rf & 1) {
-    const _r62 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "div", 119)(1, "div", 25)(2, "h3", 59);
+    const _r72 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "div", 120)(1, "div", 26)(2, "h3", 59);
     \u0275\u0275text(3, "Audit Detail");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(4, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_div_708_Template_button_click_4_listener() {
-      \u0275\u0275restoreView(_r62);
+    \u0275\u0275elementStart(4, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_div_699_Template_button_click_4_listener() {
+      \u0275\u0275restoreView(_r72);
       const ctx_r0 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r0.auditDetail = null);
     });
@@ -48270,13 +48513,13 @@ function DashboardComponent_div_708_Template(rf, ctx) {
     \u0275\u0275elementStart(6, "div", 44)(7, "div")(8, "h4");
     \u0275\u0275text(9, "Old Value JSON");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(10, "pre", 191);
+    \u0275\u0275elementStart(10, "pre", 196);
     \u0275\u0275text(11);
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(12, "div")(13, "h4");
     \u0275\u0275text(14, "New Value JSON");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(15, "pre", 191);
+    \u0275\u0275elementStart(15, "pre", 196);
     \u0275\u0275text(16);
     \u0275\u0275elementEnd()()()();
   }
@@ -48288,7 +48531,7 @@ function DashboardComponent_div_708_Template(rf, ctx) {
     \u0275\u0275textInterpolate(ctx_r0.prettyJson(ctx_r0.auditDetail.newValueJson));
   }
 }
-function DashboardComponent_div_710_Template(rf, ctx) {
+function DashboardComponent_div_701_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 50)(1, "div", 20)(2, "p", 12);
     \u0275\u0275text(3, "Total Attempts");
@@ -48351,22 +48594,22 @@ function DashboardComponent_div_710_Template(rf, ctx) {
     \u0275\u0275textInterpolate(ctx_r0.quizOverview.totalQuestions || ctx_r0.questions.length);
   }
 }
-function DashboardComponent_option_718_Template(rf, ctx) {
+function DashboardComponent_option_709_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "option", 43);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const q_r63 = ctx.$implicit;
-    \u0275\u0275property("ngValue", q_r63.id);
+    const q_r73 = ctx.$implicit;
+    \u0275\u0275property("ngValue", q_r73.id);
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate2("#", q_r63.id, " ", q_r63.title);
+    \u0275\u0275textInterpolate2("#", q_r73.id, " ", q_r73.title);
   }
 }
-function DashboardComponent_div_721_Template(rf, ctx) {
+function DashboardComponent_div_712_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 192)(1, "div")(2, "b");
+    \u0275\u0275elementStart(0, "div", 197)(1, "div")(2, "b");
     \u0275\u0275text(3, "Total Attempts");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(4, "p", 12);
@@ -48435,9 +48678,9 @@ function DashboardComponent_div_721_Template(rf, ctx) {
     \u0275\u0275textInterpolate1("", ctx_r0.quizStats.averageDurationSeconds || 0, "s");
   }
 }
-function DashboardComponent_pre_776_Template(rf, ctx) {
+function DashboardComponent_pre_767_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "pre", 191);
+    \u0275\u0275elementStart(0, "pre", 196);
     \u0275\u0275text(1);
     \u0275\u0275pipe(2, "json");
     \u0275\u0275elementEnd();
@@ -48448,15 +48691,15 @@ function DashboardComponent_pre_776_Template(rf, ctx) {
     \u0275\u0275textInterpolate(\u0275\u0275pipeBind1(2, 1, ctx_r0.importResult));
   }
 }
-function DashboardComponent_div_777_Template(rf, ctx) {
+function DashboardComponent_div_768_Template(rf, ctx) {
   if (rf & 1) {
-    const _r64 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "div", 193)(1, "div", 194)(2, "div", 25)(3, "h3", 59);
+    const _r74 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "div", 198)(1, "div", 199)(2, "div", 26)(3, "h3", 59);
     \u0275\u0275text(4);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(5, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_div_777_Template_button_click_5_listener() {
-      \u0275\u0275restoreView(_r64);
+    \u0275\u0275elementStart(5, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_div_768_Template_button_click_5_listener() {
+      \u0275\u0275restoreView(_r74);
       const ctx_r0 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r0.lockUserTarget = null);
     });
@@ -48465,9 +48708,9 @@ function DashboardComponent_div_777_Template(rf, ctx) {
     \u0275\u0275elementStart(7, "div", 39)(8, "label");
     \u0275\u0275text(9, "L\xFD do");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(10, "textarea", 195);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_div_777_Template_textarea_ngModelChange_10_listener($event) {
-      \u0275\u0275restoreView(_r64);
+    \u0275\u0275elementStart(10, "textarea", 200);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_div_768_Template_textarea_ngModelChange_10_listener($event) {
+      \u0275\u0275restoreView(_r74);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.lockForm.reason, $event) || (ctx_r0.lockForm.reason = $event);
       return \u0275\u0275resetView($event);
@@ -48476,17 +48719,17 @@ function DashboardComponent_div_777_Template(rf, ctx) {
     \u0275\u0275elementStart(11, "div", 39)(12, "label");
     \u0275\u0275text(13, "Kh\xF3a \u0111\u1EBFn");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(14, "input", 196);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_div_777_Template_input_ngModelChange_14_listener($event) {
-      \u0275\u0275restoreView(_r64);
+    \u0275\u0275elementStart(14, "input", 201);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_div_768_Template_input_ngModelChange_14_listener($event) {
+      \u0275\u0275restoreView(_r74);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.lockForm.lockUntil, $event) || (ctx_r0.lockForm.lockUntil = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(15, "button", 31);
-    \u0275\u0275listener("click", function DashboardComponent_div_777_Template_button_click_15_listener() {
-      \u0275\u0275restoreView(_r64);
+    \u0275\u0275elementStart(15, "button", 32);
+    \u0275\u0275listener("click", function DashboardComponent_div_768_Template_button_click_15_listener() {
+      \u0275\u0275restoreView(_r74);
       const ctx_r0 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r0.lockUser());
     });
@@ -48507,7 +48750,18 @@ var _DashboardComponent = class _DashboardComponent {
   constructor(api, auth) {
     this.api = api;
     this.auth = auth;
-    this.tab = "questions";
+    this.tab = "";
+    this.tabPermissions = {
+      questions: ["question.manage"],
+      categories: ["category.manage"],
+      quizsets: ["quiz.manage"],
+      users: ["user.manage"],
+      access: ["permission.manage"],
+      roadmaps: ["roadmap.manage"],
+      audit: ["audit.view"],
+      analytics: ["quiz.manage"],
+      import: ["question.manage"]
+    };
     this.users = [];
     this.roles = [];
     this.permissions = [];
@@ -48539,6 +48793,7 @@ var _DashboardComponent = class _DashboardComponent {
     this.selectedRoadmapTrackId = "";
     this.selectedRoadmapCourseId = "";
     this.selectedRoadmapModuleId = "";
+    this.roadmapVideoUploading = false;
     this.userPermissionDetail = null;
     this.permissionSaving = false;
     this.permissionGroups = [];
@@ -48565,19 +48820,30 @@ var _DashboardComponent = class _DashboardComponent {
     this.resetUserId = "";
   }
   ngOnInit() {
+    this.tab = this.firstAllowedTab();
     this.loadAll();
   }
   loadAll() {
-    this.api.get("/api/v1/admin/users").subscribe({ next: (r) => this.users = r.data || [] });
-    this.api.get("/api/v1/admin/roles").subscribe({ next: (r) => this.roles = r.data || [] });
-    this.api.get("/api/v1/admin/permissions").subscribe({ next: (r) => this.permissions = r.data || [] });
-    this.api.get("/api/v1/categories?pageSize=100").subscribe({ next: (r) => this.categories = r.data?.items || r.data || [] });
-    this.api.get("/api/v1/questions?pageSize=100").subscribe({ next: (r) => this.questions = r.data?.items || r.data || [] });
-    this.api.get("/api/v1/quiz-sets?pageSize=100").subscribe({ next: (r) => this.quizSets = r.data?.items || r.data || [] });
-    this.loadPermissionGroups();
-    this.loadRoadmaps();
+    if (this.can("user.manage"))
+      this.api.get("/api/v1/admin/users").subscribe({ next: (r) => this.users = r.data || [] });
+    if (this.canAny(["user.manage", "permission.manage"]))
+      this.api.get("/api/v1/admin/roles").subscribe({ next: (r) => this.roles = r.data || [] });
+    if (this.canAny(["user.manage", "permission.manage"]))
+      this.api.get("/api/v1/admin/permissions").subscribe({ next: (r) => this.permissions = r.data || [] });
+    if (this.canAny(["category.manage", "question.manage", "quiz.manage"]))
+      this.api.get("/api/v1/categories?pageSize=100").subscribe({ next: (r) => this.categories = r.data?.items || r.data || [] });
+    if (this.canAny(["question.manage", "quiz.manage"]))
+      this.api.get("/api/v1/questions?pageSize=100").subscribe({ next: (r) => this.questions = r.data?.items || r.data || [] });
+    if (this.can("quiz.manage"))
+      this.api.get("/api/v1/quiz-sets?pageSize=100").subscribe({ next: (r) => this.quizSets = r.data?.items || r.data || [] });
+    if (this.can("permission.manage"))
+      this.loadPermissionGroups();
+    if (this.can("roadmap.manage"))
+      this.loadRoadmaps();
   }
   setTab(next) {
+    if (!this.canSeeTab(next))
+      return;
     this.tab = next;
     if (next === "access")
       this.loadPermissionGroups();
@@ -48587,6 +48853,19 @@ var _DashboardComponent = class _DashboardComponent {
       this.loadQuizOverview();
     if (next === "roadmaps")
       this.loadRoadmaps();
+  }
+  can(permission) {
+    return this.auth.hasRole("Admin") || this.auth.hasPermission(permission);
+  }
+  canAny(permissions) {
+    return this.auth.hasRole("Admin") || this.auth.hasAnyPermission(permissions);
+  }
+  canSeeTab(tab) {
+    const permissions = this.tabPermissions[tab] || [];
+    return !permissions.length || this.canAny(permissions);
+  }
+  firstAllowedTab() {
+    return ["questions", "categories", "quizsets", "users", "access", "roadmaps", "audit", "analytics", "import"].find((tab) => this.canSeeTab(tab)) || "";
   }
   get filteredQuestions() {
     const keyword = this.searchQuestion.toLowerCase().trim();
@@ -48684,6 +48963,8 @@ var _DashboardComponent = class _DashboardComponent {
       type: "Reading",
       content: "",
       videoUrl: "",
+      videoFileId: null,
+      videoFileUrl: "",
       quizSetId: null,
       codingProblemId: null,
       estimatedMinutes: 12,
@@ -49063,8 +49344,14 @@ var _DashboardComponent = class _DashboardComponent {
     });
     const req = this.editingRoadmapLessonId ? this.api.put(`/api/v1/admin/lessons/${this.editingRoadmapLessonId}`, body) : this.api.post(`/api/v1/admin/modules/${moduleId}/lessons`, body);
     req.subscribe({
-      next: () => {
-        this.notifyOk(this.editingRoadmapLessonId ? "C\u1EADp nh\u1EADt b\xE0i h\u1ECDc th\xE0nh c\xF4ng" : "T\u1EA1o b\xE0i h\u1ECDc th\xE0nh c\xF4ng");
+      next: (r) => {
+        const lessonId = r.data?.id || this.editingRoadmapLessonId;
+        const success = this.editingRoadmapLessonId ? "C\u1EADp nh\u1EADt b\xE0i h\u1ECDc th\xE0nh c\xF4ng" : "T\u1EA1o b\xE0i h\u1ECDc th\xE0nh c\xF4ng";
+        if (this.roadmapVideoFile && body.type === "Video" && lessonId) {
+          this.uploadRoadmapLessonVideo(lessonId, success);
+          return;
+        }
+        this.notifyOk(success);
         this.cancelRoadmapLessonEdit();
         this.loadRoadmaps();
       },
@@ -49074,10 +49361,35 @@ var _DashboardComponent = class _DashboardComponent {
   editRoadmapLesson(lesson) {
     this.editingRoadmapLessonId = lesson.id;
     this.roadmapLessonForm = __spreadValues(__spreadValues({}, this.blankRoadmapLesson()), lesson);
+    this.roadmapVideoFile = void 0;
   }
   cancelRoadmapLessonEdit() {
     this.editingRoadmapLessonId = null;
     this.roadmapLessonForm = this.blankRoadmapLesson();
+    this.roadmapVideoFile = void 0;
+    this.roadmapVideoUploading = false;
+  }
+  pickRoadmapVideo(e) {
+    this.roadmapVideoFile = e.target.files?.[0];
+  }
+  uploadRoadmapLessonVideo(lessonId, successMessage) {
+    if (!this.roadmapVideoFile)
+      return;
+    const fd = new FormData();
+    fd.append("file", this.roadmapVideoFile);
+    this.roadmapVideoUploading = true;
+    this.api.upload(`/api/v1/admin/lessons/${lessonId}/video`, fd).subscribe({
+      next: () => {
+        this.roadmapVideoUploading = false;
+        this.notifyOk(`${successMessage}. Video uploaded.`);
+        this.cancelRoadmapLessonEdit();
+        this.loadRoadmaps();
+      },
+      error: (e) => {
+        this.roadmapVideoUploading = false;
+        this.notifyErr(e, "Kh\xF4ng upload \u0111\u01B0\u1EE3c video b\xE0i h\u1ECDc");
+      }
+    });
   }
   deleteRoadmapLesson(lesson) {
     if (!confirm(`X\xF3a b\xE0i h\u1ECDc "${lesson.title}"?`))
@@ -49425,7 +49737,7 @@ var _DashboardComponent = class _DashboardComponent {
 _DashboardComponent.\u0275fac = function DashboardComponent_Factory(__ngFactoryType__) {
   return new (__ngFactoryType__ || _DashboardComponent)(\u0275\u0275directiveInject(ApiService), \u0275\u0275directiveInject(AuthService));
 };
-_DashboardComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _DashboardComponent, selectors: [["app-dashboard"]], decls: 778, vars: 177, consts: [[1, "admin-shell"], [1, "admin-top"], ["routerLink", "/dashboard", 1, "logo"], [1, "logo-mark"], [1, "action-row"], ["routerLink", "/code", 1, "btn", "btn-outline"], ["type", "button", 1, "admin-sso-link", 3, "click"], ["type", "button", 1, "btn", "btn-ghost", 3, "click"], [1, "admin-wrap"], [1, "page-title"], [1, "grid", "grid-4", 2, "margin", "24px 0"], [1, "card", "card-pad", "stat-card"], [1, "muted"], [1, "stat-value"], [1, "stat-icon", "blue-bg"], [1, "stat-icon", "green-bg"], [1, "stat-icon", "purple-bg"], [1, "stat-icon", "orange-bg"], ["class", "alert alert-ok", 4, "ngIf"], ["class", "alert alert-error", "style", "white-space:pre-line", 4, "ngIf"], [1, "card", "card-pad"], [1, "admin-tabs"], [1, "admin-tab", 3, "click"], ["routerLink", "/forum", 1, "admin-tab"], [1, "admin-panel"], [1, "filters"], [1, "search-wrap"], ["placeholder", "Search questions...", 1, "input", 3, "ngModelChange", "ngModel"], [1, "select", 2, "max-width", "220px", 3, "ngModelChange", "ngModel"], ["value", "all"], [3, "ngValue", 4, "ngFor", "ngForOf"], ["type", "button", 1, "btn", "btn-primary", 3, "click"], ["type", "button", 1, "btn", "btn-outline", 3, "click"], ["class", "admin-form card card-pad", 3, "ngSubmit", 4, "ngIf"], [1, "table"], [4, "ngFor", "ngForOf"], ["class", "empty-state", 4, "ngIf"], [1, "admin-form", "card", "card-pad", 3, "ngSubmit"], [1, "grid", "grid-3"], [1, "form-group"], ["name", "name", 1, "input", 3, "ngModelChange", "input", "ngModel"], ["name", "slug", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "status", 1, "select", 3, "ngModelChange", "ngModel"], [3, "ngValue"], [1, "grid", "grid-2"], ["name", "description", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "displayOrder", 1, "input", 3, "ngModelChange", "ngModel"], [1, "btn", "btn-primary"], ["name", "categoryId", 1, "select", 3, "ngModelChange", "ngModel"], ["name", "title", 1, "input", 3, "ngModelChange", "input", "ngModel"], [1, "grid", "grid-4"], ["name", "difficulty", 1, "select", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "timeLimit", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "passingScore", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "maxAttempts", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "allowReview", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "shuffleQuestions", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "shuffleOptions", 3, "ngModelChange", "ngModel"], [1, "card", "card-pad", 2, "margin-top", "14px"], [2, "margin", "0"], ["name", "attachCategory", 1, "select", 2, "max-width", "260px", 3, "ngModelChange", "ngModel"], [1, "grid", "grid-2", 2, "max-height", "360px", "overflow", "auto"], ["class", "example", 4, "ngFor", "ngForOf"], ["class", "alert", 4, "ngIf"], [1, "action-row", 2, "margin-top", "14px"], [1, "select", 2, "max-width", "240px", 3, "ngModelChange", "ngModel"], ["name", "roadmapTrackTitle", 1, "input", 3, "ngModelChange", "input", "ngModel"], ["name", "roadmapTrackSlug", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "roadmapTrackLevel", 1, "select", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapTrackHours", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapTrackSort", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapTrackPublished", 3, "ngModelChange", "ngModel"], ["name", "roadmapTrackDescription", 1, "textarea", 3, "ngModelChange", "ngModel"], ["name", "roadmapTrackThumb", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "selectedRoadmapTrackId", 1, "select", 3, "ngModelChange", "ngModel"], ["value", ""], [1, "grid", "grid-2", 2, "margin-top", "18px"], ["name", "roadmapCourseTrack", 1, "select", 3, "ngModelChange", "ngModel"], ["name", "roadmapCourseLevel", 1, "select", 3, "ngModelChange", "ngModel"], ["name", "roadmapCourseTitle", 1, "input", 3, "ngModelChange", "input", "ngModel"], ["name", "roadmapCourseSlug", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapCourseHours", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapCourseSort", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "roadmapCourseShort", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "roadmapCourseDescription", 1, "textarea", 3, "ngModelChange", "ngModel"], ["name", "roadmapCourseReq", 1, "textarea", 3, "ngModelChange", "ngModel"], ["name", "roadmapCourseOutcomes", 1, "textarea", 3, "ngModelChange", "ngModel"], ["name", "roadmapCourseRelated", "placeholder", "1,2,3", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "roadmapCoursePrereq", "placeholder", "1,2", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapCourseSequential", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapCoursePublished", 3, "ngModelChange", "ngModel"], [3, "active-row", 4, "ngFor", "ngForOf"], ["name", "roadmapModuleTitle", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapModuleSort", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapModuleMinutes", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapModulePrevious", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapModuleLocked", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapModulePublished", 3, "ngModelChange", "ngModel"], ["name", "roadmapModuleDescription", 1, "textarea", 3, "ngModelChange", "ngModel"], ["name", "roadmapLessonTitle", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "roadmapLessonType", 1, "select", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapLessonSort", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapLessonMinutes", 1, "input", 3, "ngModelChange", "ngModel"], ["class", "form-group", 4, "ngIf"], ["type", "number", "name", "roadmapLessonUnlock", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapLessonPrevious", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapLessonRequired", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapLessonPreview", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapLessonPublished", 3, "ngModelChange", "ngModel"], ["name", "roadmapLessonContent", 1, "textarea", 3, "ngModelChange", "ngModel"], ["class", "card card-pad", 4, "ngIf"], [1, "card", "card-pad", 3, "ngSubmit"], ["name", "groupName", "required", "", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "groupCode", "required", "", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "groupDescription", 1, "textarea", 3, "ngModelChange", "ngModel"], [2, "max-height", "260px", "overflow", "auto"], ["class", "example", "style", "display:block;margin-bottom:8px", 4, "ngFor", "ngForOf"], [1, "action-row", 2, "margin-top", "12px"], ["name", "selectedRole", 1, "select", 3, "ngModelChange", "change", "ngModel"], [1, "card", "card-pad", 2, "margin-top", "18px"], ["class", "card card-pad", "style", "margin-top:18px", 4, "ngIf"], ["name", "actorUserId", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "action", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "targetType", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "pageSize", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "date", "name", "fromDate", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "date", "name", "toDate", 1, "input", 3, "ngModelChange", "ngModel"], [1, "table", 2, "margin-top", "18px"], ["class", "grid grid-4", 4, "ngIf"], ["name", "statsQuizSetId", 1, "select", 2, "max-width", "320px", 3, "ngModelChange", "ngModel"], ["class", "grid grid-4", "style", "margin-top:16px", 4, "ngIf"], ["name", "resetAttemptId", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "resetQuizSetId", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "resetUserId", 1, "input", 3, "ngModelChange", "ngModel"], [1, "alert"], ["type", "file", "accept", ".csv", 1, "input", 3, "change"], ["type", "button", 1, "btn", "btn-primary", 2, "margin-top", "12px", 3, "click"], [2, "margin-top", "18px"], ["type", "file", "accept", ".json", 1, "input", 3, "change"], ["type", "button", 1, "btn", "btn-outline", 2, "margin-top", "12px", 3, "click"], ["class", "output-box", 4, "ngIf"], ["class", "modal-backdrop", 4, "ngIf"], [1, "alert", "alert-ok"], [1, "alert", "alert-error", 2, "white-space", "pre-line"], ["name", "title", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "content", 1, "textarea", 3, "ngModelChange", "ngModel"], ["name", "explanation", "placeholder", "L\u1EDDi gi\u1EA3i th\xEDch hi\u1EC3n th\u1ECB sau khi user n\u1ED9p b\xE0i", 1, "textarea", 3, "ngModelChange", "ngModel"], ["class", "form-group card card-pad", 4, "ngFor", "ngForOf"], [1, "form-group", "card", "card-pad"], ["placeholder", "Answer content", 1, "input", 3, "ngModelChange", "ngModel", "name"], [2, "margin-top", "8px"], ["type", "radio", "name", "correctOption", 3, "change", "checked"], ["placeholder", "Option explanation", 1, "input", 2, "margin-top", "8px", 3, "ngModelChange", "ngModel", "name"], ["class", "muted", 4, "ngIf"], [1, "badge", "badge-gray"], [1, "badge", 3, "ngClass"], [1, "empty-state"], [1, "example"], ["type", "checkbox", 3, "change", "checked"], ["type", "number", "placeholder", "Score", 1, "input", "mini-input", 3, "ngModelChange", "ngModel", "name"], ["name", "roadmapLessonVideo", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "roadmapLessonQuizSet", 1, "select", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapLessonProblem", 1, "input", 3, "ngModelChange", "ngModel"], [1, "badge", "badge-blue"], ["class", "badge badge-gray", 4, "ngIf"], ["class", "badge badge-yellow", 4, "ngIf"], [1, "badge", "badge-yellow"], ["class", "badge badge-gray", 4, "ngFor", "ngForOf"], [1, "muted", 2, "margin", "6px 0 0"], [1, "permission-check-list", 2, "max-height", "520px", "overflow", "auto"], ["style", "margin-bottom:18px", 4, "ngFor", "ngForOf"], ["class", "alert success", 4, "ngIf"], [2, "margin-bottom", "18px"], [2, "margin", "0 0 10px"], ["class", "example", "style", "display:block;margin-bottom:10px", 4, "ngFor", "ngForOf"], [1, "example", 2, "display", "block", "margin-bottom", "10px"], [2, "display", "flex", "gap", "10px", "align-items", "flex-start"], ["type", "checkbox", 3, "change", "checked", "disabled"], [1, "badge", "badge-gray", 2, "margin-left", "8px"], ["class", "badge badge-green", "style", "margin-left:8px", 4, "ngIf"], ["class", "badge badge-yellow", "style", "margin-left:8px", 4, "ngIf"], [1, "badge", "badge-green", 2, "margin-left", "8px"], [1, "badge", "badge-yellow", 2, "margin-left", "8px"], [1, "alert", "success"], ["class", "example", "style", "margin-bottom:10px", 4, "ngFor", "ngForOf"], [1, "example", 2, "margin-bottom", "10px"], [1, "example", 2, "display", "block", "margin-bottom", "8px"], ["type", "button", 1, "btn", "btn-ghost", 3, "click", "disabled"], ["class", "badge badge-green", 4, "ngFor", "ngForOf"], ["class", "badge badge-yellow", 4, "ngFor", "ngForOf"], [1, "badge", "badge-green"], [1, "output-box"], [1, "grid", "grid-4", 2, "margin-top", "16px"], [1, "modal-backdrop"], [1, "card", "card-pad", 2, "max-width", "560px", "margin", "60px auto"], ["name", "lockReason", 1, "textarea", 3, "ngModelChange", "ngModel"], ["type", "datetime-local", "name", "lockUntil", 1, "input", 3, "ngModelChange", "ngModel"]], template: function DashboardComponent_Template(rf, ctx) {
+_DashboardComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _DashboardComponent, selectors: [["app-dashboard"]], decls: 769, vars: 173, consts: [[1, "admin-shell"], [1, "admin-top"], ["routerLink", "/dashboard", 1, "logo"], [1, "logo-mark"], [1, "action-row"], ["class", "btn btn-outline", "routerLink", "/code", 4, "ngIf"], ["type", "button", 1, "admin-sso-link", 3, "click"], ["type", "button", 1, "btn", "btn-ghost", 3, "click"], [1, "admin-wrap"], [1, "page-title"], [1, "grid", "grid-4", 2, "margin", "24px 0"], [1, "card", "card-pad", "stat-card"], [1, "muted"], [1, "stat-value"], [1, "stat-icon", "blue-bg"], [1, "stat-icon", "green-bg"], [1, "stat-icon", "purple-bg"], [1, "stat-icon", "orange-bg"], ["class", "alert alert-ok", 4, "ngIf"], ["class", "alert alert-error", "style", "white-space:pre-line", 4, "ngIf"], [1, "card", "card-pad"], [1, "admin-tabs"], ["class", "admin-tab", 3, "active", "click", 4, "ngIf"], ["class", "admin-tab", "routerLink", "/forum", 4, "ngIf"], ["class", "empty-state", 4, "ngIf"], [1, "admin-panel"], [1, "filters"], [1, "search-wrap"], ["placeholder", "Search questions...", 1, "input", 3, "ngModelChange", "ngModel"], [1, "select", 2, "max-width", "220px", 3, "ngModelChange", "ngModel"], ["value", "all"], [3, "ngValue", 4, "ngFor", "ngForOf"], ["type", "button", 1, "btn", "btn-primary", 3, "click"], ["type", "button", 1, "btn", "btn-outline", 3, "click"], ["class", "admin-form card card-pad", 3, "ngSubmit", 4, "ngIf"], [1, "table"], [4, "ngFor", "ngForOf"], [1, "admin-form", "card", "card-pad", 3, "ngSubmit"], [1, "grid", "grid-3"], [1, "form-group"], ["name", "name", 1, "input", 3, "ngModelChange", "input", "ngModel"], ["name", "slug", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "status", 1, "select", 3, "ngModelChange", "ngModel"], [3, "ngValue"], [1, "grid", "grid-2"], ["name", "description", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "displayOrder", 1, "input", 3, "ngModelChange", "ngModel"], [1, "btn", "btn-primary"], ["name", "categoryId", 1, "select", 3, "ngModelChange", "ngModel"], ["name", "title", 1, "input", 3, "ngModelChange", "input", "ngModel"], [1, "grid", "grid-4"], ["name", "difficulty", 1, "select", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "timeLimit", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "passingScore", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "maxAttempts", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "allowReview", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "shuffleQuestions", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "shuffleOptions", 3, "ngModelChange", "ngModel"], [1, "card", "card-pad", 2, "margin-top", "14px"], [2, "margin", "0"], ["name", "attachCategory", 1, "select", 2, "max-width", "260px", 3, "ngModelChange", "ngModel"], [1, "grid", "grid-2", 2, "max-height", "360px", "overflow", "auto"], ["class", "example", 4, "ngFor", "ngForOf"], ["class", "alert", 4, "ngIf"], [1, "action-row", 2, "margin-top", "14px"], [1, "select", 2, "max-width", "240px", 3, "ngModelChange", "ngModel"], ["name", "roadmapTrackTitle", 1, "input", 3, "ngModelChange", "input", "ngModel"], ["name", "roadmapTrackSlug", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "roadmapTrackLevel", 1, "select", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapTrackHours", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapTrackSort", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapTrackPublished", 3, "ngModelChange", "ngModel"], ["name", "roadmapTrackDescription", 1, "textarea", 3, "ngModelChange", "ngModel"], ["name", "roadmapTrackThumb", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "selectedRoadmapTrackId", 1, "select", 3, "ngModelChange", "ngModel"], ["value", ""], [1, "grid", "grid-2", 2, "margin-top", "18px"], ["name", "roadmapCourseTrack", 1, "select", 3, "ngModelChange", "ngModel"], ["name", "roadmapCourseLevel", 1, "select", 3, "ngModelChange", "ngModel"], ["name", "roadmapCourseTitle", 1, "input", 3, "ngModelChange", "input", "ngModel"], ["name", "roadmapCourseSlug", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapCourseHours", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapCourseSort", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "roadmapCourseShort", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "roadmapCourseDescription", 1, "textarea", 3, "ngModelChange", "ngModel"], ["name", "roadmapCourseReq", 1, "textarea", 3, "ngModelChange", "ngModel"], ["name", "roadmapCourseOutcomes", 1, "textarea", 3, "ngModelChange", "ngModel"], ["name", "roadmapCourseRelated", "placeholder", "1,2,3", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "roadmapCoursePrereq", "placeholder", "1,2", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapCourseSequential", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapCoursePublished", 3, "ngModelChange", "ngModel"], [3, "active-row", 4, "ngFor", "ngForOf"], ["name", "roadmapModuleTitle", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapModuleSort", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapModuleMinutes", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapModulePrevious", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapModuleLocked", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapModulePublished", 3, "ngModelChange", "ngModel"], ["name", "roadmapModuleDescription", 1, "textarea", 3, "ngModelChange", "ngModel"], ["name", "roadmapLessonTitle", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "roadmapLessonType", 1, "select", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapLessonSort", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapLessonMinutes", 1, "input", 3, "ngModelChange", "ngModel"], ["class", "form-group", 4, "ngIf"], ["type", "number", "name", "roadmapLessonUnlock", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapLessonPrevious", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapLessonRequired", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapLessonPreview", 3, "ngModelChange", "ngModel"], ["type", "checkbox", "name", "roadmapLessonPublished", 3, "ngModelChange", "ngModel"], ["name", "roadmapLessonContent", 1, "textarea", 3, "ngModelChange", "ngModel"], [1, "btn", "btn-primary", 3, "disabled"], ["class", "card card-pad", 4, "ngIf"], [1, "card", "card-pad", 3, "ngSubmit"], ["name", "groupName", "required", "", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "groupCode", "required", "", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "groupDescription", 1, "textarea", 3, "ngModelChange", "ngModel"], [2, "max-height", "260px", "overflow", "auto"], ["class", "example", "style", "display:block;margin-bottom:8px", 4, "ngFor", "ngForOf"], [1, "action-row", 2, "margin-top", "12px"], ["name", "selectedRole", 1, "select", 3, "ngModelChange", "change", "ngModel"], [1, "card", "card-pad", 2, "margin-top", "18px"], ["class", "card card-pad", "style", "margin-top:18px", 4, "ngIf"], ["name", "actorUserId", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "action", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "targetType", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "pageSize", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "date", "name", "fromDate", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "date", "name", "toDate", 1, "input", 3, "ngModelChange", "ngModel"], [1, "table", 2, "margin-top", "18px"], ["class", "grid grid-4", 4, "ngIf"], ["name", "statsQuizSetId", 1, "select", 2, "max-width", "320px", 3, "ngModelChange", "ngModel"], ["class", "grid grid-4", "style", "margin-top:16px", 4, "ngIf"], ["name", "resetAttemptId", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "resetQuizSetId", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "resetUserId", 1, "input", 3, "ngModelChange", "ngModel"], [1, "alert"], ["type", "file", "accept", ".csv", 1, "input", 3, "change"], ["type", "button", 1, "btn", "btn-primary", 2, "margin-top", "12px", 3, "click"], [2, "margin-top", "18px"], ["type", "file", "accept", ".json", 1, "input", 3, "change"], ["type", "button", 1, "btn", "btn-outline", 2, "margin-top", "12px", 3, "click"], ["class", "output-box", 4, "ngIf"], ["class", "modal-backdrop", 4, "ngIf"], ["routerLink", "/code", 1, "btn", "btn-outline"], [1, "alert", "alert-ok"], [1, "alert", "alert-error", 2, "white-space", "pre-line"], [1, "admin-tab", 3, "click"], ["routerLink", "/forum", 1, "admin-tab"], [1, "empty-state"], ["name", "title", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "content", 1, "textarea", 3, "ngModelChange", "ngModel"], ["name", "explanation", "placeholder", "L\u1EDDi gi\u1EA3i th\xEDch hi\u1EC3n th\u1ECB sau khi user n\u1ED9p b\xE0i", 1, "textarea", 3, "ngModelChange", "ngModel"], ["class", "form-group card card-pad", 4, "ngFor", "ngForOf"], [1, "form-group", "card", "card-pad"], ["placeholder", "Answer content", 1, "input", 3, "ngModelChange", "ngModel", "name"], [2, "margin-top", "8px"], ["type", "radio", "name", "correctOption", 3, "change", "checked"], ["placeholder", "Option explanation", 1, "input", 2, "margin-top", "8px", 3, "ngModelChange", "ngModel", "name"], ["class", "muted", 4, "ngIf"], [1, "badge", "badge-gray"], [1, "badge", 3, "ngClass"], [1, "example"], ["type", "checkbox", 3, "change", "checked"], ["type", "number", "placeholder", "Score", 1, "input", "mini-input", 3, "ngModelChange", "ngModel", "name"], ["name", "roadmapLessonVideo", "placeholder", "https://www.youtube.com/watch?v=...", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "file", "accept", "video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov", 1, "input", 3, "change"], ["name", "roadmapLessonQuizSet", 1, "select", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "roadmapLessonProblem", 1, "input", 3, "ngModelChange", "ngModel"], [1, "badge", "badge-blue"], ["class", "badge badge-gray", 4, "ngIf"], ["class", "badge badge-yellow", 4, "ngIf"], [1, "badge", "badge-yellow"], ["class", "badge badge-gray", 4, "ngFor", "ngForOf"], [1, "muted", 2, "margin", "6px 0 0"], [1, "permission-check-list", 2, "max-height", "520px", "overflow", "auto"], ["style", "margin-bottom:18px", 4, "ngFor", "ngForOf"], ["class", "alert success", 4, "ngIf"], [2, "margin-bottom", "18px"], [2, "margin", "0 0 10px"], ["class", "example", "style", "display:block;margin-bottom:10px", 4, "ngFor", "ngForOf"], [1, "example", 2, "display", "block", "margin-bottom", "10px"], [2, "display", "flex", "gap", "10px", "align-items", "flex-start"], ["type", "checkbox", 3, "change", "checked", "disabled"], [1, "badge", "badge-gray", 2, "margin-left", "8px"], ["class", "badge badge-green", "style", "margin-left:8px", 4, "ngIf"], ["class", "badge badge-yellow", "style", "margin-left:8px", 4, "ngIf"], [1, "badge", "badge-green", 2, "margin-left", "8px"], [1, "badge", "badge-yellow", 2, "margin-left", "8px"], [1, "alert", "success"], ["class", "example", "style", "margin-bottom:10px", 4, "ngFor", "ngForOf"], [1, "example", 2, "margin-bottom", "10px"], [1, "example", 2, "display", "block", "margin-bottom", "8px"], ["type", "button", 1, "btn", "btn-ghost", 3, "click", "disabled"], ["class", "badge badge-green", 4, "ngFor", "ngForOf"], ["class", "badge badge-yellow", 4, "ngFor", "ngForOf"], [1, "badge", "badge-green"], [1, "output-box"], [1, "grid", "grid-4", 2, "margin-top", "16px"], [1, "modal-backdrop"], [1, "card", "card-pad", 2, "max-width", "560px", "margin", "60px auto"], ["name", "lockReason", 1, "textarea", 3, "ngModelChange", "ngModel"], ["type", "datetime-local", "name", "lockUntil", 1, "input", 3, "ngModelChange", "ngModel"]], template: function DashboardComponent_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 0)(1, "header", 1)(2, "a", 2)(3, "span", 3);
     \u0275\u0275text(4, "</>");
@@ -49433,1356 +49745,1304 @@ _DashboardComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ ty
     \u0275\u0275elementStart(5, "span");
     \u0275\u0275text(6, "Admin Panel");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(7, "div", 4)(8, "a", 5);
-    \u0275\u0275text(9, "Code Judge");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(10, "button", 6);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_10_listener() {
+    \u0275\u0275elementStart(7, "div", 4);
+    \u0275\u0275template(8, DashboardComponent_a_8_Template, 2, 0, "a", 5);
+    \u0275\u0275elementStart(9, "button", 6);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_9_listener() {
       return ctx.openUserWorkspace();
     });
-    \u0275\u0275text(11, "Back to User Workspace");
+    \u0275\u0275text(10, "Back to User Workspace");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(12, "button", 7);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_12_listener() {
+    \u0275\u0275elementStart(11, "button", 7);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_11_listener() {
       return ctx.auth.logout();
     });
-    \u0275\u0275text(13, "Logout");
+    \u0275\u0275text(12, "Logout");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(14, "main", 8)(15, "div", 9)(16, "h1");
-    \u0275\u0275text(17, "Admin Panel");
+    \u0275\u0275elementStart(13, "main", 8)(14, "div", 9)(15, "h1");
+    \u0275\u0275text(16, "Admin Panel");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(18, "p");
-    \u0275\u0275text(19, "Manage quiz categories, questions, quiz sets, imports, users and access control.");
+    \u0275\u0275elementStart(17, "p");
+    \u0275\u0275text(18, "Manage quiz categories, questions, quiz sets, imports, users and access control.");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(20, "div", 10)(21, "div", 11)(22, "div")(23, "p", 12);
-    \u0275\u0275text(24, "Total Users");
+    \u0275\u0275elementStart(19, "div", 10)(20, "div", 11)(21, "div")(22, "p", 12);
+    \u0275\u0275text(23, "Total Users");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(25, "div", 13);
-    \u0275\u0275text(26);
+    \u0275\u0275elementStart(24, "div", 13);
+    \u0275\u0275text(25);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(27, "div", 14);
-    \u0275\u0275text(28, "U");
+    \u0275\u0275elementStart(26, "div", 14);
+    \u0275\u0275text(27, "U");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(29, "div", 11)(30, "div")(31, "p", 12);
-    \u0275\u0275text(32, "Total Questions");
+    \u0275\u0275elementStart(28, "div", 11)(29, "div")(30, "p", 12);
+    \u0275\u0275text(31, "Total Questions");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(33, "div", 13);
-    \u0275\u0275text(34);
+    \u0275\u0275elementStart(32, "div", 13);
+    \u0275\u0275text(33);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(35, "div", 15);
-    \u0275\u0275text(36, "Q");
+    \u0275\u0275elementStart(34, "div", 15);
+    \u0275\u0275text(35, "Q");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(37, "div", 11)(38, "div")(39, "p", 12);
-    \u0275\u0275text(40, "Quiz Sets");
+    \u0275\u0275elementStart(36, "div", 11)(37, "div")(38, "p", 12);
+    \u0275\u0275text(39, "Quiz Sets");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(41, "div", 13);
-    \u0275\u0275text(42);
+    \u0275\u0275elementStart(40, "div", 13);
+    \u0275\u0275text(41);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(43, "div", 16);
-    \u0275\u0275text(44, "S");
+    \u0275\u0275elementStart(42, "div", 16);
+    \u0275\u0275text(43, "S");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(45, "div", 11)(46, "div")(47, "p", 12);
-    \u0275\u0275text(48, "Categories");
+    \u0275\u0275elementStart(44, "div", 11)(45, "div")(46, "p", 12);
+    \u0275\u0275text(47, "Categories");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(49, "div", 13);
-    \u0275\u0275text(50);
+    \u0275\u0275elementStart(48, "div", 13);
+    \u0275\u0275text(49);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(51, "div", 17);
-    \u0275\u0275text(52, "C");
+    \u0275\u0275elementStart(50, "div", 17);
+    \u0275\u0275text(51, "C");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275template(53, DashboardComponent_div_53_Template, 2, 1, "div", 18)(54, DashboardComponent_div_54_Template, 2, 1, "div", 19);
-    \u0275\u0275elementStart(55, "div", 20)(56, "h2");
-    \u0275\u0275text(57, "Content Management");
+    \u0275\u0275template(52, DashboardComponent_div_52_Template, 2, 1, "div", 18)(53, DashboardComponent_div_53_Template, 2, 1, "div", 19);
+    \u0275\u0275elementStart(54, "div", 20)(55, "h2");
+    \u0275\u0275text(56, "Content Management");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(58, "div", 21)(59, "button", 22);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_59_listener() {
-      return ctx.setTab("questions");
-    });
-    \u0275\u0275text(60, "Questions");
+    \u0275\u0275elementStart(57, "div", 21);
+    \u0275\u0275template(58, DashboardComponent_button_58_Template, 2, 2, "button", 22)(59, DashboardComponent_button_59_Template, 2, 2, "button", 22)(60, DashboardComponent_button_60_Template, 2, 2, "button", 22)(61, DashboardComponent_button_61_Template, 2, 2, "button", 22)(62, DashboardComponent_button_62_Template, 2, 2, "button", 22)(63, DashboardComponent_button_63_Template, 2, 2, "button", 22)(64, DashboardComponent_button_64_Template, 2, 2, "button", 22)(65, DashboardComponent_button_65_Template, 2, 2, "button", 22)(66, DashboardComponent_button_66_Template, 2, 2, "button", 22)(67, DashboardComponent_a_67_Template, 2, 0, "a", 23);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(61, "button", 22);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_61_listener() {
-      return ctx.setTab("categories");
-    });
-    \u0275\u0275text(62, "Categories");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(63, "button", 22);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_63_listener() {
-      return ctx.setTab("quizsets");
-    });
-    \u0275\u0275text(64, "Quiz Sets");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(65, "button", 22);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_65_listener() {
-      return ctx.setTab("users");
-    });
-    \u0275\u0275text(66, "Users");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(67, "button", 22);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_67_listener() {
-      return ctx.setTab("access");
-    });
-    \u0275\u0275text(68, "Access Control");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(69, "button", 22);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_69_listener() {
-      return ctx.setTab("roadmaps");
-    });
-    \u0275\u0275text(70, "Roadmaps");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(71, "button", 22);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_71_listener() {
-      return ctx.setTab("audit");
-    });
-    \u0275\u0275text(72, "Audit Logs");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(73, "button", 22);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_73_listener() {
-      return ctx.setTab("analytics");
-    });
-    \u0275\u0275text(74, "Quiz Analytics");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(75, "button", 22);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_75_listener() {
-      return ctx.setTab("import");
-    });
-    \u0275\u0275text(76, "Import Questions");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(77, "a", 23);
-    \u0275\u0275text(78, "Forum Management");
-    \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(79, "section", 24)(80, "div", 25)(81, "div", 26)(82, "input", 27);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_82_listener($event) {
+    \u0275\u0275template(68, DashboardComponent_div_68_Template, 2, 0, "div", 24);
+    \u0275\u0275elementStart(69, "section", 25)(70, "div", 26)(71, "div", 27)(72, "input", 28);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_72_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.searchQuestion, $event) || (ctx.searchQuestion = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(83, "select", 28);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_83_listener($event) {
+    \u0275\u0275elementStart(73, "select", 29);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_73_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.questionCategoryFilter, $event) || (ctx.questionCategoryFilter = $event);
       return $event;
     });
-    \u0275\u0275elementStart(84, "option", 29);
-    \u0275\u0275text(85, "All categories");
+    \u0275\u0275elementStart(74, "option", 30);
+    \u0275\u0275text(75, "All categories");
     \u0275\u0275elementEnd();
-    \u0275\u0275template(86, DashboardComponent_option_86_Template, 2, 2, "option", 30);
+    \u0275\u0275template(76, DashboardComponent_option_76_Template, 2, 2, "option", 31);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(87, "button", 31);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_87_listener() {
+    \u0275\u0275elementStart(77, "button", 32);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_77_listener() {
       ctx.showQuestionForm = !ctx.showQuestionForm;
       return ctx.editingQuestionId = null;
     });
-    \u0275\u0275text(88, "Add Question");
+    \u0275\u0275text(78, "Add Question");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(89, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_89_listener() {
+    \u0275\u0275elementStart(79, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_79_listener() {
       return ctx.exportQuestions();
     });
-    \u0275\u0275text(90, "Export Questions CSV");
+    \u0275\u0275text(80, "Export Questions CSV");
     \u0275\u0275elementEnd()();
-    \u0275\u0275template(91, DashboardComponent_form_91_Template, 38, 12, "form", 33);
-    \u0275\u0275elementStart(92, "table", 34)(93, "thead")(94, "tr")(95, "th");
-    \u0275\u0275text(96, "ID");
+    \u0275\u0275template(81, DashboardComponent_form_81_Template, 38, 12, "form", 34);
+    \u0275\u0275elementStart(82, "table", 35)(83, "thead")(84, "tr")(85, "th");
+    \u0275\u0275text(86, "ID");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(97, "th");
-    \u0275\u0275text(98, "Question");
+    \u0275\u0275elementStart(87, "th");
+    \u0275\u0275text(88, "Question");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(99, "th");
-    \u0275\u0275text(100, "Topic");
+    \u0275\u0275elementStart(89, "th");
+    \u0275\u0275text(90, "Topic");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(101, "th");
-    \u0275\u0275text(102, "Level");
+    \u0275\u0275elementStart(91, "th");
+    \u0275\u0275text(92, "Level");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(103, "th");
-    \u0275\u0275text(104, "Options");
+    \u0275\u0275elementStart(93, "th");
+    \u0275\u0275text(94, "Options");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(105, "th");
-    \u0275\u0275text(106, "Actions");
+    \u0275\u0275elementStart(95, "th");
+    \u0275\u0275text(96, "Actions");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(107, "tbody");
-    \u0275\u0275template(108, DashboardComponent_tr_108_Template, 20, 7, "tr", 35);
+    \u0275\u0275elementStart(97, "tbody");
+    \u0275\u0275template(98, DashboardComponent_tr_98_Template, 20, 7, "tr", 36);
     \u0275\u0275elementEnd()();
-    \u0275\u0275template(109, DashboardComponent_div_109_Template, 2, 0, "div", 36);
+    \u0275\u0275template(99, DashboardComponent_div_99_Template, 2, 0, "div", 24);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(110, "section", 24)(111, "form", 37);
-    \u0275\u0275listener("ngSubmit", function DashboardComponent_Template_form_ngSubmit_111_listener() {
+    \u0275\u0275elementStart(100, "section", 25)(101, "form", 37);
+    \u0275\u0275listener("ngSubmit", function DashboardComponent_Template_form_ngSubmit_101_listener() {
       return ctx.createOrUpdateCategory();
     });
-    \u0275\u0275elementStart(112, "h3");
-    \u0275\u0275text(113);
+    \u0275\u0275elementStart(102, "h3");
+    \u0275\u0275text(103);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(114, "div", 38)(115, "div", 39)(116, "label");
-    \u0275\u0275text(117, "Name");
+    \u0275\u0275elementStart(104, "div", 38)(105, "div", 39)(106, "label");
+    \u0275\u0275text(107, "Name");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(118, "input", 40);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_118_listener($event) {
+    \u0275\u0275elementStart(108, "input", 40);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_108_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.categoryForm.name, $event) || (ctx.categoryForm.name = $event);
       return $event;
     });
-    \u0275\u0275listener("input", function DashboardComponent_Template_input_input_118_listener() {
+    \u0275\u0275listener("input", function DashboardComponent_Template_input_input_108_listener() {
       return ctx.autoCategorySlug();
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(119, "div", 39)(120, "label");
-    \u0275\u0275text(121, "Slug");
+    \u0275\u0275elementStart(109, "div", 39)(110, "label");
+    \u0275\u0275text(111, "Slug");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(122, "input", 41);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_122_listener($event) {
+    \u0275\u0275elementStart(112, "input", 41);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_112_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.categoryForm.slug, $event) || (ctx.categoryForm.slug = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(123, "div", 39)(124, "label");
-    \u0275\u0275text(125, "Status");
+    \u0275\u0275elementStart(113, "div", 39)(114, "label");
+    \u0275\u0275text(115, "Status");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(126, "select", 42);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_126_listener($event) {
+    \u0275\u0275elementStart(116, "select", 42);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_116_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.categoryForm.status, $event) || (ctx.categoryForm.status = $event);
       return $event;
     });
-    \u0275\u0275elementStart(127, "option", 43);
-    \u0275\u0275text(128, "Active");
+    \u0275\u0275elementStart(117, "option", 43);
+    \u0275\u0275text(118, "Active");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(129, "option", 43);
-    \u0275\u0275text(130, "Inactive");
+    \u0275\u0275elementStart(119, "option", 43);
+    \u0275\u0275text(120, "Inactive");
     \u0275\u0275elementEnd()()()();
-    \u0275\u0275elementStart(131, "div", 44)(132, "div", 39)(133, "label");
-    \u0275\u0275text(134, "Description");
+    \u0275\u0275elementStart(121, "div", 44)(122, "div", 39)(123, "label");
+    \u0275\u0275text(124, "Description");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(135, "input", 45);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_135_listener($event) {
+    \u0275\u0275elementStart(125, "input", 45);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_125_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.categoryForm.description, $event) || (ctx.categoryForm.description = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(136, "div", 39)(137, "label");
-    \u0275\u0275text(138, "Display Order");
+    \u0275\u0275elementStart(126, "div", 39)(127, "label");
+    \u0275\u0275text(128, "Display Order");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(139, "input", 46);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_139_listener($event) {
+    \u0275\u0275elementStart(129, "input", 46);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_129_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.categoryForm.displayOrder, $event) || (ctx.categoryForm.displayOrder = $event);
       return $event;
     });
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(140, "div", 4)(141, "button", 47);
-    \u0275\u0275text(142);
+    \u0275\u0275elementStart(130, "div", 4)(131, "button", 47);
+    \u0275\u0275text(132);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(143, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_143_listener() {
+    \u0275\u0275elementStart(133, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_133_listener() {
       return ctx.cancelCategoryEdit();
     });
-    \u0275\u0275text(144, "Cancel");
+    \u0275\u0275text(134, "Cancel");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(145, "table", 34)(146, "thead")(147, "tr")(148, "th");
-    \u0275\u0275text(149, "ID");
+    \u0275\u0275elementStart(135, "table", 35)(136, "thead")(137, "tr")(138, "th");
+    \u0275\u0275text(139, "ID");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(150, "th");
-    \u0275\u0275text(151, "Name");
+    \u0275\u0275elementStart(140, "th");
+    \u0275\u0275text(141, "Name");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(152, "th");
-    \u0275\u0275text(153, "Slug");
+    \u0275\u0275elementStart(142, "th");
+    \u0275\u0275text(143, "Slug");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(154, "th");
-    \u0275\u0275text(155, "Description");
+    \u0275\u0275elementStart(144, "th");
+    \u0275\u0275text(145, "Description");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(156, "th");
-    \u0275\u0275text(157, "Status");
+    \u0275\u0275elementStart(146, "th");
+    \u0275\u0275text(147, "Status");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(158, "th");
-    \u0275\u0275text(159, "Actions");
+    \u0275\u0275elementStart(148, "th");
+    \u0275\u0275text(149, "Actions");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(160, "tbody");
-    \u0275\u0275template(161, DashboardComponent_tr_161_Template, 17, 6, "tr", 35);
+    \u0275\u0275elementStart(150, "tbody");
+    \u0275\u0275template(151, DashboardComponent_tr_151_Template, 17, 6, "tr", 36);
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(162, "section", 24)(163, "form", 37);
-    \u0275\u0275listener("ngSubmit", function DashboardComponent_Template_form_ngSubmit_163_listener() {
+    \u0275\u0275elementStart(152, "section", 25)(153, "form", 37);
+    \u0275\u0275listener("ngSubmit", function DashboardComponent_Template_form_ngSubmit_153_listener() {
       return ctx.createOrUpdateQuizSet();
     });
-    \u0275\u0275elementStart(164, "h3");
-    \u0275\u0275text(165);
+    \u0275\u0275elementStart(154, "h3");
+    \u0275\u0275text(155);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(166, "div", 38)(167, "div", 39)(168, "label");
-    \u0275\u0275text(169, "Category");
+    \u0275\u0275elementStart(156, "div", 38)(157, "div", 39)(158, "label");
+    \u0275\u0275text(159, "Category");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(170, "select", 48);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_170_listener($event) {
+    \u0275\u0275elementStart(160, "select", 48);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_160_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.quizSetForm.categoryId, $event) || (ctx.quizSetForm.categoryId = $event);
       return $event;
     });
-    \u0275\u0275template(171, DashboardComponent_option_171_Template, 2, 2, "option", 30);
+    \u0275\u0275template(161, DashboardComponent_option_161_Template, 2, 2, "option", 31);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(172, "div", 39)(173, "label");
-    \u0275\u0275text(174, "Title");
+    \u0275\u0275elementStart(162, "div", 39)(163, "label");
+    \u0275\u0275text(164, "Title");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(175, "input", 49);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_175_listener($event) {
+    \u0275\u0275elementStart(165, "input", 49);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_165_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.quizSetForm.title, $event) || (ctx.quizSetForm.title = $event);
       return $event;
     });
-    \u0275\u0275listener("input", function DashboardComponent_Template_input_input_175_listener() {
+    \u0275\u0275listener("input", function DashboardComponent_Template_input_input_165_listener() {
       return ctx.autoQuizSlug();
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(176, "div", 39)(177, "label");
-    \u0275\u0275text(178, "Slug");
+    \u0275\u0275elementStart(166, "div", 39)(167, "label");
+    \u0275\u0275text(168, "Slug");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(179, "input", 41);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_179_listener($event) {
+    \u0275\u0275elementStart(169, "input", 41);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_169_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.quizSetForm.slug, $event) || (ctx.quizSetForm.slug = $event);
       return $event;
     });
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(180, "div", 39)(181, "label");
-    \u0275\u0275text(182, "Description");
+    \u0275\u0275elementStart(170, "div", 39)(171, "label");
+    \u0275\u0275text(172, "Description");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(183, "input", 45);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_183_listener($event) {
+    \u0275\u0275elementStart(173, "input", 45);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_173_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.quizSetForm.description, $event) || (ctx.quizSetForm.description = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(184, "div", 50)(185, "div", 39)(186, "label");
-    \u0275\u0275text(187, "Difficulty");
+    \u0275\u0275elementStart(174, "div", 50)(175, "div", 39)(176, "label");
+    \u0275\u0275text(177, "Difficulty");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(188, "select", 51);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_188_listener($event) {
+    \u0275\u0275elementStart(178, "select", 51);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_178_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.quizSetForm.difficulty, $event) || (ctx.quizSetForm.difficulty = $event);
       return $event;
     });
-    \u0275\u0275elementStart(189, "option", 43);
-    \u0275\u0275text(190, "Beginner");
+    \u0275\u0275elementStart(179, "option", 43);
+    \u0275\u0275text(180, "Beginner");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(191, "option", 43);
-    \u0275\u0275text(192, "Intermediate");
+    \u0275\u0275elementStart(181, "option", 43);
+    \u0275\u0275text(182, "Intermediate");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(193, "option", 43);
-    \u0275\u0275text(194, "Advanced");
+    \u0275\u0275elementStart(183, "option", 43);
+    \u0275\u0275text(184, "Advanced");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(195, "div", 39)(196, "label");
-    \u0275\u0275text(197, "Time Limit");
+    \u0275\u0275elementStart(185, "div", 39)(186, "label");
+    \u0275\u0275text(187, "Time Limit");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(198, "input", 52);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_198_listener($event) {
+    \u0275\u0275elementStart(188, "input", 52);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_188_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.quizSetForm.timeLimitMinutes, $event) || (ctx.quizSetForm.timeLimitMinutes = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(199, "div", 39)(200, "label");
-    \u0275\u0275text(201, "Passing Score /10");
+    \u0275\u0275elementStart(189, "div", 39)(190, "label");
+    \u0275\u0275text(191, "Passing Score /10");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(202, "input", 53);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_202_listener($event) {
+    \u0275\u0275elementStart(192, "input", 53);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_192_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.quizSetForm.passingScore, $event) || (ctx.quizSetForm.passingScore = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(203, "div", 39)(204, "label");
-    \u0275\u0275text(205, "Max Attempts");
+    \u0275\u0275elementStart(193, "div", 39)(194, "label");
+    \u0275\u0275text(195, "Max Attempts");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(206, "input", 54);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_206_listener($event) {
+    \u0275\u0275elementStart(196, "input", 54);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_196_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.quizSetForm.maxAttempts, $event) || (ctx.quizSetForm.maxAttempts = $event);
       return $event;
     });
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(207, "div", 50)(208, "label")(209, "input", 55);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_209_listener($event) {
+    \u0275\u0275elementStart(197, "div", 50)(198, "label")(199, "input", 55);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_199_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.quizSetForm.allowReview, $event) || (ctx.quizSetForm.allowReview = $event);
       return $event;
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275text(210, " Allow review");
+    \u0275\u0275text(200, " Allow review");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(211, "label")(212, "input", 56);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_212_listener($event) {
+    \u0275\u0275elementStart(201, "label")(202, "input", 56);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_202_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.quizSetForm.shuffleQuestions, $event) || (ctx.quizSetForm.shuffleQuestions = $event);
       return $event;
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275text(213, " Shuffle questions");
+    \u0275\u0275text(203, " Shuffle questions");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(214, "label")(215, "input", 57);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_215_listener($event) {
+    \u0275\u0275elementStart(204, "label")(205, "input", 57);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_205_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.quizSetForm.shuffleOptions, $event) || (ctx.quizSetForm.shuffleOptions = $event);
       return $event;
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275text(216, " Shuffle options");
+    \u0275\u0275text(206, " Shuffle options");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(217, "div", 39)(218, "label");
-    \u0275\u0275text(219, "Status");
+    \u0275\u0275elementStart(207, "div", 39)(208, "label");
+    \u0275\u0275text(209, "Status");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(220, "select", 42);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_220_listener($event) {
+    \u0275\u0275elementStart(210, "select", 42);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_210_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.quizSetForm.status, $event) || (ctx.quizSetForm.status = $event);
       return $event;
     });
-    \u0275\u0275elementStart(221, "option", 43);
-    \u0275\u0275text(222, "Active");
+    \u0275\u0275elementStart(211, "option", 43);
+    \u0275\u0275text(212, "Active");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(223, "option", 43);
-    \u0275\u0275text(224, "Inactive");
+    \u0275\u0275elementStart(213, "option", 43);
+    \u0275\u0275text(214, "Inactive");
     \u0275\u0275elementEnd()()()();
-    \u0275\u0275elementStart(225, "div", 58)(226, "div", 25)(227, "h3", 59);
-    \u0275\u0275text(228, "Attach Questions");
+    \u0275\u0275elementStart(215, "div", 58)(216, "div", 26)(217, "h3", 59);
+    \u0275\u0275text(218, "Attach Questions");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(229, "select", 60);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_229_listener($event) {
+    \u0275\u0275elementStart(219, "select", 60);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_219_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.quizSetForm.categoryId, $event) || (ctx.quizSetForm.categoryId = $event);
       return $event;
     });
-    \u0275\u0275template(230, DashboardComponent_option_230_Template, 2, 2, "option", 30);
+    \u0275\u0275template(220, DashboardComponent_option_220_Template, 2, 2, "option", 31);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(231, "p", 12);
-    \u0275\u0275text(232, "Ch\u1ECDn c\xE2u h\u1ECFi c\u1EA7n g\u1EAFn v\xE0o b\u1ED9 \u0111\u1EC1. Kh\xF4ng c\u1EA7n nh\u1EADp ID th\u1EE7 c\xF4ng n\u1EEFa.");
+    \u0275\u0275elementStart(221, "p", 12);
+    \u0275\u0275text(222, "Ch\u1ECDn c\xE2u h\u1ECFi c\u1EA7n g\u1EAFn v\xE0o b\u1ED9 \u0111\u1EC1. Kh\xF4ng c\u1EA7n nh\u1EADp ID th\u1EE7 c\xF4ng n\u1EEFa.");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(233, "div", 61);
-    \u0275\u0275template(234, DashboardComponent_label_234_Template, 7, 7, "label", 62);
+    \u0275\u0275elementStart(223, "div", 61);
+    \u0275\u0275template(224, DashboardComponent_label_224_Template, 7, 7, "label", 62);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(235, DashboardComponent_div_235_Template, 2, 0, "div", 63);
-    \u0275\u0275elementStart(236, "b");
-    \u0275\u0275text(237);
+    \u0275\u0275template(225, DashboardComponent_div_225_Template, 2, 0, "div", 63);
+    \u0275\u0275elementStart(226, "b");
+    \u0275\u0275text(227);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(238, "div", 64)(239, "button", 47);
-    \u0275\u0275text(240);
+    \u0275\u0275elementStart(228, "div", 64)(229, "button", 47);
+    \u0275\u0275text(230);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(241, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_241_listener() {
+    \u0275\u0275elementStart(231, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_231_listener() {
       return ctx.cancelQuizSetEdit();
     });
-    \u0275\u0275text(242, "Cancel");
+    \u0275\u0275text(232, "Cancel");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(243, "div", 25)(244, "select", 65);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_244_listener($event) {
+    \u0275\u0275elementStart(233, "div", 26)(234, "select", 65);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_234_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.quizSetCategoryFilter, $event) || (ctx.quizSetCategoryFilter = $event);
       return $event;
     });
-    \u0275\u0275elementStart(245, "option", 29);
-    \u0275\u0275text(246, "All categories");
+    \u0275\u0275elementStart(235, "option", 30);
+    \u0275\u0275text(236, "All categories");
     \u0275\u0275elementEnd();
-    \u0275\u0275template(247, DashboardComponent_option_247_Template, 2, 2, "option", 30);
+    \u0275\u0275template(237, DashboardComponent_option_237_Template, 2, 2, "option", 31);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(248, "table", 34)(249, "thead")(250, "tr")(251, "th");
-    \u0275\u0275text(252, "ID");
+    \u0275\u0275elementStart(238, "table", 35)(239, "thead")(240, "tr")(241, "th");
+    \u0275\u0275text(242, "ID");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(243, "th");
+    \u0275\u0275text(244, "Title");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(245, "th");
+    \u0275\u0275text(246, "Category");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(247, "th");
+    \u0275\u0275text(248, "Questions");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(249, "th");
+    \u0275\u0275text(250, "Time");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(251, "th");
+    \u0275\u0275text(252, "Attempts");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(253, "th");
-    \u0275\u0275text(254, "Title");
+    \u0275\u0275text(254, "Status");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(255, "th");
-    \u0275\u0275text(256, "Category");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(257, "th");
-    \u0275\u0275text(258, "Questions");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(259, "th");
-    \u0275\u0275text(260, "Time");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(261, "th");
-    \u0275\u0275text(262, "Attempts");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(263, "th");
-    \u0275\u0275text(264, "Status");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(265, "th");
-    \u0275\u0275text(266, "Actions");
+    \u0275\u0275text(256, "Actions");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(267, "tbody");
-    \u0275\u0275template(268, DashboardComponent_tr_268_Template, 26, 9, "tr", 35);
+    \u0275\u0275elementStart(257, "tbody");
+    \u0275\u0275template(258, DashboardComponent_tr_258_Template, 26, 9, "tr", 36);
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(269, "section", 24)(270, "div", 44)(271, "form", 37);
-    \u0275\u0275listener("ngSubmit", function DashboardComponent_Template_form_ngSubmit_271_listener() {
+    \u0275\u0275elementStart(259, "section", 25)(260, "div", 44)(261, "form", 37);
+    \u0275\u0275listener("ngSubmit", function DashboardComponent_Template_form_ngSubmit_261_listener() {
       return ctx.saveRoadmapTrack();
     });
-    \u0275\u0275elementStart(272, "h3");
-    \u0275\u0275text(273);
+    \u0275\u0275elementStart(262, "h3");
+    \u0275\u0275text(263);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(274, "div", 44)(275, "div", 39)(276, "label");
-    \u0275\u0275text(277, "Title");
+    \u0275\u0275elementStart(264, "div", 44)(265, "div", 39)(266, "label");
+    \u0275\u0275text(267, "Title");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(278, "input", 66);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_278_listener($event) {
+    \u0275\u0275elementStart(268, "input", 66);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_268_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapTrackForm.title, $event) || (ctx.roadmapTrackForm.title = $event);
       return $event;
     });
-    \u0275\u0275listener("input", function DashboardComponent_Template_input_input_278_listener() {
+    \u0275\u0275listener("input", function DashboardComponent_Template_input_input_268_listener() {
       return ctx.autoRoadmapTrackSlug();
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(279, "div", 39)(280, "label");
-    \u0275\u0275text(281, "Slug");
+    \u0275\u0275elementStart(269, "div", 39)(270, "label");
+    \u0275\u0275text(271, "Slug");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(282, "input", 67);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_282_listener($event) {
+    \u0275\u0275elementStart(272, "input", 67);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_272_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapTrackForm.slug, $event) || (ctx.roadmapTrackForm.slug = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(283, "div", 39)(284, "label");
-    \u0275\u0275text(285, "Level");
+    \u0275\u0275elementStart(273, "div", 39)(274, "label");
+    \u0275\u0275text(275, "Level");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(286, "select", 68);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_286_listener($event) {
+    \u0275\u0275elementStart(276, "select", 68);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_276_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapTrackForm.level, $event) || (ctx.roadmapTrackForm.level = $event);
       return $event;
     });
-    \u0275\u0275elementStart(287, "option");
-    \u0275\u0275text(288, "Beginner");
+    \u0275\u0275elementStart(277, "option");
+    \u0275\u0275text(278, "Beginner");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(289, "option");
-    \u0275\u0275text(290, "Intermediate");
+    \u0275\u0275elementStart(279, "option");
+    \u0275\u0275text(280, "Intermediate");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(291, "option");
-    \u0275\u0275text(292, "Advanced");
+    \u0275\u0275elementStart(281, "option");
+    \u0275\u0275text(282, "Advanced");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(293, "div", 39)(294, "label");
-    \u0275\u0275text(295, "Estimated hours");
+    \u0275\u0275elementStart(283, "div", 39)(284, "label");
+    \u0275\u0275text(285, "Estimated hours");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(296, "input", 69);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_296_listener($event) {
+    \u0275\u0275elementStart(286, "input", 69);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_286_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapTrackForm.estimatedHours, $event) || (ctx.roadmapTrackForm.estimatedHours = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(297, "div", 39)(298, "label");
-    \u0275\u0275text(299, "Sort order");
+    \u0275\u0275elementStart(287, "div", 39)(288, "label");
+    \u0275\u0275text(289, "Sort order");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(300, "input", 70);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_300_listener($event) {
+    \u0275\u0275elementStart(290, "input", 70);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_290_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapTrackForm.sortOrder, $event) || (ctx.roadmapTrackForm.sortOrder = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(301, "label")(302, "input", 71);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_302_listener($event) {
+    \u0275\u0275elementStart(291, "label")(292, "input", 71);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_292_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapTrackForm.isPublished, $event) || (ctx.roadmapTrackForm.isPublished = $event);
       return $event;
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275text(303, " Published");
+    \u0275\u0275text(293, " Published");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(304, "div", 39)(305, "label");
-    \u0275\u0275text(306, "Description");
+    \u0275\u0275elementStart(294, "div", 39)(295, "label");
+    \u0275\u0275text(296, "Description");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(307, "textarea", 72);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_textarea_ngModelChange_307_listener($event) {
+    \u0275\u0275elementStart(297, "textarea", 72);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_textarea_ngModelChange_297_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapTrackForm.description, $event) || (ctx.roadmapTrackForm.description = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(308, "div", 39)(309, "label");
-    \u0275\u0275text(310, "Thumbnail URL");
+    \u0275\u0275elementStart(298, "div", 39)(299, "label");
+    \u0275\u0275text(300, "Thumbnail URL");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(311, "input", 73);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_311_listener($event) {
+    \u0275\u0275elementStart(301, "input", 73);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_301_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapTrackForm.thumbnailUrl, $event) || (ctx.roadmapTrackForm.thumbnailUrl = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(312, "div", 4)(313, "button", 47);
-    \u0275\u0275text(314);
+    \u0275\u0275elementStart(302, "div", 4)(303, "button", 47);
+    \u0275\u0275text(304);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(315, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_315_listener() {
+    \u0275\u0275elementStart(305, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_305_listener() {
       return ctx.cancelRoadmapTrackEdit();
     });
-    \u0275\u0275text(316, "Cancel");
+    \u0275\u0275text(306, "Cancel");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(317, "div", 20)(318, "h3");
-    \u0275\u0275text(319, "Learning Tracks");
+    \u0275\u0275elementStart(307, "div", 20)(308, "h3");
+    \u0275\u0275text(309, "Learning Tracks");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(320, "div", 25)(321, "select", 74);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_321_listener($event) {
+    \u0275\u0275elementStart(310, "div", 26)(311, "select", 74);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_311_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.selectedRoadmapTrackId, $event) || (ctx.selectedRoadmapTrackId = $event);
       return $event;
     });
-    \u0275\u0275elementStart(322, "option", 75);
-    \u0275\u0275text(323, "All tracks");
+    \u0275\u0275elementStart(312, "option", 75);
+    \u0275\u0275text(313, "All tracks");
     \u0275\u0275elementEnd();
-    \u0275\u0275template(324, DashboardComponent_option_324_Template, 2, 2, "option", 30);
+    \u0275\u0275template(314, DashboardComponent_option_314_Template, 2, 2, "option", 31);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(325, "table", 34)(326, "thead")(327, "tr")(328, "th");
-    \u0275\u0275text(329, "ID");
+    \u0275\u0275elementStart(315, "table", 35)(316, "thead")(317, "tr")(318, "th");
+    \u0275\u0275text(319, "ID");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(330, "th");
-    \u0275\u0275text(331, "Track");
+    \u0275\u0275elementStart(320, "th");
+    \u0275\u0275text(321, "Track");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(332, "th");
-    \u0275\u0275text(333, "Courses");
+    \u0275\u0275elementStart(322, "th");
+    \u0275\u0275text(323, "Courses");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(334, "th");
-    \u0275\u0275text(335, "State");
+    \u0275\u0275elementStart(324, "th");
+    \u0275\u0275text(325, "State");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(336, "th");
-    \u0275\u0275text(337, "Actions");
+    \u0275\u0275elementStart(326, "th");
+    \u0275\u0275text(327, "Actions");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(338, "tbody");
-    \u0275\u0275template(339, DashboardComponent_tr_339_Template, 18, 6, "tr", 35);
+    \u0275\u0275elementStart(328, "tbody");
+    \u0275\u0275template(329, DashboardComponent_tr_329_Template, 18, 6, "tr", 36);
     \u0275\u0275elementEnd()()()();
-    \u0275\u0275elementStart(340, "div", 76)(341, "form", 37);
-    \u0275\u0275listener("ngSubmit", function DashboardComponent_Template_form_ngSubmit_341_listener() {
+    \u0275\u0275elementStart(330, "div", 76)(331, "form", 37);
+    \u0275\u0275listener("ngSubmit", function DashboardComponent_Template_form_ngSubmit_331_listener() {
       return ctx.saveRoadmapCourse();
     });
-    \u0275\u0275elementStart(342, "h3");
-    \u0275\u0275text(343);
+    \u0275\u0275elementStart(332, "h3");
+    \u0275\u0275text(333);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(344, "div", 44)(345, "div", 39)(346, "label");
-    \u0275\u0275text(347, "Track");
+    \u0275\u0275elementStart(334, "div", 44)(335, "div", 39)(336, "label");
+    \u0275\u0275text(337, "Track");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(348, "select", 77);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_348_listener($event) {
+    \u0275\u0275elementStart(338, "select", 77);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_338_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapCourseForm.trackId, $event) || (ctx.roadmapCourseForm.trackId = $event);
       return $event;
     });
-    \u0275\u0275template(349, DashboardComponent_option_349_Template, 2, 2, "option", 30);
+    \u0275\u0275template(339, DashboardComponent_option_339_Template, 2, 2, "option", 31);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(350, "div", 39)(351, "label");
-    \u0275\u0275text(352, "Level");
+    \u0275\u0275elementStart(340, "div", 39)(341, "label");
+    \u0275\u0275text(342, "Level");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(353, "select", 78);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_353_listener($event) {
+    \u0275\u0275elementStart(343, "select", 78);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_343_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapCourseForm.level, $event) || (ctx.roadmapCourseForm.level = $event);
       return $event;
     });
-    \u0275\u0275elementStart(354, "option");
-    \u0275\u0275text(355, "Beginner");
+    \u0275\u0275elementStart(344, "option");
+    \u0275\u0275text(345, "Beginner");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(356, "option");
-    \u0275\u0275text(357, "Intermediate");
+    \u0275\u0275elementStart(346, "option");
+    \u0275\u0275text(347, "Intermediate");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(358, "option");
-    \u0275\u0275text(359, "Advanced");
+    \u0275\u0275elementStart(348, "option");
+    \u0275\u0275text(349, "Advanced");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(360, "div", 39)(361, "label");
-    \u0275\u0275text(362, "Title");
+    \u0275\u0275elementStart(350, "div", 39)(351, "label");
+    \u0275\u0275text(352, "Title");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(363, "input", 79);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_363_listener($event) {
+    \u0275\u0275elementStart(353, "input", 79);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_353_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapCourseForm.title, $event) || (ctx.roadmapCourseForm.title = $event);
       return $event;
     });
-    \u0275\u0275listener("input", function DashboardComponent_Template_input_input_363_listener() {
+    \u0275\u0275listener("input", function DashboardComponent_Template_input_input_353_listener() {
       return ctx.autoRoadmapCourseSlug();
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(364, "div", 39)(365, "label");
-    \u0275\u0275text(366, "Slug");
+    \u0275\u0275elementStart(354, "div", 39)(355, "label");
+    \u0275\u0275text(356, "Slug");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(367, "input", 80);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_367_listener($event) {
+    \u0275\u0275elementStart(357, "input", 80);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_357_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapCourseForm.slug, $event) || (ctx.roadmapCourseForm.slug = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(368, "div", 39)(369, "label");
-    \u0275\u0275text(370, "Estimated hours");
+    \u0275\u0275elementStart(358, "div", 39)(359, "label");
+    \u0275\u0275text(360, "Estimated hours");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(371, "input", 81);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_371_listener($event) {
+    \u0275\u0275elementStart(361, "input", 81);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_361_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapCourseForm.estimatedHours, $event) || (ctx.roadmapCourseForm.estimatedHours = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(372, "div", 39)(373, "label");
-    \u0275\u0275text(374, "Sort order");
+    \u0275\u0275elementStart(362, "div", 39)(363, "label");
+    \u0275\u0275text(364, "Sort order");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(375, "input", 82);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_375_listener($event) {
+    \u0275\u0275elementStart(365, "input", 82);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_365_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapCourseForm.sortOrder, $event) || (ctx.roadmapCourseForm.sortOrder = $event);
       return $event;
     });
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(376, "div", 39)(377, "label");
-    \u0275\u0275text(378, "Short description");
+    \u0275\u0275elementStart(366, "div", 39)(367, "label");
+    \u0275\u0275text(368, "Short description");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(379, "input", 83);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_379_listener($event) {
+    \u0275\u0275elementStart(369, "input", 83);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_369_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapCourseForm.shortDescription, $event) || (ctx.roadmapCourseForm.shortDescription = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(380, "div", 39)(381, "label");
-    \u0275\u0275text(382, "Description");
+    \u0275\u0275elementStart(370, "div", 39)(371, "label");
+    \u0275\u0275text(372, "Description");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(383, "textarea", 84);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_textarea_ngModelChange_383_listener($event) {
+    \u0275\u0275elementStart(373, "textarea", 84);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_textarea_ngModelChange_373_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapCourseForm.description, $event) || (ctx.roadmapCourseForm.description = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(384, "div", 44)(385, "div", 39)(386, "label");
-    \u0275\u0275text(387, "Requirements, one per line");
+    \u0275\u0275elementStart(374, "div", 44)(375, "div", 39)(376, "label");
+    \u0275\u0275text(377, "Requirements, one per line");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(388, "textarea", 85);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_textarea_ngModelChange_388_listener($event) {
+    \u0275\u0275elementStart(378, "textarea", 85);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_textarea_ngModelChange_378_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapCourseForm.requirementsText, $event) || (ctx.roadmapCourseForm.requirementsText = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(389, "div", 39)(390, "label");
-    \u0275\u0275text(391, "Learning outcomes, one per line");
+    \u0275\u0275elementStart(379, "div", 39)(380, "label");
+    \u0275\u0275text(381, "Learning outcomes, one per line");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(392, "textarea", 86);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_textarea_ngModelChange_392_listener($event) {
+    \u0275\u0275elementStart(382, "textarea", 86);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_textarea_ngModelChange_382_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapCourseForm.learningOutcomesText, $event) || (ctx.roadmapCourseForm.learningOutcomesText = $event);
       return $event;
     });
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(393, "div", 44)(394, "div", 39)(395, "label");
-    \u0275\u0275text(396, "Related course IDs");
+    \u0275\u0275elementStart(383, "div", 44)(384, "div", 39)(385, "label");
+    \u0275\u0275text(386, "Related course IDs");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(397, "input", 87);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_397_listener($event) {
+    \u0275\u0275elementStart(387, "input", 87);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_387_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapCourseForm.relatedCourseIdsText, $event) || (ctx.roadmapCourseForm.relatedCourseIdsText = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(398, "div", 39)(399, "label");
-    \u0275\u0275text(400, "Prerequisite course IDs");
+    \u0275\u0275elementStart(388, "div", 39)(389, "label");
+    \u0275\u0275text(390, "Prerequisite course IDs");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(401, "input", 88);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_401_listener($event) {
+    \u0275\u0275elementStart(391, "input", 88);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_391_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapCourseForm.prerequisiteCourseIdsText, $event) || (ctx.roadmapCourseForm.prerequisiteCourseIdsText = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(402, "label")(403, "input", 89);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_403_listener($event) {
+    \u0275\u0275elementStart(392, "label")(393, "input", 89);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_393_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapCourseForm.requiresSequentialCompletion, $event) || (ctx.roadmapCourseForm.requiresSequentialCompletion = $event);
       return $event;
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275text(404, " Requires sequential completion");
+    \u0275\u0275text(394, " Requires sequential completion");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(405, "label")(406, "input", 90);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_406_listener($event) {
+    \u0275\u0275elementStart(395, "label")(396, "input", 90);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_396_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapCourseForm.isPublished, $event) || (ctx.roadmapCourseForm.isPublished = $event);
       return $event;
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275text(407, " Published");
+    \u0275\u0275text(397, " Published");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(408, "div", 4)(409, "button", 47);
-    \u0275\u0275text(410);
+    \u0275\u0275elementStart(398, "div", 4)(399, "button", 47);
+    \u0275\u0275text(400);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(411, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_411_listener() {
+    \u0275\u0275elementStart(401, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_401_listener() {
       return ctx.cancelRoadmapCourseEdit();
     });
-    \u0275\u0275text(412, "Cancel");
+    \u0275\u0275text(402, "Cancel");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(413, "div", 20)(414, "h3");
-    \u0275\u0275text(415, "Courses");
+    \u0275\u0275elementStart(403, "div", 20)(404, "h3");
+    \u0275\u0275text(405, "Courses");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(416, "table", 34)(417, "thead")(418, "tr")(419, "th");
-    \u0275\u0275text(420, "ID");
+    \u0275\u0275elementStart(406, "table", 35)(407, "thead")(408, "tr")(409, "th");
+    \u0275\u0275text(410, "ID");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(421, "th");
-    \u0275\u0275text(422, "Course");
+    \u0275\u0275elementStart(411, "th");
+    \u0275\u0275text(412, "Course");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(423, "th");
-    \u0275\u0275text(424, "Modules");
+    \u0275\u0275elementStart(413, "th");
+    \u0275\u0275text(414, "Modules");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(425, "th");
-    \u0275\u0275text(426, "State");
+    \u0275\u0275elementStart(415, "th");
+    \u0275\u0275text(416, "State");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(427, "th");
-    \u0275\u0275text(428, "Actions");
+    \u0275\u0275elementStart(417, "th");
+    \u0275\u0275text(418, "Actions");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(429, "tbody");
-    \u0275\u0275template(430, DashboardComponent_tr_430_Template, 20, 8, "tr", 91);
+    \u0275\u0275elementStart(419, "tbody");
+    \u0275\u0275template(420, DashboardComponent_tr_420_Template, 20, 8, "tr", 91);
     \u0275\u0275elementEnd()()()();
-    \u0275\u0275elementStart(431, "div", 76)(432, "form", 37);
-    \u0275\u0275listener("ngSubmit", function DashboardComponent_Template_form_ngSubmit_432_listener() {
+    \u0275\u0275elementStart(421, "div", 76)(422, "form", 37);
+    \u0275\u0275listener("ngSubmit", function DashboardComponent_Template_form_ngSubmit_422_listener() {
       return ctx.saveRoadmapModule();
     });
-    \u0275\u0275elementStart(433, "h3");
-    \u0275\u0275text(434);
+    \u0275\u0275elementStart(423, "h3");
+    \u0275\u0275text(424);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(435, "p", 12);
-    \u0275\u0275text(436);
+    \u0275\u0275elementStart(425, "p", 12);
+    \u0275\u0275text(426);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(437, "div", 44)(438, "div", 39)(439, "label");
-    \u0275\u0275text(440, "Title");
+    \u0275\u0275elementStart(427, "div", 44)(428, "div", 39)(429, "label");
+    \u0275\u0275text(430, "Title");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(441, "input", 92);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_441_listener($event) {
+    \u0275\u0275elementStart(431, "input", 92);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_431_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapModuleForm.title, $event) || (ctx.roadmapModuleForm.title = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(442, "div", 39)(443, "label");
-    \u0275\u0275text(444, "Sort order");
+    \u0275\u0275elementStart(432, "div", 39)(433, "label");
+    \u0275\u0275text(434, "Sort order");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(445, "input", 93);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_445_listener($event) {
+    \u0275\u0275elementStart(435, "input", 93);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_435_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapModuleForm.sortOrder, $event) || (ctx.roadmapModuleForm.sortOrder = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(446, "div", 39)(447, "label");
-    \u0275\u0275text(448, "Estimated minutes");
+    \u0275\u0275elementStart(436, "div", 39)(437, "label");
+    \u0275\u0275text(438, "Estimated minutes");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(449, "input", 94);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_449_listener($event) {
+    \u0275\u0275elementStart(439, "input", 94);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_439_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapModuleForm.estimatedMinutes, $event) || (ctx.roadmapModuleForm.estimatedMinutes = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(450, "label")(451, "input", 95);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_451_listener($event) {
+    \u0275\u0275elementStart(440, "label")(441, "input", 95);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_441_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapModuleForm.requiresPreviousModuleCompletion, $event) || (ctx.roadmapModuleForm.requiresPreviousModuleCompletion = $event);
       return $event;
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275text(452, " Requires previous module");
+    \u0275\u0275text(442, " Requires previous module");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(453, "label")(454, "input", 96);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_454_listener($event) {
+    \u0275\u0275elementStart(443, "label")(444, "input", 96);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_444_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapModuleForm.isLockedByDefault, $event) || (ctx.roadmapModuleForm.isLockedByDefault = $event);
       return $event;
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275text(455, " Locked by default");
+    \u0275\u0275text(445, " Locked by default");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(456, "label")(457, "input", 97);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_457_listener($event) {
+    \u0275\u0275elementStart(446, "label")(447, "input", 97);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_447_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapModuleForm.isPublished, $event) || (ctx.roadmapModuleForm.isPublished = $event);
       return $event;
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275text(458, " Published");
+    \u0275\u0275text(448, " Published");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(459, "div", 39)(460, "label");
-    \u0275\u0275text(461, "Description");
+    \u0275\u0275elementStart(449, "div", 39)(450, "label");
+    \u0275\u0275text(451, "Description");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(462, "textarea", 98);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_textarea_ngModelChange_462_listener($event) {
+    \u0275\u0275elementStart(452, "textarea", 98);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_textarea_ngModelChange_452_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapModuleForm.description, $event) || (ctx.roadmapModuleForm.description = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(463, "div", 4)(464, "button", 47);
-    \u0275\u0275text(465);
+    \u0275\u0275elementStart(453, "div", 4)(454, "button", 47);
+    \u0275\u0275text(455);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(466, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_466_listener() {
+    \u0275\u0275elementStart(456, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_456_listener() {
       return ctx.cancelRoadmapModuleEdit();
     });
-    \u0275\u0275text(467, "Cancel");
+    \u0275\u0275text(457, "Cancel");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(468, "div", 20)(469, "h3");
-    \u0275\u0275text(470, "Modules");
+    \u0275\u0275elementStart(458, "div", 20)(459, "h3");
+    \u0275\u0275text(460, "Modules");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(471, "table", 34)(472, "thead")(473, "tr")(474, "th");
-    \u0275\u0275text(475, "ID");
+    \u0275\u0275elementStart(461, "table", 35)(462, "thead")(463, "tr")(464, "th");
+    \u0275\u0275text(465, "ID");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(476, "th");
-    \u0275\u0275text(477, "Module");
+    \u0275\u0275elementStart(466, "th");
+    \u0275\u0275text(467, "Module");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(478, "th");
-    \u0275\u0275text(479, "Lessons");
+    \u0275\u0275elementStart(468, "th");
+    \u0275\u0275text(469, "Lessons");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(480, "th");
-    \u0275\u0275text(481, "State");
+    \u0275\u0275elementStart(470, "th");
+    \u0275\u0275text(471, "State");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(482, "th");
-    \u0275\u0275text(483, "Actions");
+    \u0275\u0275elementStart(472, "th");
+    \u0275\u0275text(473, "Actions");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(484, "tbody");
-    \u0275\u0275template(485, DashboardComponent_tr_485_Template, 18, 7, "tr", 91);
+    \u0275\u0275elementStart(474, "tbody");
+    \u0275\u0275template(475, DashboardComponent_tr_475_Template, 18, 7, "tr", 91);
     \u0275\u0275elementEnd()()()();
-    \u0275\u0275elementStart(486, "div", 76)(487, "form", 37);
-    \u0275\u0275listener("ngSubmit", function DashboardComponent_Template_form_ngSubmit_487_listener() {
+    \u0275\u0275elementStart(476, "div", 76)(477, "form", 37);
+    \u0275\u0275listener("ngSubmit", function DashboardComponent_Template_form_ngSubmit_477_listener() {
       return ctx.saveRoadmapLesson();
     });
-    \u0275\u0275elementStart(488, "h3");
-    \u0275\u0275text(489);
+    \u0275\u0275elementStart(478, "h3");
+    \u0275\u0275text(479);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(490, "p", 12);
-    \u0275\u0275text(491);
+    \u0275\u0275elementStart(480, "p", 12);
+    \u0275\u0275text(481);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(492, "div", 44)(493, "div", 39)(494, "label");
-    \u0275\u0275text(495, "Title");
+    \u0275\u0275elementStart(482, "div", 44)(483, "div", 39)(484, "label");
+    \u0275\u0275text(485, "Title");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(496, "input", 99);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_496_listener($event) {
+    \u0275\u0275elementStart(486, "input", 99);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_486_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapLessonForm.title, $event) || (ctx.roadmapLessonForm.title = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(497, "div", 39)(498, "label");
-    \u0275\u0275text(499, "Type");
+    \u0275\u0275elementStart(487, "div", 39)(488, "label");
+    \u0275\u0275text(489, "Type");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(500, "select", 100);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_500_listener($event) {
+    \u0275\u0275elementStart(490, "select", 100);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_490_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapLessonForm.type, $event) || (ctx.roadmapLessonForm.type = $event);
       return $event;
     });
-    \u0275\u0275elementStart(501, "option");
-    \u0275\u0275text(502, "Reading");
+    \u0275\u0275elementStart(491, "option");
+    \u0275\u0275text(492, "Reading");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(503, "option");
-    \u0275\u0275text(504, "Video");
+    \u0275\u0275elementStart(493, "option");
+    \u0275\u0275text(494, "Video");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(505, "option");
-    \u0275\u0275text(506, "Quiz");
+    \u0275\u0275elementStart(495, "option");
+    \u0275\u0275text(496, "Quiz");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(507, "option");
-    \u0275\u0275text(508, "CodePractice");
+    \u0275\u0275elementStart(497, "option");
+    \u0275\u0275text(498, "CodePractice");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(509, "option");
-    \u0275\u0275text(510, "Assignment");
+    \u0275\u0275elementStart(499, "option");
+    \u0275\u0275text(500, "Assignment");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(511, "div", 39)(512, "label");
-    \u0275\u0275text(513, "Sort order");
+    \u0275\u0275elementStart(501, "div", 39)(502, "label");
+    \u0275\u0275text(503, "Sort order");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(514, "input", 101);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_514_listener($event) {
+    \u0275\u0275elementStart(504, "input", 101);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_504_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapLessonForm.sortOrder, $event) || (ctx.roadmapLessonForm.sortOrder = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(515, "div", 39)(516, "label");
-    \u0275\u0275text(517, "Estimated minutes");
+    \u0275\u0275elementStart(505, "div", 39)(506, "label");
+    \u0275\u0275text(507, "Estimated minutes");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(518, "input", 102);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_518_listener($event) {
+    \u0275\u0275elementStart(508, "input", 102);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_508_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapLessonForm.estimatedMinutes, $event) || (ctx.roadmapLessonForm.estimatedMinutes = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275template(519, DashboardComponent_div_519_Template, 4, 1, "div", 103)(520, DashboardComponent_div_520_Template, 7, 3, "div", 103)(521, DashboardComponent_div_521_Template, 4, 1, "div", 103);
-    \u0275\u0275elementStart(522, "div", 39)(523, "label");
-    \u0275\u0275text(524, "Unlock after lesson ID");
+    \u0275\u0275template(509, DashboardComponent_div_509_Template, 6, 1, "div", 103)(510, DashboardComponent_div_510_Template, 6, 2, "div", 103)(511, DashboardComponent_div_511_Template, 7, 3, "div", 103)(512, DashboardComponent_div_512_Template, 4, 1, "div", 103);
+    \u0275\u0275elementStart(513, "div", 39)(514, "label");
+    \u0275\u0275text(515, "Unlock after lesson ID");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(525, "input", 104);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_525_listener($event) {
+    \u0275\u0275elementStart(516, "input", 104);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_516_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapLessonForm.unlockAfterLessonId, $event) || (ctx.roadmapLessonForm.unlockAfterLessonId = $event);
       return $event;
     });
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(526, "div", 50)(527, "label")(528, "input", 105);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_528_listener($event) {
+    \u0275\u0275elementStart(517, "div", 50)(518, "label")(519, "input", 105);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_519_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapLessonForm.requiresPreviousLessonCompletion, $event) || (ctx.roadmapLessonForm.requiresPreviousLessonCompletion = $event);
       return $event;
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275text(529, " Requires previous lesson");
+    \u0275\u0275text(520, " Requires previous lesson");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(530, "label")(531, "input", 106);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_531_listener($event) {
+    \u0275\u0275elementStart(521, "label")(522, "input", 106);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_522_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapLessonForm.isRequired, $event) || (ctx.roadmapLessonForm.isRequired = $event);
       return $event;
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275text(532, " Required");
+    \u0275\u0275text(523, " Required");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(533, "label")(534, "input", 107);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_534_listener($event) {
+    \u0275\u0275elementStart(524, "label")(525, "input", 107);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_525_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapLessonForm.isPreview, $event) || (ctx.roadmapLessonForm.isPreview = $event);
       return $event;
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275text(535, " Preview");
+    \u0275\u0275text(526, " Preview");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(536, "label")(537, "input", 108);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_537_listener($event) {
+    \u0275\u0275elementStart(527, "label")(528, "input", 108);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_528_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapLessonForm.isPublished, $event) || (ctx.roadmapLessonForm.isPublished = $event);
       return $event;
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275text(538, " Published");
+    \u0275\u0275text(529, " Published");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(539, "div", 39)(540, "label");
-    \u0275\u0275text(541, "Content");
+    \u0275\u0275elementStart(530, "div", 39)(531, "label");
+    \u0275\u0275text(532, "Content");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(542, "textarea", 109);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_textarea_ngModelChange_542_listener($event) {
+    \u0275\u0275elementStart(533, "textarea", 109);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_textarea_ngModelChange_533_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.roadmapLessonForm.content, $event) || (ctx.roadmapLessonForm.content = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(543, "div", 4)(544, "button", 47);
-    \u0275\u0275text(545);
+    \u0275\u0275elementStart(534, "div", 4)(535, "button", 110);
+    \u0275\u0275text(536);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(546, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_546_listener() {
+    \u0275\u0275elementStart(537, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_537_listener() {
       return ctx.cancelRoadmapLessonEdit();
     });
-    \u0275\u0275text(547, "Cancel");
+    \u0275\u0275text(538, "Cancel");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(548, "div", 20)(549, "h3");
-    \u0275\u0275text(550, "Lessons");
+    \u0275\u0275elementStart(539, "div", 20)(540, "h3");
+    \u0275\u0275text(541, "Lessons");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(551, "table", 34)(552, "thead")(553, "tr")(554, "th");
-    \u0275\u0275text(555, "ID");
+    \u0275\u0275elementStart(542, "table", 35)(543, "thead")(544, "tr")(545, "th");
+    \u0275\u0275text(546, "ID");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(556, "th");
-    \u0275\u0275text(557, "Lesson");
+    \u0275\u0275elementStart(547, "th");
+    \u0275\u0275text(548, "Lesson");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(558, "th");
-    \u0275\u0275text(559, "Type");
+    \u0275\u0275elementStart(549, "th");
+    \u0275\u0275text(550, "Type");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(560, "th");
-    \u0275\u0275text(561, "Lock");
+    \u0275\u0275elementStart(551, "th");
+    \u0275\u0275text(552, "Lock");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(562, "th");
-    \u0275\u0275text(563, "Actions");
+    \u0275\u0275elementStart(553, "th");
+    \u0275\u0275text(554, "Actions");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(564, "tbody");
-    \u0275\u0275template(565, DashboardComponent_tr_565_Template, 19, 7, "tr", 35);
+    \u0275\u0275elementStart(555, "tbody");
+    \u0275\u0275template(556, DashboardComponent_tr_556_Template, 19, 7, "tr", 36);
     \u0275\u0275elementEnd()()()()();
-    \u0275\u0275elementStart(566, "section", 24)(567, "div", 44)(568, "div", 20)(569, "h3");
-    \u0275\u0275text(570, "Accounts");
+    \u0275\u0275elementStart(557, "section", 25)(558, "div", 44)(559, "div", 20)(560, "h3");
+    \u0275\u0275text(561, "Accounts");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(571, "p", 12);
-    \u0275\u0275text(572, "B\u1EA5m v\xE0o t\xE0i kho\u1EA3n \u0111\u1EC3 qu\u1EA3n l\xFD quy\u1EC1n l\u1EBB, nh\xF3m quy\u1EC1n, tr\u1EA1ng th\xE1i kh\xF3a v\xE0 quy\u1EC1n hi\u1EC7u l\u1EF1c.");
+    \u0275\u0275elementStart(562, "p", 12);
+    \u0275\u0275text(563, "B\u1EA5m v\xE0o t\xE0i kho\u1EA3n \u0111\u1EC3 qu\u1EA3n l\xFD quy\u1EC1n l\u1EBB, nh\xF3m quy\u1EC1n, tr\u1EA1ng th\xE1i kh\xF3a v\xE0 quy\u1EC1n hi\u1EC7u l\u1EF1c.");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(573, "table", 34)(574, "thead")(575, "tr")(576, "th");
-    \u0275\u0275text(577, "ID");
+    \u0275\u0275elementStart(564, "table", 35)(565, "thead")(566, "tr")(567, "th");
+    \u0275\u0275text(568, "ID");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(578, "th");
-    \u0275\u0275text(579, "Name");
+    \u0275\u0275elementStart(569, "th");
+    \u0275\u0275text(570, "Name");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(580, "th");
-    \u0275\u0275text(581, "Email");
+    \u0275\u0275elementStart(571, "th");
+    \u0275\u0275text(572, "Email");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(582, "th");
-    \u0275\u0275text(583, "Roles");
+    \u0275\u0275elementStart(573, "th");
+    \u0275\u0275text(574, "Roles");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(584, "th");
-    \u0275\u0275text(585, "Status");
+    \u0275\u0275elementStart(575, "th");
+    \u0275\u0275text(576, "Status");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(586, "th");
-    \u0275\u0275text(587, "Action");
+    \u0275\u0275elementStart(577, "th");
+    \u0275\u0275text(578, "Action");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(588, "tbody");
-    \u0275\u0275template(589, DashboardComponent_tr_589_Template, 27, 9, "tr", 91);
+    \u0275\u0275elementStart(579, "tbody");
+    \u0275\u0275template(580, DashboardComponent_tr_580_Template, 27, 9, "tr", 91);
     \u0275\u0275elementEnd()()();
-    \u0275\u0275template(590, DashboardComponent_div_590_Template, 14, 4, "div", 110)(591, DashboardComponent_div_591_Template, 6, 1, "div", 110);
+    \u0275\u0275template(581, DashboardComponent_div_581_Template, 14, 4, "div", 111)(582, DashboardComponent_div_582_Template, 6, 1, "div", 111);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(592, "section", 24)(593, "div", 44)(594, "form", 111);
-    \u0275\u0275listener("ngSubmit", function DashboardComponent_Template_form_ngSubmit_594_listener() {
+    \u0275\u0275elementStart(583, "section", 25)(584, "div", 44)(585, "form", 112);
+    \u0275\u0275listener("ngSubmit", function DashboardComponent_Template_form_ngSubmit_585_listener() {
       return ctx.savePermissionGroup();
     });
-    \u0275\u0275elementStart(595, "h3");
-    \u0275\u0275text(596);
+    \u0275\u0275elementStart(586, "h3");
+    \u0275\u0275text(587);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(597, "div", 44)(598, "div", 39)(599, "label");
-    \u0275\u0275text(600, "Name");
+    \u0275\u0275elementStart(588, "div", 44)(589, "div", 39)(590, "label");
+    \u0275\u0275text(591, "Name");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(601, "input", 112);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_601_listener($event) {
+    \u0275\u0275elementStart(592, "input", 113);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_592_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.groupForm.name, $event) || (ctx.groupForm.name = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(602, "div", 39)(603, "label");
-    \u0275\u0275text(604, "Code");
+    \u0275\u0275elementStart(593, "div", 39)(594, "label");
+    \u0275\u0275text(595, "Code");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(605, "input", 113);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_605_listener($event) {
+    \u0275\u0275elementStart(596, "input", 114);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_596_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.groupForm.code, $event) || (ctx.groupForm.code = $event);
       return $event;
     });
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(606, "div", 39)(607, "label");
-    \u0275\u0275text(608, "Description");
+    \u0275\u0275elementStart(597, "div", 39)(598, "label");
+    \u0275\u0275text(599, "Description");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(609, "textarea", 114);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_textarea_ngModelChange_609_listener($event) {
+    \u0275\u0275elementStart(600, "textarea", 115);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_textarea_ngModelChange_600_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.groupForm.description, $event) || (ctx.groupForm.description = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(610, "h4");
-    \u0275\u0275text(611, "Permissions");
+    \u0275\u0275elementStart(601, "h4");
+    \u0275\u0275text(602, "Permissions");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(612, "div", 115);
-    \u0275\u0275template(613, DashboardComponent_label_613_Template, 6, 3, "label", 116);
+    \u0275\u0275elementStart(603, "div", 116);
+    \u0275\u0275template(604, DashboardComponent_label_604_Template, 6, 3, "label", 117);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(614, "div", 117)(615, "button", 47);
-    \u0275\u0275text(616, "L\u01B0u nh\xF3m quy\u1EC1n");
+    \u0275\u0275elementStart(605, "div", 118)(606, "button", 47);
+    \u0275\u0275text(607, "L\u01B0u nh\xF3m quy\u1EC1n");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(617, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_617_listener() {
+    \u0275\u0275elementStart(608, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_608_listener() {
       return ctx.cancelGroupEdit();
     });
-    \u0275\u0275text(618, "H\u1EE7y");
+    \u0275\u0275text(609, "H\u1EE7y");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(619, "div", 20)(620, "h3");
-    \u0275\u0275text(621, "Assign Group To Role");
+    \u0275\u0275elementStart(610, "div", 20)(611, "h3");
+    \u0275\u0275text(612, "Assign Group To Role");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(622, "div", 39)(623, "label");
-    \u0275\u0275text(624, "Role");
+    \u0275\u0275elementStart(613, "div", 39)(614, "label");
+    \u0275\u0275text(615, "Role");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(625, "select", 118);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_625_listener($event) {
+    \u0275\u0275elementStart(616, "select", 119);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_616_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.selectedRoleId, $event) || (ctx.selectedRoleId = $event);
       return $event;
     });
-    \u0275\u0275listener("change", function DashboardComponent_Template_select_change_625_listener() {
+    \u0275\u0275listener("change", function DashboardComponent_Template_select_change_616_listener() {
       return ctx.loadRoleGroups();
     });
-    \u0275\u0275elementStart(626, "option", 75);
-    \u0275\u0275text(627, "Ch\u1ECDn role");
+    \u0275\u0275elementStart(617, "option", 75);
+    \u0275\u0275text(618, "Ch\u1ECDn role");
     \u0275\u0275elementEnd();
-    \u0275\u0275template(628, DashboardComponent_option_628_Template, 2, 2, "option", 30);
+    \u0275\u0275template(619, DashboardComponent_option_619_Template, 2, 2, "option", 31);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(629, "div", 115);
-    \u0275\u0275template(630, DashboardComponent_label_630_Template, 6, 3, "label", 116);
+    \u0275\u0275elementStart(620, "div", 116);
+    \u0275\u0275template(621, DashboardComponent_label_621_Template, 6, 3, "label", 117);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(631, "button", 31);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_631_listener() {
+    \u0275\u0275elementStart(622, "button", 32);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_622_listener() {
       return ctx.saveRoleGroups();
     });
-    \u0275\u0275text(632, "L\u01B0u nh\xF3m quy\u1EC1n cho role");
+    \u0275\u0275text(623, "L\u01B0u nh\xF3m quy\u1EC1n cho role");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(633, "div", 119)(634, "h3");
-    \u0275\u0275text(635, "Permission Groups");
+    \u0275\u0275elementStart(624, "div", 120)(625, "h3");
+    \u0275\u0275text(626, "Permission Groups");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(636, "table", 34)(637, "thead")(638, "tr")(639, "th");
-    \u0275\u0275text(640, "ID");
+    \u0275\u0275elementStart(627, "table", 35)(628, "thead")(629, "tr")(630, "th");
+    \u0275\u0275text(631, "ID");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(641, "th");
-    \u0275\u0275text(642, "Name");
+    \u0275\u0275elementStart(632, "th");
+    \u0275\u0275text(633, "Name");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(643, "th");
-    \u0275\u0275text(644, "Code");
+    \u0275\u0275elementStart(634, "th");
+    \u0275\u0275text(635, "Code");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(645, "th");
-    \u0275\u0275text(646, "Description");
+    \u0275\u0275elementStart(636, "th");
+    \u0275\u0275text(637, "Description");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(647, "th");
-    \u0275\u0275text(648, "System");
+    \u0275\u0275elementStart(638, "th");
+    \u0275\u0275text(639, "System");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(649, "th");
-    \u0275\u0275text(650, "Permissions");
+    \u0275\u0275elementStart(640, "th");
+    \u0275\u0275text(641, "Permissions");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(651, "th");
-    \u0275\u0275text(652, "Actions");
+    \u0275\u0275elementStart(642, "th");
+    \u0275\u0275text(643, "Actions");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(653, "tbody");
-    \u0275\u0275template(654, DashboardComponent_tr_654_Template, 22, 7, "tr", 35);
+    \u0275\u0275elementStart(644, "tbody");
+    \u0275\u0275template(645, DashboardComponent_tr_645_Template, 22, 7, "tr", 36);
     \u0275\u0275elementEnd()()();
-    \u0275\u0275template(655, DashboardComponent_div_655_Template, 10, 2, "div", 120)(656, DashboardComponent_div_656_Template, 10, 2, "div", 120)(657, DashboardComponent_div_657_Template, 21, 6, "div", 120);
+    \u0275\u0275template(646, DashboardComponent_div_646_Template, 10, 2, "div", 121)(647, DashboardComponent_div_647_Template, 10, 2, "div", 121)(648, DashboardComponent_div_648_Template, 21, 6, "div", 121);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(658, "section", 24)(659, "div", 20)(660, "h3");
-    \u0275\u0275text(661, "Audit Logs");
+    \u0275\u0275elementStart(649, "section", 25)(650, "div", 20)(651, "h3");
+    \u0275\u0275text(652, "Audit Logs");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(662, "div", 50)(663, "div", 39)(664, "label");
-    \u0275\u0275text(665, "Actor User ID");
+    \u0275\u0275elementStart(653, "div", 50)(654, "div", 39)(655, "label");
+    \u0275\u0275text(656, "Actor User ID");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(666, "input", 121);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_666_listener($event) {
+    \u0275\u0275elementStart(657, "input", 122);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_657_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.auditFilters.actorUserId, $event) || (ctx.auditFilters.actorUserId = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(667, "div", 39)(668, "label");
-    \u0275\u0275text(669, "Action");
+    \u0275\u0275elementStart(658, "div", 39)(659, "label");
+    \u0275\u0275text(660, "Action");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(670, "input", 122);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_670_listener($event) {
+    \u0275\u0275elementStart(661, "input", 123);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_661_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.auditFilters.action, $event) || (ctx.auditFilters.action = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(671, "div", 39)(672, "label");
-    \u0275\u0275text(673, "Target Type");
+    \u0275\u0275elementStart(662, "div", 39)(663, "label");
+    \u0275\u0275text(664, "Target Type");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(674, "input", 123);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_674_listener($event) {
+    \u0275\u0275elementStart(665, "input", 124);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_665_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.auditFilters.targetType, $event) || (ctx.auditFilters.targetType = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(675, "div", 39)(676, "label");
-    \u0275\u0275text(677, "Page Size");
+    \u0275\u0275elementStart(666, "div", 39)(667, "label");
+    \u0275\u0275text(668, "Page Size");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(678, "input", 124);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_678_listener($event) {
+    \u0275\u0275elementStart(669, "input", 125);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_669_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.auditFilters.pageSize, $event) || (ctx.auditFilters.pageSize = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(679, "div", 39)(680, "label");
-    \u0275\u0275text(681, "From Date");
+    \u0275\u0275elementStart(670, "div", 39)(671, "label");
+    \u0275\u0275text(672, "From Date");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(682, "input", 125);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_682_listener($event) {
+    \u0275\u0275elementStart(673, "input", 126);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_673_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.auditFilters.fromDate, $event) || (ctx.auditFilters.fromDate = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(683, "div", 39)(684, "label");
-    \u0275\u0275text(685, "To Date");
+    \u0275\u0275elementStart(674, "div", 39)(675, "label");
+    \u0275\u0275text(676, "To Date");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(686, "input", 126);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_686_listener($event) {
+    \u0275\u0275elementStart(677, "input", 127);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_677_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.auditFilters.toDate, $event) || (ctx.auditFilters.toDate = $event);
       return $event;
     });
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(687, "button", 31);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_687_listener() {
+    \u0275\u0275elementStart(678, "button", 32);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_678_listener() {
       return ctx.loadAuditLogs();
     });
-    \u0275\u0275text(688, "L\u1ECDc audit logs");
+    \u0275\u0275text(679, "L\u1ECDc audit logs");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(689, "table", 127)(690, "thead")(691, "tr")(692, "th");
-    \u0275\u0275text(693, "Created At");
+    \u0275\u0275elementStart(680, "table", 128)(681, "thead")(682, "tr")(683, "th");
+    \u0275\u0275text(684, "Created At");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(694, "th");
-    \u0275\u0275text(695, "Actor");
+    \u0275\u0275elementStart(685, "th");
+    \u0275\u0275text(686, "Actor");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(696, "th");
-    \u0275\u0275text(697, "Action");
+    \u0275\u0275elementStart(687, "th");
+    \u0275\u0275text(688, "Action");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(698, "th");
-    \u0275\u0275text(699, "Target");
+    \u0275\u0275elementStart(689, "th");
+    \u0275\u0275text(690, "Target");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(700, "th");
-    \u0275\u0275text(701, "IP");
+    \u0275\u0275elementStart(691, "th");
+    \u0275\u0275text(692, "IP");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(702, "th");
-    \u0275\u0275text(703, "User Agent");
+    \u0275\u0275elementStart(693, "th");
+    \u0275\u0275text(694, "User Agent");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(704, "th");
-    \u0275\u0275text(705, "Detail");
+    \u0275\u0275elementStart(695, "th");
+    \u0275\u0275text(696, "Detail");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(706, "tbody");
-    \u0275\u0275template(707, DashboardComponent_tr_707_Template, 18, 10, "tr", 35);
+    \u0275\u0275elementStart(697, "tbody");
+    \u0275\u0275template(698, DashboardComponent_tr_698_Template, 18, 10, "tr", 36);
     \u0275\u0275elementEnd()();
-    \u0275\u0275template(708, DashboardComponent_div_708_Template, 17, 2, "div", 120);
+    \u0275\u0275template(699, DashboardComponent_div_699_Template, 17, 2, "div", 121);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(709, "section", 24);
-    \u0275\u0275template(710, DashboardComponent_div_710_Template, 36, 7, "div", 128);
-    \u0275\u0275elementStart(711, "div", 119)(712, "h3");
-    \u0275\u0275text(713, "Quiz Set Statistics");
+    \u0275\u0275elementStart(700, "section", 25);
+    \u0275\u0275template(701, DashboardComponent_div_701_Template, 36, 7, "div", 129);
+    \u0275\u0275elementStart(702, "div", 120)(703, "h3");
+    \u0275\u0275text(704, "Quiz Set Statistics");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(714, "div", 4)(715, "select", 129);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_715_listener($event) {
+    \u0275\u0275elementStart(705, "div", 4)(706, "select", 130);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_select_ngModelChange_706_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.selectedStatsQuizSetId, $event) || (ctx.selectedStatsQuizSetId = $event);
       return $event;
     });
-    \u0275\u0275elementStart(716, "option", 75);
-    \u0275\u0275text(717, "Ch\u1ECDn quiz set");
+    \u0275\u0275elementStart(707, "option", 75);
+    \u0275\u0275text(708, "Ch\u1ECDn quiz set");
     \u0275\u0275elementEnd();
-    \u0275\u0275template(718, DashboardComponent_option_718_Template, 2, 3, "option", 30);
+    \u0275\u0275template(709, DashboardComponent_option_709_Template, 2, 3, "option", 31);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(719, "button", 31);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_719_listener() {
+    \u0275\u0275elementStart(710, "button", 32);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_710_listener() {
       return ctx.loadQuizStats();
     });
-    \u0275\u0275text(720, "T\u1EA3i th\u1ED1ng k\xEA");
+    \u0275\u0275text(711, "T\u1EA3i th\u1ED1ng k\xEA");
     \u0275\u0275elementEnd()();
-    \u0275\u0275template(721, DashboardComponent_div_721_Template, 41, 8, "div", 130);
+    \u0275\u0275template(712, DashboardComponent_div_712_Template, 41, 8, "div", 131);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(722, "div", 76)(723, "div", 20)(724, "h3");
-    \u0275\u0275text(725, "Reset Attempt");
+    \u0275\u0275elementStart(713, "div", 76)(714, "div", 20)(715, "h3");
+    \u0275\u0275text(716, "Reset Attempt");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(726, "div", 39)(727, "label");
-    \u0275\u0275text(728, "Attempt ID");
+    \u0275\u0275elementStart(717, "div", 39)(718, "label");
+    \u0275\u0275text(719, "Attempt ID");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(729, "input", 131);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_729_listener($event) {
+    \u0275\u0275elementStart(720, "input", 132);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_720_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.resetAttemptId, $event) || (ctx.resetAttemptId = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(730, "button", 31);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_730_listener() {
+    \u0275\u0275elementStart(721, "button", 32);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_721_listener() {
       return ctx.resetAttempt();
     });
-    \u0275\u0275text(731, "Reset Attempt");
+    \u0275\u0275text(722, "Reset Attempt");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(732, "div", 20)(733, "h3");
-    \u0275\u0275text(734, "Reset User Attempts In Quiz");
+    \u0275\u0275elementStart(723, "div", 20)(724, "h3");
+    \u0275\u0275text(725, "Reset User Attempts In Quiz");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(735, "div", 44)(736, "div", 39)(737, "label");
-    \u0275\u0275text(738, "Quiz Set ID");
+    \u0275\u0275elementStart(726, "div", 44)(727, "div", 39)(728, "label");
+    \u0275\u0275text(729, "Quiz Set ID");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(739, "input", 132);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_739_listener($event) {
+    \u0275\u0275elementStart(730, "input", 133);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_730_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.resetQuizSetId, $event) || (ctx.resetQuizSetId = $event);
       return $event;
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(740, "div", 39)(741, "label");
-    \u0275\u0275text(742, "User ID");
+    \u0275\u0275elementStart(731, "div", 39)(732, "label");
+    \u0275\u0275text(733, "User ID");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(743, "input", 133);
-    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_743_listener($event) {
+    \u0275\u0275elementStart(734, "input", 134);
+    \u0275\u0275twoWayListener("ngModelChange", function DashboardComponent_Template_input_ngModelChange_734_listener($event) {
       \u0275\u0275twoWayBindingSet(ctx.resetUserId, $event) || (ctx.resetUserId = $event);
       return $event;
     });
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(744, "button", 31);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_744_listener() {
+    \u0275\u0275elementStart(735, "button", 32);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_735_listener() {
       return ctx.resetUserQuizAttempts();
     });
-    \u0275\u0275text(745, "Reset Attempts");
+    \u0275\u0275text(736, "Reset Attempts");
     \u0275\u0275elementEnd()()()();
-    \u0275\u0275elementStart(746, "section", 24)(747, "div", 20)(748, "h3");
-    \u0275\u0275text(749, "Import Questions from Excel/CSV");
+    \u0275\u0275elementStart(737, "section", 25)(738, "div", 20)(739, "h3");
+    \u0275\u0275text(740, "Import Questions from Excel/CSV");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(750, "p", 12);
-    \u0275\u0275text(751, "D\xE0nh cho Admin/Gi\u1EA3ng vi\xEAn nh\u1EADp ng\xE2n h\xE0ng c\xE2u h\u1ECFi. T\u1EA3i file m\u1EABu CSV, m\u1EDF b\u1EB1ng Excel, \u0111i\u1EC1n c\xE2u h\u1ECFi r\u1ED3i l\u01B0u l\u1EA1i d\u1EA1ng .csv \u0111\u1EC3 import v\xE0o database.");
+    \u0275\u0275elementStart(741, "p", 12);
+    \u0275\u0275text(742, "D\xE0nh cho Admin/Gi\u1EA3ng vi\xEAn nh\u1EADp ng\xE2n h\xE0ng c\xE2u h\u1ECFi. T\u1EA3i file m\u1EABu CSV, m\u1EDF b\u1EB1ng Excel, \u0111i\u1EC1n c\xE2u h\u1ECFi r\u1ED3i l\u01B0u l\u1EA1i d\u1EA1ng .csv \u0111\u1EC3 import v\xE0o database.");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(752, "div", 134);
-    \u0275\u0275text(753, "Import t\u1EA1i \u0111\xE2y d\xF9ng cho Admin/Gi\u1EA3ng vi\xEAn nh\u1EADp ng\xE2n h\xE0ng c\xE2u h\u1ECFi chung. Ng\u01B0\u1EDDi h\u1ECDc c\xF3 khu v\u1EF1c T\u1EF1 luy\u1EC7n ri\xEAng \u0111\u1EC3 upload file c\xE2u h\u1ECFi c\xE1 nh\xE2n, d\u1EEF li\u1EC7u ch\u1EC9 thu\u1ED9c v\u1EC1 t\xE0i kho\u1EA3n \u0111\xF3.");
+    \u0275\u0275elementStart(743, "div", 135);
+    \u0275\u0275text(744, "Import t\u1EA1i \u0111\xE2y d\xF9ng cho Admin/Gi\u1EA3ng vi\xEAn nh\u1EADp ng\xE2n h\xE0ng c\xE2u h\u1ECFi chung. Ng\u01B0\u1EDDi h\u1ECDc c\xF3 khu v\u1EF1c T\u1EF1 luy\u1EC7n ri\xEAng \u0111\u1EC3 upload file c\xE2u h\u1ECFi c\xE1 nh\xE2n, d\u1EEF li\u1EC7u ch\u1EC9 thu\u1ED9c v\u1EC1 t\xE0i kho\u1EA3n \u0111\xF3.");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(754, "div", 44)(755, "div")(756, "h4");
-    \u0275\u0275text(757, "1. T\u1EA3i file m\u1EABu");
+    \u0275\u0275elementStart(745, "div", 44)(746, "div")(747, "h4");
+    \u0275\u0275text(748, "1. T\u1EA3i file m\u1EABu");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(758, "p", 12);
-    \u0275\u0275text(759, "File c\xF3 c\xE1c c\u1ED9t: CategoryId, Title, Content, OptionA-D, CorrectOption, Explanation.");
+    \u0275\u0275elementStart(749, "p", 12);
+    \u0275\u0275text(750, "File c\xF3 c\xE1c c\u1ED9t: CategoryId, Title, Content, OptionA-D, CorrectOption, Explanation.");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(760, "button", 32);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_760_listener() {
+    \u0275\u0275elementStart(751, "button", 33);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_751_listener() {
       return ctx.downloadCsvTemplate();
     });
-    \u0275\u0275text(761, "Download CSV Template");
+    \u0275\u0275text(752, "Download CSV Template");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(762, "div")(763, "h4");
-    \u0275\u0275text(764, "2. Upload CSV");
+    \u0275\u0275elementStart(753, "div")(754, "h4");
+    \u0275\u0275text(755, "2. Upload CSV");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(765, "input", 135);
-    \u0275\u0275listener("change", function DashboardComponent_Template_input_change_765_listener($event) {
+    \u0275\u0275elementStart(756, "input", 136);
+    \u0275\u0275listener("change", function DashboardComponent_Template_input_change_756_listener($event) {
       return ctx.pick($event);
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(766, "button", 136);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_766_listener() {
+    \u0275\u0275elementStart(757, "button", 137);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_757_listener() {
       return ctx.importFile();
     });
-    \u0275\u0275text(767, "Import CSV");
+    \u0275\u0275text(758, "Import CSV");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(768, "details", 137)(769, "summary");
-    \u0275\u0275text(770, "Advanced: Import JSON cho developer/seed d\u1EEF li\u1EC7u");
+    \u0275\u0275elementStart(759, "details", 138)(760, "summary");
+    \u0275\u0275text(761, "Advanced: Import JSON cho developer/seed d\u1EEF li\u1EC7u");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(771, "p", 12);
-    \u0275\u0275text(772, "JSON ch\u1EC9 d\xF9ng cho ki\u1EC3m th\u1EED k\u1EF9 thu\u1EADt ho\u1EB7c seed d\u1EEF li\u1EC7u, kh\xF4ng ph\u1EA3i lu\u1ED3ng ch\xEDnh trong th\u1EF1c t\u1EBF.");
+    \u0275\u0275elementStart(762, "p", 12);
+    \u0275\u0275text(763, "JSON ch\u1EC9 d\xF9ng cho ki\u1EC3m th\u1EED k\u1EF9 thu\u1EADt ho\u1EB7c seed d\u1EEF li\u1EC7u, kh\xF4ng ph\u1EA3i lu\u1ED3ng ch\xEDnh trong th\u1EF1c t\u1EBF.");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(773, "input", 138);
-    \u0275\u0275listener("change", function DashboardComponent_Template_input_change_773_listener($event) {
+    \u0275\u0275elementStart(764, "input", 139);
+    \u0275\u0275listener("change", function DashboardComponent_Template_input_change_764_listener($event) {
       return ctx.pick($event);
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(774, "button", 139);
-    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_774_listener() {
+    \u0275\u0275elementStart(765, "button", 140);
+    \u0275\u0275listener("click", function DashboardComponent_Template_button_click_765_listener() {
       return ctx.importJsonFile();
     });
-    \u0275\u0275text(775, "Import JSON Advanced");
+    \u0275\u0275text(766, "Import JSON Advanced");
     \u0275\u0275elementEnd()();
-    \u0275\u0275template(776, DashboardComponent_pre_776_Template, 3, 3, "pre", 140);
+    \u0275\u0275template(767, DashboardComponent_pre_767_Template, 3, 3, "pre", 141);
     \u0275\u0275elementEnd()()();
-    \u0275\u0275template(777, DashboardComponent_div_777_Template, 17, 3, "div", 141);
+    \u0275\u0275template(768, DashboardComponent_div_768_Template, 17, 3, "div", 142);
     \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
-    \u0275\u0275advance(26);
+    \u0275\u0275advance(8);
+    \u0275\u0275property("ngIf", ctx.can("code.manage"));
+    \u0275\u0275advance(17);
     \u0275\u0275textInterpolate(ctx.users.length);
     \u0275\u0275advance(8);
     \u0275\u0275textInterpolate(ctx.questions.length);
@@ -50795,24 +51055,28 @@ _DashboardComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ ty
     \u0275\u0275advance();
     \u0275\u0275property("ngIf", ctx.error);
     \u0275\u0275advance(5);
-    \u0275\u0275classProp("active", ctx.tab === "questions");
-    \u0275\u0275advance(2);
-    \u0275\u0275classProp("active", ctx.tab === "categories");
-    \u0275\u0275advance(2);
-    \u0275\u0275classProp("active", ctx.tab === "quizsets");
-    \u0275\u0275advance(2);
-    \u0275\u0275classProp("active", ctx.tab === "users");
-    \u0275\u0275advance(2);
-    \u0275\u0275classProp("active", ctx.tab === "access");
-    \u0275\u0275advance(2);
-    \u0275\u0275classProp("active", ctx.tab === "roadmaps");
-    \u0275\u0275advance(2);
-    \u0275\u0275classProp("active", ctx.tab === "audit");
-    \u0275\u0275advance(2);
-    \u0275\u0275classProp("active", ctx.tab === "analytics");
-    \u0275\u0275advance(2);
-    \u0275\u0275classProp("active", ctx.tab === "import");
-    \u0275\u0275advance(4);
+    \u0275\u0275property("ngIf", ctx.canSeeTab("questions"));
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx.canSeeTab("categories"));
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx.canSeeTab("quizsets"));
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx.canSeeTab("users"));
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx.canSeeTab("access"));
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx.canSeeTab("roadmaps"));
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx.canSeeTab("audit"));
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx.canSeeTab("analytics"));
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx.canSeeTab("import"));
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx.can("forum.moderate"));
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", !ctx.tab);
+    \u0275\u0275advance();
     \u0275\u0275classProp("active", ctx.tab === "questions");
     \u0275\u0275advance(3);
     \u0275\u0275twoWayProperty("ngModel", ctx.searchQuestion);
@@ -51007,6 +51271,8 @@ _DashboardComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ ty
     \u0275\u0275advance();
     \u0275\u0275property("ngIf", ctx.roadmapLessonForm.type === "Video");
     \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx.roadmapLessonForm.type === "Video");
+    \u0275\u0275advance();
     \u0275\u0275property("ngIf", ctx.roadmapLessonForm.type === "Quiz");
     \u0275\u0275advance();
     \u0275\u0275property("ngIf", ctx.roadmapLessonForm.type === "CodePractice");
@@ -51022,8 +51288,10 @@ _DashboardComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ ty
     \u0275\u0275twoWayProperty("ngModel", ctx.roadmapLessonForm.isPublished);
     \u0275\u0275advance(5);
     \u0275\u0275twoWayProperty("ngModel", ctx.roadmapLessonForm.content);
-    \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(ctx.editingRoadmapLessonId ? "Update Lesson" : "Save Lesson");
+    \u0275\u0275advance(2);
+    \u0275\u0275property("disabled", ctx.roadmapVideoUploading);
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate(ctx.roadmapVideoUploading ? "Uploading video..." : ctx.editingRoadmapLessonId ? "Update Lesson" : "Save Lesson");
     \u0275\u0275advance(20);
     \u0275\u0275property("ngForOf", ctx.selectedRoadmapLessons);
     \u0275\u0275advance();
@@ -51113,7 +51381,7 @@ var DashboardComponent = _DashboardComponent;
       <span>Admin Panel</span>
     </a>
     <div class="action-row">
-      <a class="btn btn-outline" routerLink="/code">Code Judge</a>
+      <a class="btn btn-outline" routerLink="/code" *ngIf="can('code.manage')">Code Judge</a>
       <button type="button" class="admin-sso-link" (click)="openUserWorkspace()">Back to User Workspace</button>
       <button class="btn btn-ghost" type="button" (click)="auth.logout()">Logout</button>
     </div>
@@ -51138,17 +51406,19 @@ var DashboardComponent = _DashboardComponent;
     <div class="card card-pad">
       <h2>Content Management</h2>
       <div class="admin-tabs">
-        <button class="admin-tab" [class.active]="tab==='questions'" (click)="setTab('questions')">Questions</button>
-        <button class="admin-tab" [class.active]="tab==='categories'" (click)="setTab('categories')">Categories</button>
-        <button class="admin-tab" [class.active]="tab==='quizsets'" (click)="setTab('quizsets')">Quiz Sets</button>
-        <button class="admin-tab" [class.active]="tab==='users'" (click)="setTab('users')">Users</button>
-        <button class="admin-tab" [class.active]="tab==='access'" (click)="setTab('access')">Access Control</button>
-        <button class="admin-tab" [class.active]="tab==='roadmaps'" (click)="setTab('roadmaps')">Roadmaps</button>
-        <button class="admin-tab" [class.active]="tab==='audit'" (click)="setTab('audit')">Audit Logs</button>
-        <button class="admin-tab" [class.active]="tab==='analytics'" (click)="setTab('analytics')">Quiz Analytics</button>
-        <button class="admin-tab" [class.active]="tab==='import'" (click)="setTab('import')">Import Questions</button>
-        <a class="admin-tab" routerLink="/forum">Forum Management</a>
+        <button class="admin-tab" *ngIf="canSeeTab('questions')" [class.active]="tab==='questions'" (click)="setTab('questions')">Questions</button>
+        <button class="admin-tab" *ngIf="canSeeTab('categories')" [class.active]="tab==='categories'" (click)="setTab('categories')">Categories</button>
+        <button class="admin-tab" *ngIf="canSeeTab('quizsets')" [class.active]="tab==='quizsets'" (click)="setTab('quizsets')">Quiz Sets</button>
+        <button class="admin-tab" *ngIf="canSeeTab('users')" [class.active]="tab==='users'" (click)="setTab('users')">Users</button>
+        <button class="admin-tab" *ngIf="canSeeTab('access')" [class.active]="tab==='access'" (click)="setTab('access')">Access Control</button>
+        <button class="admin-tab" *ngIf="canSeeTab('roadmaps')" [class.active]="tab==='roadmaps'" (click)="setTab('roadmaps')">Roadmaps</button>
+        <button class="admin-tab" *ngIf="canSeeTab('audit')" [class.active]="tab==='audit'" (click)="setTab('audit')">Audit Logs</button>
+        <button class="admin-tab" *ngIf="canSeeTab('analytics')" [class.active]="tab==='analytics'" (click)="setTab('analytics')">Quiz Analytics</button>
+        <button class="admin-tab" *ngIf="canSeeTab('import')" [class.active]="tab==='import'" (click)="setTab('import')">Import Questions</button>
+        <a class="admin-tab" *ngIf="can('forum.moderate')" routerLink="/forum">Forum Management</a>
       </div>
+
+      <div class="empty-state" *ngIf="!tab">T\xE0i kho\u1EA3n \u0111\xE3 c\xF3 quy\u1EC1n v\xE0o Admin Portal nh\u01B0ng ch\u01B0a \u0111\u01B0\u1EE3c g\xE1n quy\u1EC1n qu\u1EA3n tr\u1ECB ch\u1EE9c n\u0103ng.</div>
 
       <section class="admin-panel" [class.active]="tab==='questions'">
         <div class="filters">
@@ -51346,7 +51616,17 @@ var DashboardComponent = _DashboardComponent;
               <div class="form-group"><label>Type</label><select class="select" name="roadmapLessonType" [(ngModel)]="roadmapLessonForm.type"><option>Reading</option><option>Video</option><option>Quiz</option><option>CodePractice</option><option>Assignment</option></select></div>
               <div class="form-group"><label>Sort order</label><input class="input" type="number" name="roadmapLessonSort" [(ngModel)]="roadmapLessonForm.sortOrder"></div>
               <div class="form-group"><label>Estimated minutes</label><input class="input" type="number" name="roadmapLessonMinutes" [(ngModel)]="roadmapLessonForm.estimatedMinutes"></div>
-              <div class="form-group" *ngIf="roadmapLessonForm.type==='Video'"><label>Video URL</label><input class="input" name="roadmapLessonVideo" [(ngModel)]="roadmapLessonForm.videoUrl"></div>
+              <div class="form-group" *ngIf="roadmapLessonForm.type==='Video'">
+                <label>Video URL</label>
+                <input class="input" name="roadmapLessonVideo" [(ngModel)]="roadmapLessonForm.videoUrl" placeholder="https://www.youtube.com/watch?v=...">
+                <small class="muted">Paste a YouTube URL or upload an mp4/webm video file.</small>
+              </div>
+              <div class="form-group" *ngIf="roadmapLessonForm.type==='Video'">
+                <label>Upload Video File</label>
+                <input class="input" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" (change)="pickRoadmapVideo($event)">
+                <small class="muted" *ngIf="roadmapVideoFile">Selected: {{roadmapVideoFile.name}}</small>
+                <small class="muted" *ngIf="!roadmapVideoFile && roadmapLessonForm.videoFileId">Current file #{{roadmapLessonForm.videoFileId}}</small>
+              </div>
               <div class="form-group" *ngIf="roadmapLessonForm.type==='Quiz'"><label>Quiz set</label><select class="select" name="roadmapLessonQuizSet" [(ngModel)]="roadmapLessonForm.quizSetId"><option [ngValue]="null">Choose quiz set</option><option *ngFor="let q of quizSets" [ngValue]="q.id">#{{q.id}} {{q.title}}</option></select></div>
               <div class="form-group" *ngIf="roadmapLessonForm.type==='CodePractice'"><label>Coding problem ID</label><input class="input" type="number" name="roadmapLessonProblem" [(ngModel)]="roadmapLessonForm.codingProblemId"></div>
               <div class="form-group"><label>Unlock after lesson ID</label><input class="input" type="number" name="roadmapLessonUnlock" [(ngModel)]="roadmapLessonForm.unlockAfterLessonId"></div>
@@ -51358,7 +51638,7 @@ var DashboardComponent = _DashboardComponent;
               <label><input type="checkbox" name="roadmapLessonPublished" [(ngModel)]="roadmapLessonForm.isPublished"> Published</label>
             </div>
             <div class="form-group"><label>Content</label><textarea class="textarea" name="roadmapLessonContent" [(ngModel)]="roadmapLessonForm.content"></textarea></div>
-            <div class="action-row"><button class="btn btn-primary">{{editingRoadmapLessonId ? 'Update Lesson' : 'Save Lesson'}}</button><button class="btn btn-outline" type="button" (click)="cancelRoadmapLessonEdit()">Cancel</button></div>
+            <div class="action-row"><button class="btn btn-primary" [disabled]="roadmapVideoUploading">{{roadmapVideoUploading ? 'Uploading video...' : (editingRoadmapLessonId ? 'Update Lesson' : 'Save Lesson')}}</button><button class="btn btn-outline" type="button" (click)="cancelRoadmapLessonEdit()">Cancel</button></div>
           </form>
 
           <div class="card card-pad">
@@ -52338,8 +52618,11 @@ var _ForumManagementComponent = class _ForumManagementComponent {
   get isAdmin() {
     return this.auth.hasRole("Admin");
   }
+  get canManageForumTags() {
+    return this.isAdmin;
+  }
   get apiRoot() {
-    return this.isAdmin ? "/api/v1/admin/forum" : "/api/v1/moderator/forum";
+    return this.isAdmin || this.auth.hasPermission("forum.moderate") ? "/api/v1/admin/forum" : "/api/v1/moderator/forum";
   }
   get pendingReports() {
     return this.reports.filter((r) => Number(r.status) === 0 || Number(r.status) === 1 || String(r.status).toLowerCase() === "pending").length;
@@ -52348,7 +52631,7 @@ var _ForumManagementComponent = class _ForumManagementComponent {
     this.loadAll();
   }
   setTab(tab) {
-    if (tab === "tags" && !this.isAdmin)
+    if (tab === "tags" && !this.canManageForumTags)
       return;
     this.tab = tab;
     this.message = "";
@@ -53038,7 +53321,7 @@ var ForumManagementComponent = _ForumManagementComponent;
 // src/app/features/code-management.component.ts
 function CodeManagementComponent_div_22_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 19);
+    \u0275\u0275elementStart(0, "div", 20);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -53050,7 +53333,7 @@ function CodeManagementComponent_div_22_Template(rf, ctx) {
 }
 function CodeManagementComponent_div_23_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 20);
+    \u0275\u0275elementStart(0, "div", 21);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -53060,14 +53343,57 @@ function CodeManagementComponent_div_23_Template(rf, ctx) {
     \u0275\u0275textInterpolate(ctx_r0.error);
   }
 }
-function CodeManagementComponent_ng_container_32_div_103_Template(rf, ctx) {
+function CodeManagementComponent_ng_container_32_div_14_pre_9_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "pre", 66);
+    \u0275\u0275text(1);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext(3);
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate(ctx_r0.importResult.errors.join("\n"));
+  }
+}
+function CodeManagementComponent_ng_container_32_div_14_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 61)(1, "b");
+    \u0275\u0275text(2);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(3, "span", 62);
+    \u0275\u0275text(4);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(5, "span", 63);
+    \u0275\u0275text(6);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(7, "span", 64);
+    \u0275\u0275text(8);
+    \u0275\u0275elementEnd();
+    \u0275\u0275template(9, CodeManagementComponent_ng_container_32_div_14_pre_9_Template, 2, 1, "pre", 65);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext(2);
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate1("Total ", ctx_r0.importResult.total || 0);
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate1("Created ", ctx_r0.importResult.created || 0);
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate1("Updated ", ctx_r0.importResult.updated || 0);
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate1("Skipped ", ctx_r0.importResult.skipped || 0);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx_r0.importResult.errors == null ? null : ctx_r0.importResult.errors.length);
+  }
+}
+function CodeManagementComponent_ng_container_32_div_117_Template(rf, ctx) {
   if (rf & 1) {
     const _r3 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "div", 54)(1, "div", 55)(2, "b");
+    \u0275\u0275elementStart(0, "div", 67)(1, "div", 23)(2, "b");
     \u0275\u0275text(3);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(4, "label")(5, "input", 56);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_div_103_Template_input_ngModelChange_5_listener($event) {
+    \u0275\u0275elementStart(4, "label")(5, "input", 68);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_div_117_Template_input_ngModelChange_5_listener($event) {
       const tc_r4 = \u0275\u0275restoreView(_r3).$implicit;
       \u0275\u0275twoWayBindingSet(tc_r4.isHidden, $event) || (tc_r4.isHidden = $event);
       return \u0275\u0275resetView($event);
@@ -53075,39 +53401,39 @@ function CodeManagementComponent_ng_container_32_div_103_Template(rf, ctx) {
     \u0275\u0275elementEnd();
     \u0275\u0275text(6, " Hidden test");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(7, "button", 9);
-    \u0275\u0275listener("click", function CodeManagementComponent_ng_container_32_div_103_Template_button_click_7_listener() {
+    \u0275\u0275elementStart(7, "button", 10);
+    \u0275\u0275listener("click", function CodeManagementComponent_ng_container_32_div_117_Template_button_click_7_listener() {
       const i_r5 = \u0275\u0275restoreView(_r3).index;
       const ctx_r0 = \u0275\u0275nextContext(2);
       return \u0275\u0275resetView(ctx_r0.removeTestCase(i_r5));
     });
     \u0275\u0275text(8, "Remove");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(9, "div", 23)(10, "div", 24)(11, "label");
+    \u0275\u0275elementStart(9, "div", 32)(10, "div", 33)(11, "label");
     \u0275\u0275text(12, "Input");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(13, "textarea", 57);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_div_103_Template_textarea_ngModelChange_13_listener($event) {
+    \u0275\u0275elementStart(13, "textarea", 69);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_div_117_Template_textarea_ngModelChange_13_listener($event) {
       const tc_r4 = \u0275\u0275restoreView(_r3).$implicit;
       \u0275\u0275twoWayBindingSet(tc_r4.input, $event) || (tc_r4.input = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(14, "div", 24)(15, "label");
+    \u0275\u0275elementStart(14, "div", 33)(15, "label");
     \u0275\u0275text(16, "Expected Output");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(17, "textarea", 57);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_div_103_Template_textarea_ngModelChange_17_listener($event) {
+    \u0275\u0275elementStart(17, "textarea", 69);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_div_117_Template_textarea_ngModelChange_17_listener($event) {
       const tc_r4 = \u0275\u0275restoreView(_r3).$implicit;
       \u0275\u0275twoWayBindingSet(tc_r4.expectedOutput, $event) || (tc_r4.expectedOutput = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(18, "div", 24)(19, "label");
+    \u0275\u0275elementStart(18, "div", 33)(19, "label");
     \u0275\u0275text(20, "Explanation");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(21, "input", 58);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_div_103_Template_input_ngModelChange_21_listener($event) {
+    \u0275\u0275elementStart(21, "input", 70);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_div_117_Template_input_ngModelChange_21_listener($event) {
       const tc_r4 = \u0275\u0275restoreView(_r3).$implicit;
       \u0275\u0275twoWayBindingSet(tc_r4.explanation, $event) || (tc_r4.explanation = $event);
       return \u0275\u0275resetView($event);
@@ -53133,7 +53459,7 @@ function CodeManagementComponent_ng_container_32_div_103_Template(rf, ctx) {
     \u0275\u0275property("name", "explain" + i_r5);
   }
 }
-function CodeManagementComponent_ng_container_32_tr_130_Template(rf, ctx) {
+function CodeManagementComponent_ng_container_32_tr_144_Template(rf, ctx) {
   if (rf & 1) {
     const _r6 = \u0275\u0275getCurrentView();
     \u0275\u0275elementStart(0, "tr")(1, "td");
@@ -53142,10 +53468,10 @@ function CodeManagementComponent_ng_container_32_tr_130_Template(rf, ctx) {
     \u0275\u0275elementStart(3, "td")(4, "b");
     \u0275\u0275text(5);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(6, "div", 59);
+    \u0275\u0275elementStart(6, "div", 71);
     \u0275\u0275text(7);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(8, "td")(9, "span", 60);
+    \u0275\u0275elementStart(8, "td")(9, "span", 72);
     \u0275\u0275text(10);
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(11, "td");
@@ -53157,16 +53483,16 @@ function CodeManagementComponent_ng_container_32_tr_130_Template(rf, ctx) {
     \u0275\u0275elementStart(15, "td");
     \u0275\u0275text(16);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(17, "td", 5)(18, "button", 48);
-    \u0275\u0275listener("click", function CodeManagementComponent_ng_container_32_tr_130_Template_button_click_18_listener() {
+    \u0275\u0275elementStart(17, "td", 6)(18, "button", 26);
+    \u0275\u0275listener("click", function CodeManagementComponent_ng_container_32_tr_144_Template_button_click_18_listener() {
       const p_r7 = \u0275\u0275restoreView(_r6).$implicit;
       const ctx_r0 = \u0275\u0275nextContext(2);
       return \u0275\u0275resetView(ctx_r0.edit(p_r7));
     });
     \u0275\u0275text(19, "Edit");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(20, "button", 9);
-    \u0275\u0275listener("click", function CodeManagementComponent_ng_container_32_tr_130_Template_button_click_20_listener() {
+    \u0275\u0275elementStart(20, "button", 10);
+    \u0275\u0275listener("click", function CodeManagementComponent_ng_container_32_tr_144_Template_button_click_20_listener() {
       const p_r7 = \u0275\u0275restoreView(_r6).$implicit;
       const ctx_r0 = \u0275\u0275nextContext(2);
       return \u0275\u0275resetView(ctx_r0.delete(p_r7));
@@ -53199,299 +53525,336 @@ function CodeManagementComponent_ng_container_32_Template(rf, ctx) {
   if (rf & 1) {
     const _r2 = \u0275\u0275getCurrentView();
     \u0275\u0275elementContainerStart(0);
-    \u0275\u0275elementStart(1, "section", 21)(2, "h3");
-    \u0275\u0275text(3);
+    \u0275\u0275elementStart(1, "section", 22)(2, "div", 23)(3, "div")(4, "h3", 24);
+    \u0275\u0275text(5, "Import Problems");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(4, "form", 22);
-    \u0275\u0275listener("ngSubmit", function CodeManagementComponent_ng_container_32_Template_form_ngSubmit_4_listener() {
+    \u0275\u0275elementStart(6, "p", 25);
+    \u0275\u0275text(7, "Upload JSON first for nested test cases; CSV is supported for flat imports.");
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(8, "button", 26);
+    \u0275\u0275listener("click", function CodeManagementComponent_ng_container_32_Template_button_click_8_listener() {
+      \u0275\u0275restoreView(_r2);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.downloadSampleJson());
+    });
+    \u0275\u0275text(9, "Download Sample JSON");
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(10, "div", 27)(11, "input", 28);
+    \u0275\u0275listener("change", function CodeManagementComponent_ng_container_32_Template_input_change_11_listener($event) {
+      \u0275\u0275restoreView(_r2);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.pickImportFile($event));
+    });
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(12, "button", 29);
+    \u0275\u0275listener("click", function CodeManagementComponent_ng_container_32_Template_button_click_12_listener() {
+      \u0275\u0275restoreView(_r2);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.importProblems());
+    });
+    \u0275\u0275text(13);
+    \u0275\u0275elementEnd()();
+    \u0275\u0275template(14, CodeManagementComponent_ng_container_32_div_14_Template, 10, 5, "div", 30);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(15, "section", 22)(16, "h3");
+    \u0275\u0275text(17);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(18, "form", 31);
+    \u0275\u0275listener("ngSubmit", function CodeManagementComponent_ng_container_32_Template_form_ngSubmit_18_listener() {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r0.save());
     });
-    \u0275\u0275elementStart(5, "div", 23)(6, "div", 24)(7, "label");
-    \u0275\u0275text(8, "Title");
+    \u0275\u0275elementStart(19, "div", 32)(20, "div", 33)(21, "label");
+    \u0275\u0275text(22, "Title");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(9, "input", 25);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_input_ngModelChange_9_listener($event) {
+    \u0275\u0275elementStart(23, "input", 34);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_input_ngModelChange_23_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.title, $event) || (ctx_r0.form.title = $event);
       return \u0275\u0275resetView($event);
     });
-    \u0275\u0275listener("blur", function CodeManagementComponent_ng_container_32_Template_input_blur_9_listener() {
+    \u0275\u0275listener("blur", function CodeManagementComponent_ng_container_32_Template_input_blur_23_listener() {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r0.autoSlug());
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(10, "div", 24)(11, "label");
-    \u0275\u0275text(12, "Slug");
+    \u0275\u0275elementStart(24, "div", 33)(25, "label");
+    \u0275\u0275text(26, "Slug");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(13, "input", 26);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_input_ngModelChange_13_listener($event) {
+    \u0275\u0275elementStart(27, "input", 35);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_input_ngModelChange_27_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.slug, $event) || (ctx_r0.form.slug = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(14, "div", 24)(15, "label");
-    \u0275\u0275text(16, "Description");
+    \u0275\u0275elementStart(28, "div", 33)(29, "label");
+    \u0275\u0275text(30, "Description");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(17, "textarea", 27);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_17_listener($event) {
+    \u0275\u0275elementStart(31, "textarea", 36);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_31_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.description, $event) || (ctx_r0.form.description = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(18, "div", 28)(19, "div", 24)(20, "label");
-    \u0275\u0275text(21, "Difficulty");
+    \u0275\u0275elementStart(32, "div", 37)(33, "div", 33)(34, "label");
+    \u0275\u0275text(35, "Difficulty");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(22, "select", 29);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_select_ngModelChange_22_listener($event) {
+    \u0275\u0275elementStart(36, "select", 38);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_select_ngModelChange_36_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.difficulty, $event) || (ctx_r0.form.difficulty = $event);
       return \u0275\u0275resetView($event);
     });
-    \u0275\u0275elementStart(23, "option", 30);
-    \u0275\u0275text(24, "Easy");
+    \u0275\u0275elementStart(37, "option", 39);
+    \u0275\u0275text(38, "Easy");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(25, "option", 30);
-    \u0275\u0275text(26, "Medium");
+    \u0275\u0275elementStart(39, "option", 39);
+    \u0275\u0275text(40, "Medium");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(27, "option", 30);
-    \u0275\u0275text(28, "Hard");
+    \u0275\u0275elementStart(41, "option", 39);
+    \u0275\u0275text(42, "Hard");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(29, "div", 24)(30, "label");
-    \u0275\u0275text(31, "Status");
+    \u0275\u0275elementStart(43, "div", 33)(44, "label");
+    \u0275\u0275text(45, "Status");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(32, "select", 31);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_select_ngModelChange_32_listener($event) {
+    \u0275\u0275elementStart(46, "select", 40);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_select_ngModelChange_46_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.status, $event) || (ctx_r0.form.status = $event);
       return \u0275\u0275resetView($event);
     });
-    \u0275\u0275elementStart(33, "option", 30);
-    \u0275\u0275text(34, "Published");
+    \u0275\u0275elementStart(47, "option", 39);
+    \u0275\u0275text(48, "Published");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(35, "option", 30);
-    \u0275\u0275text(36, "Draft");
+    \u0275\u0275elementStart(49, "option", 39);
+    \u0275\u0275text(50, "Draft");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(37, "div", 24)(38, "label");
-    \u0275\u0275text(39, "Tags");
+    \u0275\u0275elementStart(51, "div", 33)(52, "label");
+    \u0275\u0275text(53, "Tags");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(40, "input", 32);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_input_ngModelChange_40_listener($event) {
+    \u0275\u0275elementStart(54, "input", 41);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_input_ngModelChange_54_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.tags, $event) || (ctx_r0.form.tags = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(41, "div", 23)(42, "div", 24)(43, "label");
-    \u0275\u0275text(44, "Input Format");
+    \u0275\u0275elementStart(55, "div", 32)(56, "div", 33)(57, "label");
+    \u0275\u0275text(58, "Input Format");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(45, "textarea", 33);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_45_listener($event) {
+    \u0275\u0275elementStart(59, "textarea", 42);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_59_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.inputFormat, $event) || (ctx_r0.form.inputFormat = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(46, "div", 24)(47, "label");
-    \u0275\u0275text(48, "Output Format");
+    \u0275\u0275elementStart(60, "div", 33)(61, "label");
+    \u0275\u0275text(62, "Output Format");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(49, "textarea", 34);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_49_listener($event) {
+    \u0275\u0275elementStart(63, "textarea", 43);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_63_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.outputFormat, $event) || (ctx_r0.form.outputFormat = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(50, "div", 23)(51, "div", 24)(52, "label");
-    \u0275\u0275text(53, "Time Limit (ms)");
+    \u0275\u0275elementStart(64, "div", 32)(65, "div", 33)(66, "label");
+    \u0275\u0275text(67, "Time Limit (ms)");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(54, "input", 35);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_input_ngModelChange_54_listener($event) {
+    \u0275\u0275elementStart(68, "input", 44);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_input_ngModelChange_68_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.timeLimitMs, $event) || (ctx_r0.form.timeLimitMs = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(55, "div", 24)(56, "label");
-    \u0275\u0275text(57, "Memory Limit (KB)");
+    \u0275\u0275elementStart(69, "div", 33)(70, "label");
+    \u0275\u0275text(71, "Memory Limit (KB)");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(58, "input", 36);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_input_ngModelChange_58_listener($event) {
+    \u0275\u0275elementStart(72, "input", 45);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_input_ngModelChange_72_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.memoryLimitKb, $event) || (ctx_r0.form.memoryLimitKb = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(59, "div", 24)(60, "label");
-    \u0275\u0275text(61, "Constraints");
+    \u0275\u0275elementStart(73, "div", 33)(74, "label");
+    \u0275\u0275text(75, "Constraints");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(62, "textarea", 37);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_62_listener($event) {
+    \u0275\u0275elementStart(76, "textarea", 46);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_76_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.constraints, $event) || (ctx_r0.form.constraints = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(63, "h3");
-    \u0275\u0275text(64, "Starter Code");
+    \u0275\u0275elementStart(77, "h3");
+    \u0275\u0275text(78, "Starter Code");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(65, "div", 23)(66, "div", 24)(67, "label");
-    \u0275\u0275text(68, "JavaScript");
+    \u0275\u0275elementStart(79, "div", 32)(80, "div", 33)(81, "label");
+    \u0275\u0275text(82, "JavaScript");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(69, "textarea", 38);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_69_listener($event) {
+    \u0275\u0275elementStart(83, "textarea", 47);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_83_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.starterCodeJavaScript, $event) || (ctx_r0.form.starterCodeJavaScript = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(70, "div", 24)(71, "label");
-    \u0275\u0275text(72, "Python");
+    \u0275\u0275elementStart(84, "div", 33)(85, "label");
+    \u0275\u0275text(86, "Python");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(73, "textarea", 39);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_73_listener($event) {
+    \u0275\u0275elementStart(87, "textarea", 48);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_87_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.starterCodePython, $event) || (ctx_r0.form.starterCodePython = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(74, "div", 24)(75, "label");
-    \u0275\u0275text(76, "TypeScript");
+    \u0275\u0275elementStart(88, "div", 33)(89, "label");
+    \u0275\u0275text(90, "TypeScript");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(77, "textarea", 40);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_77_listener($event) {
+    \u0275\u0275elementStart(91, "textarea", 49);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_91_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.starterCodeTypeScript, $event) || (ctx_r0.form.starterCodeTypeScript = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(78, "div", 24)(79, "label");
-    \u0275\u0275text(80, "Java");
+    \u0275\u0275elementStart(92, "div", 33)(93, "label");
+    \u0275\u0275text(94, "Java");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(81, "textarea", 41);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_81_listener($event) {
+    \u0275\u0275elementStart(95, "textarea", 50);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_95_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.starterCodeJava, $event) || (ctx_r0.form.starterCodeJava = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(82, "div", 24)(83, "label");
-    \u0275\u0275text(84, "C");
+    \u0275\u0275elementStart(96, "div", 33)(97, "label");
+    \u0275\u0275text(98, "C");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(85, "textarea", 42);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_85_listener($event) {
+    \u0275\u0275elementStart(99, "textarea", 51);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_99_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.starterCodeC, $event) || (ctx_r0.form.starterCodeC = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(86, "div", 24)(87, "label");
-    \u0275\u0275text(88, "C++17");
+    \u0275\u0275elementStart(100, "div", 33)(101, "label");
+    \u0275\u0275text(102, "C++17");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(89, "textarea", 43);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_89_listener($event) {
+    \u0275\u0275elementStart(103, "textarea", 52);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_103_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.starterCodeCpp, $event) || (ctx_r0.form.starterCodeCpp = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(90, "div", 24)(91, "label");
-    \u0275\u0275text(92, "C#");
+    \u0275\u0275elementStart(104, "div", 33)(105, "label");
+    \u0275\u0275text(106, "C#");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(93, "textarea", 44);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_93_listener($event) {
+    \u0275\u0275elementStart(107, "textarea", 53);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_107_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.starterCodeCsharp, $event) || (ctx_r0.form.starterCodeCsharp = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(94, "div", 24)(95, "label");
-    \u0275\u0275text(96, "Go");
+    \u0275\u0275elementStart(108, "div", 33)(109, "label");
+    \u0275\u0275text(110, "Go");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(97, "textarea", 45);
-    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_97_listener($event) {
+    \u0275\u0275elementStart(111, "textarea", 54);
+    \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_ng_container_32_Template_textarea_ngModelChange_111_listener($event) {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       \u0275\u0275twoWayBindingSet(ctx_r0.form.starterCodeGo, $event) || (ctx_r0.form.starterCodeGo = $event);
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(98, "div", 46)(99, "h3", 47);
-    \u0275\u0275text(100, "Test Cases");
+    \u0275\u0275elementStart(112, "div", 55)(113, "h3", 24);
+    \u0275\u0275text(114, "Test Cases");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(101, "button", 48);
-    \u0275\u0275listener("click", function CodeManagementComponent_ng_container_32_Template_button_click_101_listener() {
+    \u0275\u0275elementStart(115, "button", 26);
+    \u0275\u0275listener("click", function CodeManagementComponent_ng_container_32_Template_button_click_115_listener() {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r0.addTestCase());
     });
-    \u0275\u0275text(102, "Add Test Case");
+    \u0275\u0275text(116, "Add Test Case");
     \u0275\u0275elementEnd()();
-    \u0275\u0275template(103, CodeManagementComponent_ng_container_32_div_103_Template, 22, 9, "div", 49);
-    \u0275\u0275elementStart(104, "div", 50)(105, "button", 51);
-    \u0275\u0275text(106);
+    \u0275\u0275template(117, CodeManagementComponent_ng_container_32_div_117_Template, 22, 9, "div", 56);
+    \u0275\u0275elementStart(118, "div", 57)(119, "button", 58);
+    \u0275\u0275text(120);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(107, "button", 48);
-    \u0275\u0275listener("click", function CodeManagementComponent_ng_container_32_Template_button_click_107_listener() {
+    \u0275\u0275elementStart(121, "button", 26);
+    \u0275\u0275listener("click", function CodeManagementComponent_ng_container_32_Template_button_click_121_listener() {
       \u0275\u0275restoreView(_r2);
       const ctx_r0 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r0.cancel());
     });
-    \u0275\u0275text(108, "Cancel");
+    \u0275\u0275text(122, "Cancel");
     \u0275\u0275elementEnd()()()();
-    \u0275\u0275elementStart(109, "section", 21)(110, "h3");
-    \u0275\u0275text(111, "Problem Library");
+    \u0275\u0275elementStart(123, "section", 22)(124, "h3");
+    \u0275\u0275text(125, "Problem Library");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(112, "table", 52)(113, "thead")(114, "tr")(115, "th");
-    \u0275\u0275text(116, "ID");
+    \u0275\u0275elementStart(126, "table", 59)(127, "thead")(128, "tr")(129, "th");
+    \u0275\u0275text(130, "ID");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(117, "th");
-    \u0275\u0275text(118, "Title");
+    \u0275\u0275elementStart(131, "th");
+    \u0275\u0275text(132, "Title");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(119, "th");
-    \u0275\u0275text(120, "Difficulty");
+    \u0275\u0275elementStart(133, "th");
+    \u0275\u0275text(134, "Difficulty");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(121, "th");
-    \u0275\u0275text(122, "Tests");
+    \u0275\u0275elementStart(135, "th");
+    \u0275\u0275text(136, "Tests");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(123, "th");
-    \u0275\u0275text(124, "Acceptance");
+    \u0275\u0275elementStart(137, "th");
+    \u0275\u0275text(138, "Acceptance");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(125, "th");
-    \u0275\u0275text(126, "Status");
+    \u0275\u0275elementStart(139, "th");
+    \u0275\u0275text(140, "Status");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(127, "th");
-    \u0275\u0275text(128, "Actions");
+    \u0275\u0275elementStart(141, "th");
+    \u0275\u0275text(142, "Actions");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(129, "tbody");
-    \u0275\u0275template(130, CodeManagementComponent_ng_container_32_tr_130_Template, 22, 8, "tr", 53);
+    \u0275\u0275elementStart(143, "tbody");
+    \u0275\u0275template(144, CodeManagementComponent_ng_container_32_tr_144_Template, 22, 8, "tr", 60);
     \u0275\u0275elementEnd()()();
     \u0275\u0275elementContainerEnd();
   }
   if (rf & 2) {
     const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275advance(12);
+    \u0275\u0275property("disabled", ctx_r0.importing);
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate(ctx_r0.importing ? "Importing..." : "Upload JSON/CSV");
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx_r0.importResult);
     \u0275\u0275advance(3);
     \u0275\u0275textInterpolate(ctx_r0.editingId ? "Edit Problem" : "Create Problem");
     \u0275\u0275advance(6);
@@ -53570,7 +53933,7 @@ function CodeManagementComponent_section_33_tr_27_Template(rf, ctx) {
     \u0275\u0275elementStart(14, "td");
     \u0275\u0275text(15);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(16, "td")(17, "span", 60);
+    \u0275\u0275elementStart(16, "td")(17, "span", 72);
     \u0275\u0275text(18);
     \u0275\u0275elementEnd()()();
   }
@@ -53597,7 +53960,7 @@ function CodeManagementComponent_section_33_tr_27_Template(rf, ctx) {
 }
 function CodeManagementComponent_section_33_tr_28_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "tr")(1, "td", 62);
+    \u0275\u0275elementStart(0, "tr")(1, "td", 73);
     \u0275\u0275text(2, "No languages returned by API.");
     \u0275\u0275elementEnd()();
   }
@@ -53605,13 +53968,13 @@ function CodeManagementComponent_section_33_tr_28_Template(rf, ctx) {
 function CodeManagementComponent_section_33_Template(rf, ctx) {
   if (rf & 1) {
     const _r8 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "section", 21)(1, "div", 55)(2, "div")(3, "h3", 47);
+    \u0275\u0275elementStart(0, "section", 22)(1, "div", 23)(2, "div")(3, "h3", 24);
     \u0275\u0275text(4, "Programming Languages");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(5, "p", 61);
+    \u0275\u0275elementStart(5, "p", 25);
     \u0275\u0275text(6, "Runtime is checked when code runs; missing tools return a readable judge error.");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(7, "button", 48);
+    \u0275\u0275elementStart(7, "button", 26);
     \u0275\u0275listener("click", function CodeManagementComponent_section_33_Template_button_click_7_listener() {
       \u0275\u0275restoreView(_r8);
       const ctx_r0 = \u0275\u0275nextContext();
@@ -53619,7 +53982,7 @@ function CodeManagementComponent_section_33_Template(rf, ctx) {
     });
     \u0275\u0275text(8, "Refresh");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(9, "table", 52)(10, "thead")(11, "tr")(12, "th");
+    \u0275\u0275elementStart(9, "table", 59)(10, "thead")(11, "tr")(12, "th");
     \u0275\u0275text(13, "Code");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(14, "th");
@@ -53641,7 +54004,7 @@ function CodeManagementComponent_section_33_Template(rf, ctx) {
     \u0275\u0275text(25, "Status");
     \u0275\u0275elementEnd()()();
     \u0275\u0275elementStart(26, "tbody");
-    \u0275\u0275template(27, CodeManagementComponent_section_33_tr_27_Template, 19, 8, "tr", 53)(28, CodeManagementComponent_section_33_tr_28_Template, 3, 0, "tr", 17);
+    \u0275\u0275template(27, CodeManagementComponent_section_33_tr_27_Template, 19, 8, "tr", 60)(28, CodeManagementComponent_section_33_tr_28_Template, 3, 0, "tr", 18);
     \u0275\u0275elementEnd()()();
   }
   if (rf & 2) {
@@ -53652,24 +54015,43 @@ function CodeManagementComponent_section_33_Template(rf, ctx) {
     \u0275\u0275property("ngIf", !ctx_r0.languages.length);
   }
 }
-function CodeManagementComponent_section_34_div_9_div_44_div_5_Template(rf, ctx) {
+function CodeManagementComponent_section_34_div_9_pre_40_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 28)(1, "div")(2, "small", 59);
+    \u0275\u0275elementStart(0, "pre", 66)(1, "code");
+    \u0275\u0275text(2);
+    \u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext(3);
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate(ctx_r0.submissionSourceCode);
+  }
+}
+function CodeManagementComponent_section_34_div_9_ng_template_41_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 80);
+    \u0275\u0275text(1, "Kh\xF4ng c\xF3 source code \u0111\u01B0\u1EE3c l\u01B0u cho submission n\xE0y.");
+    \u0275\u0275elementEnd();
+  }
+}
+function CodeManagementComponent_section_34_div_9_div_45_div_5_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 37)(1, "div")(2, "small", 71);
     \u0275\u0275text(3, "Input");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(4, "pre", 68);
+    \u0275\u0275elementStart(4, "pre", 66);
     \u0275\u0275text(5);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(6, "div")(7, "small", 59);
+    \u0275\u0275elementStart(6, "div")(7, "small", 71);
     \u0275\u0275text(8, "Expected");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(9, "pre", 68);
+    \u0275\u0275elementStart(9, "pre", 66);
     \u0275\u0275text(10);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(11, "div")(12, "small", 59);
+    \u0275\u0275elementStart(11, "div")(12, "small", 71);
     \u0275\u0275text(13, "Actual");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(14, "pre", 68);
+    \u0275\u0275elementStart(14, "pre", 66);
     \u0275\u0275text(15);
     \u0275\u0275elementEnd()()();
   }
@@ -53683,16 +54065,16 @@ function CodeManagementComponent_section_34_div_9_div_44_div_5_Template(rf, ctx)
     \u0275\u0275textInterpolate(tc_r11.actualOutput || "(no output)");
   }
 }
-function CodeManagementComponent_section_34_div_9_div_44_ng_template_6_Template(rf, ctx) {
+function CodeManagementComponent_section_34_div_9_div_45_ng_template_6_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "p", 59);
+    \u0275\u0275elementStart(0, "p", 71);
     \u0275\u0275text(1, "Hidden testcase");
     \u0275\u0275elementEnd();
   }
 }
-function CodeManagementComponent_section_34_div_9_div_44_pre_8_Template(rf, ctx) {
+function CodeManagementComponent_section_34_div_9_div_45_pre_8_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "pre", 68);
+    \u0275\u0275elementStart(0, "pre", 66);
     \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
@@ -53702,15 +54084,15 @@ function CodeManagementComponent_section_34_div_9_div_44_pre_8_Template(rf, ctx)
     \u0275\u0275textInterpolate(tc_r11.error);
   }
 }
-function CodeManagementComponent_section_34_div_9_div_44_Template(rf, ctx) {
+function CodeManagementComponent_section_34_div_9_div_45_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 54)(1, "b");
+    \u0275\u0275elementStart(0, "div", 67)(1, "b");
     \u0275\u0275text(2);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "span", 60);
+    \u0275\u0275elementStart(3, "span", 72);
     \u0275\u0275text(4);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(5, CodeManagementComponent_section_34_div_9_div_44_div_5_Template, 16, 3, "div", 69)(6, CodeManagementComponent_section_34_div_9_div_44_ng_template_6_Template, 2, 0, "ng-template", null, 0, \u0275\u0275templateRefExtractor)(8, CodeManagementComponent_section_34_div_9_div_44_pre_8_Template, 2, 1, "pre", 70);
+    \u0275\u0275template(5, CodeManagementComponent_section_34_div_9_div_45_div_5_Template, 16, 3, "div", 81)(6, CodeManagementComponent_section_34_div_9_div_45_ng_template_6_Template, 2, 0, "ng-template", null, 1, \u0275\u0275templateRefExtractor)(8, CodeManagementComponent_section_34_div_9_div_45_pre_8_Template, 2, 1, "pre", 65);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
@@ -53731,62 +54113,61 @@ function CodeManagementComponent_section_34_div_9_div_44_Template(rf, ctx) {
 }
 function CodeManagementComponent_section_34_div_9_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 66)(1, "div", 67)(2, "div")(3, "b");
+    \u0275\u0275elementStart(0, "div", 77)(1, "div", 78)(2, "div")(3, "b");
     \u0275\u0275text(4, "Problem");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(5, "p", 59);
+    \u0275\u0275elementStart(5, "p", 71);
     \u0275\u0275text(6);
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(7, "div")(8, "b");
     \u0275\u0275text(9, "Language");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(10, "p", 59);
+    \u0275\u0275elementStart(10, "p", 71);
     \u0275\u0275text(11);
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(12, "div")(13, "b");
     \u0275\u0275text(14, "Status");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(15, "p", 59);
+    \u0275\u0275elementStart(15, "p", 71);
     \u0275\u0275text(16);
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(17, "div")(18, "b");
     \u0275\u0275text(19, "Score");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(20, "p", 59);
+    \u0275\u0275elementStart(20, "p", 71);
     \u0275\u0275text(21);
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(22, "div")(23, "b");
     \u0275\u0275text(24, "Runtime");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(25, "p", 59);
+    \u0275\u0275elementStart(25, "p", 71);
     \u0275\u0275text(26);
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(27, "div")(28, "b");
     \u0275\u0275text(29, "Memory");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(30, "p", 59);
+    \u0275\u0275elementStart(30, "p", 71);
     \u0275\u0275text(31);
     \u0275\u0275elementEnd()();
     \u0275\u0275elementStart(32, "div")(33, "b");
     \u0275\u0275text(34, "Submitted At");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(35, "p", 59);
+    \u0275\u0275elementStart(35, "p", 71);
     \u0275\u0275text(36);
     \u0275\u0275pipe(37, "date");
     \u0275\u0275elementEnd()()();
     \u0275\u0275elementStart(38, "h4");
     \u0275\u0275text(39, "Source Code");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(40, "pre", 68);
-    \u0275\u0275text(41);
+    \u0275\u0275template(40, CodeManagementComponent_section_34_div_9_pre_40_Template, 3, 1, "pre", 79)(41, CodeManagementComponent_section_34_div_9_ng_template_41_Template, 2, 0, "ng-template", null, 0, \u0275\u0275templateRefExtractor);
+    \u0275\u0275elementStart(43, "h4");
+    \u0275\u0275text(44, "Testcase Results");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(42, "h4");
-    \u0275\u0275text(43, "Testcase Results");
-    \u0275\u0275elementEnd();
-    \u0275\u0275template(44, CodeManagementComponent_section_34_div_9_div_44_Template, 9, 7, "div", 49);
+    \u0275\u0275template(45, CodeManagementComponent_section_34_div_9_div_45_Template, 9, 7, "div", 56);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
+    const noAdminSource_r14 = \u0275\u0275reference(42);
     const ctx_r0 = \u0275\u0275nextContext(2);
     \u0275\u0275advance(6);
     \u0275\u0275textInterpolate(ctx_r0.submissionDetail.problemTitle || ctx_r0.submissionDetail.problemId);
@@ -53799,25 +54180,25 @@ function CodeManagementComponent_section_34_div_9_Template(rf, ctx) {
     \u0275\u0275advance(5);
     \u0275\u0275textInterpolate1("", ctx_r0.submissionDetail.runtimeMs || ctx_r0.submissionDetail.executionTimeMs || "-", " ms");
     \u0275\u0275advance(5);
-    \u0275\u0275textInterpolate1("", ctx_r0.submissionDetail.memoryKb || "-", " KB");
+    \u0275\u0275textInterpolate(ctx_r0.submissionMemoryText);
     \u0275\u0275advance(5);
-    \u0275\u0275textInterpolate(\u0275\u0275pipeBind2(37, 9, ctx_r0.submissionDetail.submittedAt, "short"));
+    \u0275\u0275textInterpolate(\u0275\u0275pipeBind2(37, 10, ctx_r0.submissionDetail.submittedAt || ctx_r0.submissionDetail.createdAt, "short"));
+    \u0275\u0275advance(4);
+    \u0275\u0275property("ngIf", ctx_r0.submissionSourceCode)("ngIfElse", noAdminSource_r14);
     \u0275\u0275advance(5);
-    \u0275\u0275textInterpolate(ctx_r0.submissionDetail.sourceCode);
-    \u0275\u0275advance(3);
     \u0275\u0275property("ngForOf", ctx_r0.submissionTests);
   }
 }
 function CodeManagementComponent_section_34_Template(rf, ctx) {
   if (rf & 1) {
     const _r10 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "section", 21)(1, "h3");
+    \u0275\u0275elementStart(0, "section", 22)(1, "h3");
     \u0275\u0275text(2, "Submission Detail");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "p", 59);
+    \u0275\u0275elementStart(3, "p", 71);
     \u0275\u0275text(4, "N\u1EBFu backend ch\u01B0a c\xF3 API list submissions, nh\u1EADp submissionId \u0111\u1EC3 xem chi ti\u1EBFt.");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(5, "div", 5)(6, "input", 63);
+    \u0275\u0275elementStart(5, "div", 6)(6, "input", 74);
     \u0275\u0275twoWayListener("ngModelChange", function CodeManagementComponent_section_34_Template_input_ngModelChange_6_listener($event) {
       \u0275\u0275restoreView(_r10);
       const ctx_r0 = \u0275\u0275nextContext();
@@ -53825,7 +54206,7 @@ function CodeManagementComponent_section_34_Template(rf, ctx) {
       return \u0275\u0275resetView($event);
     });
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(7, "button", 64);
+    \u0275\u0275elementStart(7, "button", 75);
     \u0275\u0275listener("click", function CodeManagementComponent_section_34_Template_button_click_7_listener() {
       \u0275\u0275restoreView(_r10);
       const ctx_r0 = \u0275\u0275nextContext();
@@ -53833,7 +54214,7 @@ function CodeManagementComponent_section_34_Template(rf, ctx) {
     });
     \u0275\u0275text(8, "Xem detail");
     \u0275\u0275elementEnd()();
-    \u0275\u0275template(9, CodeManagementComponent_section_34_div_9_Template, 45, 12, "div", 65);
+    \u0275\u0275template(9, CodeManagementComponent_section_34_div_9_Template, 46, 13, "div", 76);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
@@ -53858,6 +54239,8 @@ var _CodeManagementComponent = class _CodeManagementComponent {
     this.loading = false;
     this.submissionId = "";
     this.submissionDetail = null;
+    this.importResult = null;
+    this.importing = false;
   }
   ngOnInit() {
     this.load();
@@ -54002,6 +54385,68 @@ func main() {
       }
     });
   }
+  pickImportFile(e) {
+    this.importFile = e.target.files?.[0];
+    this.importResult = null;
+  }
+  importProblems() {
+    this.message = "";
+    this.error = "";
+    if (!this.importFile) {
+      this.error = "Choose a JSON or CSV file first.";
+      return;
+    }
+    const fd = new FormData();
+    fd.append("file", this.importFile);
+    this.importing = true;
+    this.api.upload("/api/v1/admin/code/problems/import", fd).subscribe({
+      next: (r) => {
+        this.importResult = r.data;
+        this.importing = false;
+        this.message = "Problem import completed.";
+        this.load();
+      },
+      error: (e) => {
+        this.importResult = e?.error?.data;
+        this.importing = false;
+        this.error = this.api.errorMessage(e, "Problem import failed.");
+      }
+    });
+  }
+  downloadSampleJson() {
+    const sample = [
+      {
+        title: "Hello World",
+        slug: "hello-world",
+        description: "Print Hello, World!",
+        difficulty: 1,
+        tags: ["basic", "output"],
+        inputFormat: "No input",
+        outputFormat: "Print Hello, World!",
+        constraints: "",
+        starterCodePython: 'print("Hello, World!")',
+        starterCodeJavaScript: 'console.log("Hello, World!");',
+        starterCodeCpp: '#include <bits/stdc++.h>\nusing namespace std;\nint main(){ cout << "Hello, World!"; return 0; }',
+        timeLimitMs: 2e3,
+        memoryLimitKb: 131072,
+        testCases: [
+          {
+            input: "",
+            expectedOutput: "Hello, World!",
+            isHidden: false,
+            displayOrder: 1
+          }
+        ]
+      }
+    ];
+    const blob = new Blob([JSON.stringify(sample, null, 2)], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "coding-problems-sample.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
   loadSubmission() {
     this.message = "";
     this.error = "";
@@ -54018,6 +54463,14 @@ func main() {
   get submissionTests() {
     return this.submissionDetail?.testcaseResults || this.submissionDetail?.testCaseResults || [];
   }
+  get submissionSourceCode() {
+    const s = this.submissionDetail || {};
+    return s.sourceCode || s.code || s.submittedCode || s.userCode || s.content || "";
+  }
+  get submissionMemoryText() {
+    const memory = this.submissionDetail?.memoryUsedKb ?? this.submissionDetail?.memoryKb;
+    return memory === null || memory === void 0 || memory === "" ? "-" : `${memory} KB`;
+  }
   difficultyText(d) {
     return Number(d) === 3 ? "Hard" : Number(d) === 2 ? "Medium" : "Easy";
   }
@@ -54031,55 +54484,55 @@ func main() {
 _CodeManagementComponent.\u0275fac = function CodeManagementComponent_Factory(__ngFactoryType__) {
   return new (__ngFactoryType__ || _CodeManagementComponent)(\u0275\u0275directiveInject(ApiService), \u0275\u0275directiveInject(AuthService));
 };
-_CodeManagementComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _CodeManagementComponent, selectors: [["app-code-management"]], decls: 35, vars: 11, consts: [["hiddenCase", ""], [1, "admin-shell"], [1, "admin-top"], ["routerLink", "/dashboard", 1, "logo"], [1, "logo-mark"], [1, "action-row"], ["routerLink", "/dashboard", 1, "btn", "btn-outline"], ["routerLink", "/forum", 1, "btn", "btn-outline"], ["href", "http://localhost:4200/learner/problems", 1, "btn", "btn-outline"], ["type", "button", 1, "btn", "btn-ghost", 3, "click"], [1, "admin-wrap"], [1, "page-title"], ["class", "alert success", 4, "ngIf"], ["class", "alert", "style", "white-space:pre-line", 4, "ngIf"], [1, "card", "card-pad"], [1, "admin-tabs"], [1, "admin-tab", 3, "click"], [4, "ngIf"], ["class", "card card-pad", "style", "margin-top:18px", 4, "ngIf"], [1, "alert", "success"], [1, "alert", 2, "white-space", "pre-line"], [1, "card", "card-pad", 2, "margin-top", "18px"], [3, "ngSubmit"], [1, "grid", "grid-2"], [1, "form-group"], ["name", "title", 1, "input", 3, "ngModelChange", "blur", "ngModel"], ["name", "slug", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "description", 1, "textarea", 2, "min-height", "120px", 3, "ngModelChange", "ngModel"], [1, "grid", "grid-3"], ["name", "difficulty", 1, "select", 3, "ngModelChange", "ngModel"], [3, "ngValue"], ["name", "status", 1, "select", 3, "ngModelChange", "ngModel"], ["name", "tags", "placeholder", "array, math, beginner", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "inputFormat", 1, "textarea", 3, "ngModelChange", "ngModel"], ["name", "outputFormat", 1, "textarea", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "timeLimitMs", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "memoryLimitKb", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "constraints", 1, "textarea", 3, "ngModelChange", "ngModel"], ["name", "starterJs", 1, "textarea", "code-editor", 2, "min-height", "180px", 3, "ngModelChange", "ngModel"], ["name", "starterPython", 1, "textarea", "code-editor", 2, "min-height", "180px", 3, "ngModelChange", "ngModel"], ["name", "starterTs", 1, "textarea", "code-editor", 2, "min-height", "180px", 3, "ngModelChange", "ngModel"], ["name", "starterJava", 1, "textarea", "code-editor", 2, "min-height", "180px", 3, "ngModelChange", "ngModel"], ["name", "starterC", 1, "textarea", "code-editor", 2, "min-height", "180px", 3, "ngModelChange", "ngModel"], ["name", "starterCpp", 1, "textarea", "code-editor", 2, "min-height", "180px", 3, "ngModelChange", "ngModel"], ["name", "starterCsharp", 1, "textarea", "code-editor", 2, "min-height", "180px", 3, "ngModelChange", "ngModel"], ["name", "starterGo", 1, "textarea", "code-editor", 2, "min-height", "180px", 3, "ngModelChange", "ngModel"], [1, "filters", 2, "margin-top", "14px"], [2, "margin", "0"], ["type", "button", 1, "btn", "btn-outline", 3, "click"], ["class", "example", "style", "margin-bottom:12px", 4, "ngFor", "ngForOf"], [1, "action-row", 2, "margin-top", "14px"], [1, "btn", "btn-primary"], [1, "table"], [4, "ngFor", "ngForOf"], [1, "example", 2, "margin-bottom", "12px"], [1, "filters"], ["type", "checkbox", 3, "ngModelChange", "ngModel", "name"], [1, "textarea", 3, "ngModelChange", "ngModel", "name"], [1, "input", 3, "ngModelChange", "ngModel", "name"], [1, "muted"], [1, "badge", 3, "ngClass"], [1, "muted", 2, "margin", "6px 0 0"], ["colspan", "7", 1, "muted"], ["name", "submissionId", "placeholder", "submissionId", 1, "input", 2, "max-width", "260px", 3, "ngModelChange", "ngModel"], ["type", "button", 1, "btn", "btn-primary", 3, "click"], ["style", "margin-top:18px", 4, "ngIf"], [2, "margin-top", "18px"], [1, "grid", "grid-4"], [1, "output-box"], ["class", "grid grid-3", 4, "ngIf", "ngIfElse"], ["class", "output-box", 4, "ngIf"]], template: function CodeManagementComponent_Template(rf, ctx) {
+_CodeManagementComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _CodeManagementComponent, selectors: [["app-code-management"]], decls: 35, vars: 11, consts: [["noAdminSource", ""], ["hiddenCase", ""], [1, "admin-shell"], [1, "admin-top"], ["routerLink", "/dashboard", 1, "logo"], [1, "logo-mark"], [1, "action-row"], ["routerLink", "/dashboard", 1, "btn", "btn-outline"], ["routerLink", "/forum", 1, "btn", "btn-outline"], ["href", "http://localhost:4200/learner/problems", 1, "btn", "btn-outline"], ["type", "button", 1, "btn", "btn-ghost", 3, "click"], [1, "admin-wrap"], [1, "page-title"], ["class", "alert success", 4, "ngIf"], ["class", "alert", "style", "white-space:pre-line", 4, "ngIf"], [1, "card", "card-pad"], [1, "admin-tabs"], [1, "admin-tab", 3, "click"], [4, "ngIf"], ["class", "card card-pad", "style", "margin-top:18px", 4, "ngIf"], [1, "alert", "success"], [1, "alert", 2, "white-space", "pre-line"], [1, "card", "card-pad", 2, "margin-top", "18px"], [1, "filters"], [2, "margin", "0"], [1, "muted", 2, "margin", "6px 0 0"], ["type", "button", 1, "btn", "btn-outline", 3, "click"], [1, "action-row", 2, "margin-top", "12px"], ["type", "file", "accept", ".json,.csv,application/json,text/csv", 1, "input", 3, "change"], ["type", "button", 1, "btn", "btn-primary", 3, "click", "disabled"], ["class", "example", "style", "margin-top:12px", 4, "ngIf"], [3, "ngSubmit"], [1, "grid", "grid-2"], [1, "form-group"], ["name", "title", 1, "input", 3, "ngModelChange", "blur", "ngModel"], ["name", "slug", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "description", 1, "textarea", 2, "min-height", "120px", 3, "ngModelChange", "ngModel"], [1, "grid", "grid-3"], ["name", "difficulty", 1, "select", 3, "ngModelChange", "ngModel"], [3, "ngValue"], ["name", "status", 1, "select", 3, "ngModelChange", "ngModel"], ["name", "tags", "placeholder", "array, math, beginner", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "inputFormat", 1, "textarea", 3, "ngModelChange", "ngModel"], ["name", "outputFormat", 1, "textarea", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "timeLimitMs", 1, "input", 3, "ngModelChange", "ngModel"], ["type", "number", "name", "memoryLimitKb", 1, "input", 3, "ngModelChange", "ngModel"], ["name", "constraints", 1, "textarea", 3, "ngModelChange", "ngModel"], ["name", "starterJs", 1, "textarea", "code-editor", 2, "min-height", "180px", 3, "ngModelChange", "ngModel"], ["name", "starterPython", 1, "textarea", "code-editor", 2, "min-height", "180px", 3, "ngModelChange", "ngModel"], ["name", "starterTs", 1, "textarea", "code-editor", 2, "min-height", "180px", 3, "ngModelChange", "ngModel"], ["name", "starterJava", 1, "textarea", "code-editor", 2, "min-height", "180px", 3, "ngModelChange", "ngModel"], ["name", "starterC", 1, "textarea", "code-editor", 2, "min-height", "180px", 3, "ngModelChange", "ngModel"], ["name", "starterCpp", 1, "textarea", "code-editor", 2, "min-height", "180px", 3, "ngModelChange", "ngModel"], ["name", "starterCsharp", 1, "textarea", "code-editor", 2, "min-height", "180px", 3, "ngModelChange", "ngModel"], ["name", "starterGo", 1, "textarea", "code-editor", 2, "min-height", "180px", 3, "ngModelChange", "ngModel"], [1, "filters", 2, "margin-top", "14px"], ["class", "example", "style", "margin-bottom:12px", 4, "ngFor", "ngForOf"], [1, "action-row", 2, "margin-top", "14px"], [1, "btn", "btn-primary"], [1, "table"], [4, "ngFor", "ngForOf"], [1, "example", 2, "margin-top", "12px"], [1, "badge", "badge-green"], [1, "badge", "badge-blue"], [1, "badge", "badge-yellow"], ["class", "output-box", 4, "ngIf"], [1, "output-box"], [1, "example", 2, "margin-bottom", "12px"], ["type", "checkbox", 3, "ngModelChange", "ngModel", "name"], [1, "textarea", 3, "ngModelChange", "ngModel", "name"], [1, "input", 3, "ngModelChange", "ngModel", "name"], [1, "muted"], [1, "badge", 3, "ngClass"], ["colspan", "7", 1, "muted"], ["name", "submissionId", "placeholder", "submissionId", 1, "input", 2, "max-width", "260px", 3, "ngModelChange", "ngModel"], ["type", "button", 1, "btn", "btn-primary", 3, "click"], ["style", "margin-top:18px", 4, "ngIf"], [2, "margin-top", "18px"], [1, "grid", "grid-4"], ["class", "output-box", 4, "ngIf", "ngIfElse"], [1, "alert"], ["class", "grid grid-3", 4, "ngIf", "ngIfElse"]], template: function CodeManagementComponent_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 1)(1, "header", 2)(2, "a", 3)(3, "span", 4);
+    \u0275\u0275elementStart(0, "div", 2)(1, "header", 3)(2, "a", 4)(3, "span", 5);
     \u0275\u0275text(4, "</>");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(5, "span");
     \u0275\u0275text(6, "Admin Panel");
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(7, "div", 5)(8, "a", 6);
+    \u0275\u0275elementStart(7, "div", 6)(8, "a", 7);
     \u0275\u0275text(9, "Dashboard");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(10, "a", 7);
+    \u0275\u0275elementStart(10, "a", 8);
     \u0275\u0275text(11, "Forum Management");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(12, "a", 8);
+    \u0275\u0275elementStart(12, "a", 9);
     \u0275\u0275text(13, "User Problems");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(14, "button", 9);
+    \u0275\u0275elementStart(14, "button", 10);
     \u0275\u0275listener("click", function CodeManagementComponent_Template_button_click_14_listener() {
       return ctx.auth.logout();
     });
     \u0275\u0275text(15, "Logout");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(16, "main", 10)(17, "div", 11)(18, "h1");
+    \u0275\u0275elementStart(16, "main", 11)(17, "div", 12)(18, "h1");
     \u0275\u0275text(19, "Online Code Playground & Judge");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(20, "p");
     \u0275\u0275text(21, "Qu\u1EA3n l\xFD b\xE0i l\u1EADp tr\xECnh, test case, starter code, tr\u1EA1ng th\xE1i ch\u1EA5m b\xE0i v\xE0 submission detail.");
     \u0275\u0275elementEnd()();
-    \u0275\u0275template(22, CodeManagementComponent_div_22_Template, 2, 1, "div", 12)(23, CodeManagementComponent_div_23_Template, 2, 1, "div", 13);
-    \u0275\u0275elementStart(24, "div", 14)(25, "div", 15)(26, "button", 16);
+    \u0275\u0275template(22, CodeManagementComponent_div_22_Template, 2, 1, "div", 13)(23, CodeManagementComponent_div_23_Template, 2, 1, "div", 14);
+    \u0275\u0275elementStart(24, "div", 15)(25, "div", 16)(26, "button", 17);
     \u0275\u0275listener("click", function CodeManagementComponent_Template_button_click_26_listener() {
       return ctx.tab = "problems";
     });
     \u0275\u0275text(27, "Problems");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(28, "button", 16);
+    \u0275\u0275elementStart(28, "button", 17);
     \u0275\u0275listener("click", function CodeManagementComponent_Template_button_click_28_listener() {
       return ctx.tab = "languages";
     });
     \u0275\u0275text(29, "Languages");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(30, "button", 16);
+    \u0275\u0275elementStart(30, "button", 17);
     \u0275\u0275listener("click", function CodeManagementComponent_Template_button_click_30_listener() {
       return ctx.tab = "submissions";
     });
     \u0275\u0275text(31, "Submissions");
     \u0275\u0275elementEnd()()();
-    \u0275\u0275template(32, CodeManagementComponent_ng_container_32_Template, 131, 28, "ng-container", 17)(33, CodeManagementComponent_section_33_Template, 29, 2, "section", 18)(34, CodeManagementComponent_section_34_Template, 10, 2, "section", 18);
+    \u0275\u0275template(32, CodeManagementComponent_ng_container_32_Template, 145, 31, "ng-container", 18)(33, CodeManagementComponent_section_33_Template, 29, 2, "section", 19)(34, CodeManagementComponent_section_34_Template, 10, 2, "section", 19);
     \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
@@ -54133,6 +54586,27 @@ var CodeManagementComponent = _CodeManagementComponent;
     </div>
 
     <ng-container *ngIf="tab==='problems'">
+      <section class="card card-pad" style="margin-top:18px">
+        <div class="filters">
+          <div>
+            <h3 style="margin:0">Import Problems</h3>
+            <p class="muted" style="margin:6px 0 0">Upload JSON first for nested test cases; CSV is supported for flat imports.</p>
+          </div>
+          <button class="btn btn-outline" type="button" (click)="downloadSampleJson()">Download Sample JSON</button>
+        </div>
+        <div class="action-row" style="margin-top:12px">
+          <input class="input" type="file" accept=".json,.csv,application/json,text/csv" (change)="pickImportFile($event)">
+          <button class="btn btn-primary" type="button" [disabled]="importing" (click)="importProblems()">{{importing ? 'Importing...' : 'Upload JSON/CSV'}}</button>
+        </div>
+        <div class="example" *ngIf="importResult" style="margin-top:12px">
+          <b>Total {{importResult.total || 0}}</b>
+          <span class="badge badge-green">Created {{importResult.created || 0}}</span>
+          <span class="badge badge-blue">Updated {{importResult.updated || 0}}</span>
+          <span class="badge badge-yellow">Skipped {{importResult.skipped || 0}}</span>
+          <pre class="output-box" *ngIf="importResult.errors?.length">{{importResult.errors.join('\\n')}}</pre>
+        </div>
+      </section>
+
       <section class="card card-pad" style="margin-top:18px">
         <h3>{{editingId ? 'Edit Problem' : 'Create Problem'}}</h3>
         <form (ngSubmit)="save()">
@@ -54228,11 +54702,12 @@ var CodeManagementComponent = _CodeManagementComponent;
           <div><b>Status</b><p class="muted">{{submissionDetail.status || submissionDetail.verdict}}</p></div>
           <div><b>Score</b><p class="muted">{{submissionDetail.score ?? '-'}}</p></div>
           <div><b>Runtime</b><p class="muted">{{submissionDetail.runtimeMs || submissionDetail.executionTimeMs || '-'}} ms</p></div>
-          <div><b>Memory</b><p class="muted">{{submissionDetail.memoryKb || '-'}} KB</p></div>
-          <div><b>Submitted At</b><p class="muted">{{submissionDetail.submittedAt | date:'short'}}</p></div>
+          <div><b>Memory</b><p class="muted">{{submissionMemoryText}}</p></div>
+          <div><b>Submitted At</b><p class="muted">{{(submissionDetail.submittedAt || submissionDetail.createdAt) | date:'short'}}</p></div>
         </div>
         <h4>Source Code</h4>
-        <pre class="output-box">{{submissionDetail.sourceCode}}</pre>
+        <pre class="output-box" *ngIf="submissionSourceCode; else noAdminSource"><code>{{submissionSourceCode}}</code></pre>
+        <ng-template #noAdminSource><div class="alert">Kh\xF4ng c\xF3 source code \u0111\u01B0\u1EE3c l\u01B0u cho submission n\xE0y.</div></ng-template>
         <h4>Testcase Results</h4>
         <div class="example" *ngFor="let tc of submissionTests; let i=index" style="margin-bottom:12px">
           <b>#{{tc.displayOrder || i + 1}} {{tc.status || tc.verdict}}</b>
@@ -54259,11 +54734,18 @@ var CodeManagementComponent = _CodeManagementComponent;
 // src/app/core/guards/auth.guard.ts
 var adminGuard = () => {
   const a = inject2(AuthService);
-  return a.isLoggedIn() && a.hasRole("Admin") ? true : inject2(Router).createUrlTree(["/login"]);
+  return a.isLoggedIn() && a.canAccessAdmin() ? true : inject2(Router).createUrlTree(["/login"]);
 };
 var staffGuard = () => {
   const a = inject2(AuthService);
-  return a.isLoggedIn() && (a.hasRole("Admin") || a.hasRole("Moderator")) ? true : inject2(Router).createUrlTree(["/login"]);
+  return a.isLoggedIn() && (a.hasRole("Admin") || a.hasRole("Moderator") || a.hasPermission("forum.moderate")) ? true : inject2(Router).createUrlTree(["/login"]);
+};
+var permissionGuard = (route) => {
+  const a = inject2(AuthService);
+  if (!a.isLoggedIn() || !a.canAccessAdmin())
+    return inject2(Router).createUrlTree(["/login"]);
+  const required = route.data?.["permissions"];
+  return !required?.length || a.hasRole("Admin") || a.hasAnyPermission(required) ? true : inject2(Router).createUrlTree(["/dashboard"]);
 };
 
 // src/app/app.routes.ts
@@ -54271,8 +54753,8 @@ var routes = [
   { path: "", component: LoginComponent },
   { path: "login", component: LoginComponent },
   { path: "dashboard", component: DashboardComponent, canActivate: [adminGuard] },
-  { path: "forum", component: ForumManagementComponent, canActivate: [staffGuard] },
-  { path: "code", component: CodeManagementComponent, canActivate: [adminGuard] },
+  { path: "forum", component: ForumManagementComponent, canActivate: [staffGuard, permissionGuard], data: { permissions: ["forum.moderate"] } },
+  { path: "code", component: CodeManagementComponent, canActivate: [permissionGuard], data: { permissions: ["code.manage"] } },
   { path: "users", redirectTo: "dashboard" },
   { path: "categories", redirectTo: "dashboard" },
   { path: "questions", redirectTo: "dashboard" },

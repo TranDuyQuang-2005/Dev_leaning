@@ -4,6 +4,7 @@ using DevLearningHub.Api.Common;
 using DevLearningHub.Api.Data;
 using DevLearningHub.Api.DTOs;
 using DevLearningHub.Api.Entities;
+using DevLearningHub.Api.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ namespace DevLearningHub.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/admin")]
-[Authorize(Roles = "Admin")]
+[RequirePermission("quiz.manage")]
 public sealed class AdminQuizController : BaseApiController
 {
     private readonly DevLearningHubDbContext _db;

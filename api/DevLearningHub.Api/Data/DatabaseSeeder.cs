@@ -33,6 +33,8 @@ public static class DatabaseSeeder
 
         var permissions = new[]
         {
+            ("admin.access", "Access admin portal", "Admin Portal"),
+            ("dashboard.view", "View admin dashboard", "Admin Portal"),
             ("user.view", "View users", "User"),
             ("user.manage", "Manage users", "User"),
             ("role.manage", "Manage roles", "Auth"),
@@ -72,10 +74,11 @@ public static class DatabaseSeeder
         var groups = new (string Name, string Code, string Description, List<string> PermissionCodes)[]
         {
             ("System Admin Group", "system_admin_group", "All system permissions", allPermissionCodes),
-            ("Quiz Manager Group", "quiz_manager_group", "Quiz and question management", new List<string> { "category.manage", "question.manage", "quiz.manage" }),
-            ("Forum Moderator Group", "forum_moderator_group", "Forum moderation", new List<string> { "forum.moderate", "forum.answer.accept" }),
-            ("Code Judge Admin Group", "code_judge_admin_group", "Code judge management", new List<string> { "code.manage", "code.submit", "code.run" }),
-            ("Roadmap Manager Group", "roadmap_manager_group", "Roadmap and course management", new List<string> { "roadmap.manage", "category.manage", "quiz.manage", "code.manage" }),
+            ("Admin Portal Basic", "admin_portal_basic", "Basic admin portal access", new List<string> { "admin.access", "dashboard.view" }),
+            ("Quiz Manager Group", "quiz_manager_group", "Quiz and question management", new List<string> { "admin.access", "dashboard.view", "category.manage", "question.manage", "quiz.manage" }),
+            ("Forum Moderator Group", "forum_moderator_group", "Forum moderation", new List<string> { "admin.access", "dashboard.view", "forum.moderate", "forum.answer.accept" }),
+            ("Code Judge Admin Group", "code_judge_admin_group", "Code judge management", new List<string> { "admin.access", "dashboard.view", "code.manage", "code.submit", "code.run" }),
+            ("Roadmap Manager Group", "roadmap_manager_group", "Roadmap and course management", new List<string> { "admin.access", "dashboard.view", "roadmap.manage", "category.manage", "quiz.manage", "code.manage" }),
             ("Learner Personal Practice Group", "learner_personal_practice_group", "Own personal practice banks", new List<string> { "personal_practice.manage_own", "code.submit", "code.run" })
         };
 

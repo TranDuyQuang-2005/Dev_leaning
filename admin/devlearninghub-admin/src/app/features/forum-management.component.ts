@@ -39,8 +39,12 @@ export class ForumManagementComponent implements OnInit {
     return this.auth.hasRole('Admin');
   }
 
+  get canManageForumTags(): boolean {
+    return this.isAdmin;
+  }
+
   get apiRoot(): string {
-    return this.isAdmin ? '/api/v1/admin/forum' : '/api/v1/moderator/forum';
+    return this.isAdmin || this.auth.hasPermission('forum.moderate') ? '/api/v1/admin/forum' : '/api/v1/moderator/forum';
   }
 
   get pendingReports(): number {
@@ -52,7 +56,7 @@ export class ForumManagementComponent implements OnInit {
   }
 
   setTab(tab: ForumTab): void {
-    if (tab === 'tags' && !this.isAdmin) return;
+    if (tab === 'tags' && !this.canManageForumTags) return;
     this.tab = tab;
     this.message = '';
     this.error = '';

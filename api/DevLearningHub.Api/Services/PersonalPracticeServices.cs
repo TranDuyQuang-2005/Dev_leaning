@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using DevLearningHub.Api.Common;
 using DevLearningHub.Api.Data;
 using DevLearningHub.Api.DTOs;
@@ -159,6 +160,7 @@ public sealed class PersonalPracticeService : IPersonalPracticeService
         {
             AttemptId = attempt.Id,
             BankId = bankId,
+            BankTitle = bank.Title,
             StartedAt = attempt.StartedAt,
             Questions = questions.Select(q => MapQuestionForTake(q, request.ShuffleOptions)).ToList()
         }, "Personal practice attempt started");
@@ -173,15 +175,22 @@ public sealed class PersonalPracticeService : IPersonalPracticeService
         if (attempt == null) return ApiResponse<PersonalPracticeAttemptResultResponse>.Fail("Practice attempt not found");
         if (attempt.Status != "InProgress") return ApiResponse<PersonalPracticeAttemptResultResponse>.Fail("Practice attempt was already submitted");
 
-        var answerMap = request.Answers
+        var optionLabelsById = attempt.Answers
+            .SelectMany(x => x.Question.Options)
+            .GroupBy(x => x.Id)
+            .ToDictionary(x => x.Key, x => NormalizeOptionKey(x.First().Label));
+
+        var answerMap = (request.Answers ?? new List<PersonalPracticeAnswerRequest>())
+            .Select(x => new { x.QuestionId, Selected = NormalizeSelectedOption(x, optionLabelsById) })
+            .Where(x => !string.IsNullOrWhiteSpace(x.Selected))
             .GroupBy(x => x.QuestionId)
-            .ToDictionary(x => x.Key, x => x.First().SelectedOptionLabel.Trim().ToUpperInvariant());
+            .ToDictionary(x => x.Key, x => x.First().Selected!);
 
         var correct = 0;
         foreach (var answer in attempt.Answers)
         {
             answer.SelectedOptionLabel = answerMap.TryGetValue(answer.QuestionId, out var selected) ? selected : null;
-            var correctLabel = answer.Question.Options.FirstOrDefault(x => x.IsCorrect)?.Label;
+            var correctLabel = NormalizeOptionKey(answer.Question.Options.FirstOrDefault(x => x.IsCorrect)?.Label);
             answer.IsCorrect = !string.IsNullOrWhiteSpace(answer.SelectedOptionLabel)
                 && string.Equals(answer.SelectedOptionLabel, correctLabel, StringComparison.OrdinalIgnoreCase);
             if (answer.IsCorrect) correct++;
@@ -253,7 +262,19 @@ public sealed class PersonalPracticeService : IPersonalPracticeService
     {
         try
         {
-            var rows = JsonSerializer.Deserialize<List<PersonalQuestionImportRow>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            using var document = JsonDocument.Parse(json);
+            List<PersonalQuestionImportRow> rows;
+            if (document.RootElement.ValueKind == JsonValueKind.Object
+                && TryGetPropertyIgnoreCase(document.RootElement, "questions", out var questions)
+                && questions.ValueKind == JsonValueKind.Array)
+            {
+                rows = questions.Deserialize<List<PersonalQuestionImportRow>>(options) ?? new();
+            }
+            else
+            {
+                rows = JsonSerializer.Deserialize<List<PersonalQuestionImportRow>>(json, options) ?? new();
+            }
             return BuildQuestions(rows);
         }
         catch (Exception ex)
@@ -281,7 +302,7 @@ public sealed class PersonalPracticeService : IPersonalPracticeService
                 OptionB = ReadValue(headers, row, "option_b", "optionb", "b"),
                 OptionC = ReadValue(headers, row, "option_c", "optionc", "c"),
                 OptionD = ReadValue(headers, row, "option_d", "optiond", "d"),
-                CorrectAnswer = ReadValue(headers, row, "correct_answer", "correctanswer", "correct"),
+                CorrectAnswer = ReadValue(headers, row, "correct_answer", "correctanswer", "correct_option", "correctoption", "correct"),
                 Explanation = ReadValue(headers, row, "explanation"),
                 Difficulty = ReadValue(headers, row, "difficulty"),
                 Tags = ReadValue(headers, row, "tags")
@@ -298,12 +319,49 @@ public sealed class PersonalPracticeService : IPersonalPracticeService
         {
             var line = row.LineNumber == 0 ? rows.IndexOf(row) + 1 : row.LineNumber;
             var questionType = string.IsNullOrWhiteSpace(row.QuestionType) ? "single_choice" : row.QuestionType.Trim().ToLowerInvariant();
+            var questionText = FirstNonEmpty(row.QuestionText, row.Content, row.Question, row.Title);
+            var importOptions = BuildImportOptions(row);
+            var correctRaw = FirstNonEmpty(row.CorrectAnswer, row.CorrectOption, row.CorrectAnswerSnake, row.CorrectOptionSnake);
+            var correctKey = NormalizeOptionKey(correctRaw);
             if (questionType != "single_choice") result.Errors.Add($"Line {line}: only single_choice is supported.");
-            if (string.IsNullOrWhiteSpace(row.QuestionText)) result.Errors.Add($"Line {line}: question_text is required.");
-            var options = new[] { row.OptionA, row.OptionB, row.OptionC, row.OptionD };
-            if (options.Any(string.IsNullOrWhiteSpace)) result.Errors.Add($"Line {line}: option_a, option_b, option_c and option_d are required.");
-            var correct = (row.CorrectAnswer ?? string.Empty).Trim().ToUpperInvariant();
-            if (correct is not ("A" or "B" or "C" or "D")) result.Errors.Add($"Line {line}: correct_answer must be A, B, C or D.");
+            if (string.IsNullOrWhiteSpace(questionText)) result.Errors.Add($"Line {line}: question_text/content is required.");
+            if (importOptions.Count < 2) result.Errors.Add($"Line {line}: at least two options are required.");
+            foreach (var option in importOptions)
+            {
+                var optionKey = NormalizeOptionKey(option.Label);
+                if (optionKey == null)
+                {
+                    result.Errors.Add($"Line {line}: option keys must be A, B, C or D.");
+                    break;
+                }
+                option.Label = optionKey;
+            }
+            if (importOptions.Select(x => x.Label).Distinct(StringComparer.OrdinalIgnoreCase).Count() != importOptions.Count)
+            {
+                result.Errors.Add($"Line {line}: option keys must be unique.");
+            }
+            if (string.IsNullOrWhiteSpace(correctRaw))
+            {
+                var correctFromOption = importOptions.Where(x => x.IsCorrect).Select(x => x.Label).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+                if (correctFromOption.Count == 1) correctKey = correctFromOption[0];
+            }
+            else if (correctKey == null)
+            {
+                result.Errors.Add($"Line {line}: correct option must be A, B, C or D.");
+            }
+            if (correctKey == null)
+            {
+                result.Errors.Add($"Line {line}: correctAnswer/correctOption is required.");
+            }
+            else if (!importOptions.Any(x => string.Equals(x.Label, correctKey, StringComparison.OrdinalIgnoreCase)))
+            {
+                result.Errors.Add($"Line {line}: correct option {correctKey} does not match any option.");
+            }
+            foreach (var option in importOptions)
+            {
+                option.IsCorrect = string.Equals(option.Label, correctKey, StringComparison.OrdinalIgnoreCase);
+            }
+            if (importOptions.Count(x => x.IsCorrect) != 1) result.Errors.Add($"Line {line}: exactly one option must be correct.");
             var difficulty = NormalizeDifficulty(row.Difficulty);
             if (!string.IsNullOrWhiteSpace(row.Difficulty) && difficulty == "medium" && !row.Difficulty.Equals("medium", StringComparison.OrdinalIgnoreCase))
                 result.Warnings.Add($"Line {line}: unknown difficulty was converted to medium.");
@@ -312,24 +370,49 @@ public sealed class PersonalPracticeService : IPersonalPracticeService
 
             result.Questions.Add(new PersonalQuestion
             {
-                QuestionText = row.QuestionText.Trim(),
+                QuestionText = questionText.Trim(),
                 QuestionType = questionType,
                 Difficulty = difficulty,
                 Explanation = row.Explanation,
-                Tags = row.Tags,
+                Tags = FirstNonEmpty(row.Tags, row.Topic),
                 CreatedAt = DateTime.UtcNow,
-                Options = new List<PersonalQuestionOption>
+                Options = importOptions.Select(x => new PersonalQuestionOption
                 {
-                    new() { Label = "A", Text = row.OptionA.Trim(), IsCorrect = correct == "A" },
-                    new() { Label = "B", Text = row.OptionB.Trim(), IsCorrect = correct == "B" },
-                    new() { Label = "C", Text = row.OptionC.Trim(), IsCorrect = correct == "C" },
-                    new() { Label = "D", Text = row.OptionD.Trim(), IsCorrect = correct == "D" }
-                }
+                    Label = x.Label,
+                    Text = x.Text.Trim(),
+                    IsCorrect = x.IsCorrect
+                }).ToList()
             });
         }
         if (result.Questions.Count == 0 && result.Errors.Count == 0) result.Errors.Add("No question rows were found.");
         return result;
     }
+
+    private static List<ImportOption> BuildImportOptions(PersonalQuestionImportRow row)
+    {
+        if (row.Options?.Count > 0)
+        {
+            return row.Options
+                .Select((option, index) => new ImportOption
+                {
+                    Label = FirstNonEmpty(option.Key, option.Label, option.OptionLabel, Letter(index)).ToUpperInvariant(),
+                    Text = FirstNonEmpty(option.Content, option.Text, option.OptionText, option.AnswerText),
+                    IsCorrect = option.IsCorrect ?? option.Correct ?? false
+                })
+                .Where(x => !string.IsNullOrWhiteSpace(x.Text))
+                .ToList();
+        }
+
+        return new[] { row.OptionA, row.OptionB, row.OptionC, row.OptionD }
+            .Select((text, index) => new ImportOption { Label = Letter(index), Text = text ?? string.Empty })
+            .Where(x => !string.IsNullOrWhiteSpace(x.Text))
+            .ToList();
+    }
+
+    private static string Letter(int index) => ((char)('A' + index)).ToString();
+
+    private static string FirstNonEmpty(params string?[] values)
+        => values.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))?.Trim() ?? string.Empty;
 
     private static string NormalizeDifficulty(string? difficulty)
     {
@@ -347,7 +430,7 @@ public sealed class PersonalPracticeService : IPersonalPracticeService
         Questions = bank.Questions.OrderBy(x => x.Id).Select(x => MapQuestionForTake(x, false)).ToList()
     };
 
-    private static PersonalQuestionTakeResponse MapQuestionForTake(PersonalQuestion q, bool shuffleOptions)
+    private static PersonalQuestionTakeResponse MapQuestionForTake(PersonalQuestion q, bool shuffleOptions, string? selectedOptionLabel = null)
     {
         var options = q.Options.OrderBy(x => x.Label).ToList();
         if (shuffleOptions) options = options.OrderBy(_ => Guid.NewGuid()).ToList();
@@ -355,37 +438,162 @@ public sealed class PersonalPracticeService : IPersonalPracticeService
         {
             Id = q.Id,
             QuestionText = q.QuestionText,
+            Content = q.QuestionText,
             QuestionType = q.QuestionType,
-            Difficulty = q.Difficulty,
+            Difficulty = DisplayDifficulty(q.Difficulty),
+            Topic = TopicFromTags(q.Tags),
             Tags = q.Tags,
-            Options = options.Select(x => new PersonalQuestionOptionTakeResponse { Label = x.Label, Text = x.Text }).ToList()
+            SelectedOptionLabel = selectedOptionLabel,
+            SelectedAnswer = selectedOptionLabel,
+            Options = options.Select(x => new PersonalQuestionOptionTakeResponse
+            {
+                Id = x.Id,
+                Key = x.Label,
+                Label = x.Label,
+                Text = x.Text,
+                Content = x.Text
+            }).ToList()
         };
     }
 
-    private static PersonalPracticeAttemptResultResponse MapAttemptResult(PersonalPracticeAttempt attempt) => new()
+    private static PersonalPracticeAttemptResultResponse MapAttemptResult(PersonalPracticeAttempt attempt)
     {
-        AttemptId = attempt.Id,
-        BankId = attempt.BankId,
-        BankTitle = attempt.Bank.Title,
-        Score = attempt.Score,
-        TotalQuestions = attempt.TotalQuestions,
-        CorrectCount = attempt.CorrectCount,
-        Status = attempt.Status,
-        StartedAt = attempt.StartedAt,
-        SubmittedAt = attempt.SubmittedAt,
-        Details = attempt.Answers.OrderBy(x => x.Id).Select(x =>
+        var answers = attempt.Answers.OrderBy(x => x.Id).ToList();
+        return new PersonalPracticeAttemptResultResponse
         {
-            var correct = x.Question.Options.FirstOrDefault(o => o.IsCorrect);
-            return new PersonalPracticeAnswerResultResponse
+            Id = attempt.Id,
+            AttemptId = attempt.Id,
+            BankId = attempt.BankId,
+            BankTitle = attempt.Bank.Title,
+            Score = attempt.Score,
+            TotalQuestions = attempt.TotalQuestions,
+            CorrectCount = attempt.CorrectCount,
+            Status = attempt.Status,
+            StartedAt = attempt.StartedAt,
+            SubmittedAt = attempt.SubmittedAt,
+            Questions = answers.Select(MapQuestionResult).ToList(),
+            Details = answers.Select(MapAnswerResult).ToList()
+        };
+    }
+
+    private static PersonalPracticeQuestionResultResponse MapQuestionResult(PersonalPracticeAttemptAnswer answer)
+    {
+        var review = BuildReview(answer);
+        return new PersonalPracticeQuestionResultResponse
+        {
+            QuestionId = answer.QuestionId,
+            Id = answer.QuestionId,
+            QuestionText = answer.Question.QuestionText,
+            Content = answer.Question.QuestionText,
+            QuestionType = answer.Question.QuestionType,
+            Difficulty = DisplayDifficulty(answer.Question.Difficulty),
+            Topic = TopicFromTags(answer.Question.Tags),
+            Tags = answer.Question.Tags,
+            SelectedOptionLabel = review.SelectedOptionLabel,
+            SelectedOption = review.SelectedOption,
+            SelectedOptionKey = review.SelectedOptionKey,
+            SelectedAnswer = review.SelectedOption,
+            CorrectOptionLabel = review.CorrectOptionLabel,
+            CorrectOption = review.CorrectOption,
+            CorrectOptionKey = review.CorrectOptionKey,
+            CorrectAnswer = review.CorrectOption,
+            SelectedAnswerText = review.SelectedAnswerText,
+            CorrectAnswerText = review.CorrectAnswerText,
+            IsCorrect = review.IsCorrect,
+            Explanation = review.Explanation,
+            Warning = review.Warning,
+            Options = review.Options
+        };
+    }
+
+    private static PersonalPracticeAnswerResultResponse MapAnswerResult(PersonalPracticeAttemptAnswer answer)
+        => BuildReview(answer);
+
+    private static PersonalPracticeAnswerResultResponse BuildReview(PersonalPracticeAttemptAnswer answer)
+    {
+        var selectedKey = NormalizeOptionKey(answer.SelectedOptionLabel);
+        var correct = answer.Question.Options.FirstOrDefault(o => o.IsCorrect);
+        var correctKey = NormalizeOptionKey(correct?.Label);
+        var orderedOptions = answer.Question.Options.OrderBy(x => x.Label).ToList();
+        var selectedOption = orderedOptions.FirstOrDefault(o => string.Equals(NormalizeOptionKey(o.Label), selectedKey, StringComparison.OrdinalIgnoreCase));
+        var correctOption = orderedOptions.FirstOrDefault(o => string.Equals(NormalizeOptionKey(o.Label), correctKey, StringComparison.OrdinalIgnoreCase));
+
+        return new PersonalPracticeAnswerResultResponse
+        {
+            QuestionId = answer.QuestionId,
+            SelectedOptionLabel = selectedKey,
+            SelectedOption = selectedKey,
+            SelectedOptionKey = selectedKey,
+            CorrectOptionLabel = correctKey,
+            CorrectOption = correctKey,
+            CorrectOptionKey = correctKey,
+            SelectedAnswerText = selectedOption?.Text,
+            CorrectAnswerText = correctOption?.Text,
+            IsCorrect = answer.IsCorrect,
+            Explanation = answer.Question.Explanation,
+            Warning = correctKey == null ? "Chưa có đáp án đúng" : null,
+            Options = orderedOptions.Select(o =>
             {
-                QuestionId = x.QuestionId,
-                SelectedOptionLabel = x.SelectedOptionLabel,
-                CorrectOptionLabel = correct?.Label ?? string.Empty,
-                IsCorrect = x.IsCorrect,
-                Explanation = x.Question.Explanation
-            };
-        }).ToList()
-    };
+                var key = NormalizeOptionKey(o.Label) ?? o.Label;
+                return new PersonalPracticeOptionReviewResponse
+                {
+                    Id = o.Id,
+                    Key = key,
+                    Label = key,
+                    Content = o.Text,
+                    Text = o.Text,
+                    IsSelected = string.Equals(key, selectedKey, StringComparison.OrdinalIgnoreCase),
+                    IsCorrect = o.IsCorrect
+                };
+            }).ToList()
+        };
+    }
+
+    private static string DisplayDifficulty(string? difficulty)
+        => (difficulty ?? string.Empty).Trim().ToLowerInvariant() switch
+        {
+            "easy" => "Easy",
+            "hard" => "Hard",
+            _ => "Medium"
+        };
+
+    private static string? TopicFromTags(string? tags)
+        => string.IsNullOrWhiteSpace(tags)
+            ? null
+            : tags.Split(',', ';', '|').Select(x => x.Trim()).FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
+
+    private static string? NormalizeSelectedOption(PersonalPracticeAnswerRequest answer, IReadOnlyDictionary<long, string?> optionLabelsById)
+    {
+        if (answer.SelectedOptionId.HasValue
+            && optionLabelsById.TryGetValue(answer.SelectedOptionId.Value, out var optionKey)
+            && !string.IsNullOrWhiteSpace(optionKey))
+        {
+            return optionKey;
+        }
+
+        return NormalizeOptionKey(FirstNonEmpty(answer.SelectedOptionKey, answer.SelectedOption, answer.SelectedOptionLabel, answer.SelectedAnswer));
+    }
+
+    private static string? NormalizeOptionKey(string? value)
+    {
+        var clean = (value ?? string.Empty).Trim().ToUpperInvariant();
+        return clean is "A" or "B" or "C" or "D" ? clean : null;
+    }
+
+    private static bool TryGetPropertyIgnoreCase(JsonElement element, string name, out JsonElement value)
+    {
+        foreach (var property in element.EnumerateObject())
+        {
+            if (property.NameEquals(name) || property.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+            {
+                value = property.Value;
+                return true;
+            }
+        }
+
+        value = default;
+        return false;
+    }
 
     private sealed class ParseResult
     {
@@ -398,15 +606,53 @@ public sealed class PersonalPracticeService : IPersonalPracticeService
     {
         public int LineNumber { get; set; }
         public string QuestionText { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
+        public string Question { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
         public string QuestionType { get; set; } = string.Empty;
         public string OptionA { get; set; } = string.Empty;
         public string OptionB { get; set; } = string.Empty;
         public string OptionC { get; set; } = string.Empty;
         public string OptionD { get; set; } = string.Empty;
         public string CorrectAnswer { get; set; } = string.Empty;
+        public string CorrectOption { get; set; } = string.Empty;
+        [JsonPropertyName("correct_answer")]
+        public string CorrectAnswerSnake { get; set; } = string.Empty;
+        [JsonPropertyName("correct_option")]
+        public string CorrectOptionSnake { get; set; } = string.Empty;
+        [JsonPropertyName("option_a")]
+        public string OptionASnake { get => OptionA; set => OptionA = value; }
+        [JsonPropertyName("option_b")]
+        public string OptionBSnake { get => OptionB; set => OptionB = value; }
+        [JsonPropertyName("option_c")]
+        public string OptionCSnake { get => OptionC; set => OptionC = value; }
+        [JsonPropertyName("option_d")]
+        public string OptionDSnake { get => OptionD; set => OptionD = value; }
         public string? Explanation { get; set; }
         public string? Difficulty { get; set; }
+        public string? Topic { get; set; }
         public string? Tags { get; set; }
+        public List<PersonalQuestionImportOption> Options { get; set; } = new();
+    }
+
+    private sealed class PersonalQuestionImportOption
+    {
+        public string? Key { get; set; }
+        public string? Label { get; set; }
+        public string? OptionLabel { get; set; }
+        public string? Content { get; set; }
+        public string? Text { get; set; }
+        public string? OptionText { get; set; }
+        public string? AnswerText { get; set; }
+        public bool? IsCorrect { get; set; }
+        public bool? Correct { get; set; }
+    }
+
+    private sealed class ImportOption
+    {
+        public string Label { get; set; } = string.Empty;
+        public string Text { get; set; } = string.Empty;
+        public bool IsCorrect { get; set; }
     }
 
     private static string ReadValue(List<string> headers, List<string> row, params string[] names)

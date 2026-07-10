@@ -119,13 +119,13 @@ public sealed class LearningModuleService : ILearningModuleService
 {
     private readonly DevLearningHubDbContext _db;
     private readonly INotificationService _notifications;
-    private readonly IRoadmapService _roadmaps;
+    private readonly IRoadmapProgressService _roadmapProgress;
 
-    public LearningModuleService(DevLearningHubDbContext db, INotificationService notifications, IRoadmapService roadmaps)
+    public LearningModuleService(DevLearningHubDbContext db, INotificationService notifications, IRoadmapProgressService roadmapProgress)
     {
         _db = db;
         _notifications = notifications;
-        _roadmaps = roadmaps;
+        _roadmapProgress = roadmapProgress;
     }
 
     public async Task<ApiResponse<PagedResult<CategoryResponse>>> GetCategories(string? keyword, int pageIndex, int pageSize, CancellationToken ct)
@@ -420,7 +420,7 @@ public sealed class LearningModuleService : ILearningModuleService
         var lessonId = RoadmapContextLessonId(r.LessonId, r.RoadmapLessonId);
         if (lessonId.HasValue)
         {
-            var access = await _roadmaps.CanAccessQuizLessonAsync(userId, lessonId.Value, quiz.Id, ct);
+            var access = await _roadmapProgress.CanAccessQuizLessonAsync(userId, lessonId.Value, quiz.Id, ct);
             if (!access.CanAccess)
                 return ApiResponse<QuizAttemptResponse>.Fail(access.Message ?? "Bài quiz đang bị khóa. Hãy hoàn thành bài học trước đó.");
         }
@@ -486,7 +486,7 @@ public sealed class LearningModuleService : ILearningModuleService
         var lessonId = RoadmapContextLessonId(r.LessonId, r.RoadmapLessonId);
         if (lessonId.HasValue)
         {
-            var access = await _roadmaps.CanAccessQuizLessonAsync(userId, lessonId.Value, attempt.QuizSetId, ct);
+            var access = await _roadmapProgress.CanAccessQuizLessonAsync(userId, lessonId.Value, attempt.QuizSetId, ct);
             if (!access.CanAccess)
                 return ApiResponse<QuizAttemptDetailResultResponse>.Fail(access.Message ?? "Bài quiz đang bị khóa. Hãy hoàn thành bài học trước đó.");
         }
@@ -542,9 +542,9 @@ public sealed class LearningModuleService : ILearningModuleService
         if (attempt.IsPassed)
         {
             if (lessonId.HasValue)
-                await _roadmaps.CompleteQuizLessonIfPassedAsync(userId, lessonId.Value, attempt.QuizSetId, attempt.Id, attempt.Score, ct);
+                await _roadmapProgress.CompleteQuizLessonIfPassedAsync(userId, lessonId.Value, attempt.QuizSetId, attempt.Id, attempt.Score, ct);
             else
-                await _roadmaps.CompleteQuizLessonIfPassedAsync(userId, attempt.QuizSetId, attempt.Id, attempt.Score, ct);
+                await _roadmapProgress.CompleteQuizLessonIfPassedAsync(userId, attempt.QuizSetId, attempt.Id, attempt.Score, ct);
             await _notifications.CreateAsync(
                 userId,
                 "quiz.passed",
@@ -782,11 +782,10 @@ public sealed class FileModuleService : IFileModuleService
 {
     private readonly DevLearningHubDbContext _db;
     private readonly IWebHostEnvironment _env;
-    private readonly ILearningModuleService _learning;
 
-    public FileModuleService(DevLearningHubDbContext db, IWebHostEnvironment env, ILearningModuleService learning)
+    public FileModuleService(DevLearningHubDbContext db, IWebHostEnvironment env)
     {
-        _db = db; _env = env; _learning = learning;
+        _db = db; _env = env;
     }
 
     public async Task<ApiResponse<FileUploadResponse>> Upload(long userId, IFormFile file, string fileType, CancellationToken ct)
@@ -887,7 +886,7 @@ public sealed class FileModuleService : IFileModuleService
         var result = new ImportQuestionResult { BatchId = batch.Id, TotalRows = questions.Count };
         for (int i = 0; i < questions.Count; i++)
         {
-            var res = await _learning.CreateQuestion(userId, questions[i], ct);
+            var res = await CreateQuestionForImport(userId, questions[i], ct);
             if (res.Success) result.SuccessRows++;
             else
             {
@@ -903,6 +902,50 @@ public sealed class FileModuleService : IFileModuleService
         await _db.SaveChangesAsync(ct);
 
         return ApiResponse<ImportQuestionResult>.Ok(result, successMessage);
+    }
+
+    private async Task<ApiResponse<object>> CreateQuestionForImport(long userId, QuestionRequest r, CancellationToken ct)
+    {
+        var errors = ValidateImportedQuestion(r);
+        if (errors.Count > 0) return ApiResponse<object>.Fail("Dữ liệu câu hỏi không hợp lệ", errors);
+        if (!await _db.Categories.AnyAsync(x => x.Id == r.CategoryId && !x.IsDeleted, ct))
+            return ApiResponse<object>.Fail("Chủ đề không tồn tại");
+
+        var question = new Question
+        {
+            CategoryId = r.CategoryId,
+            CreatedByUserId = userId,
+            Title = r.Title.Trim(),
+            Content = r.Content.Trim(),
+            Explanation = r.Explanation,
+            Difficulty = r.Difficulty,
+            QuestionType = r.QuestionType,
+            Status = r.Status,
+            Source = r.Source,
+            CreatedAt = DateTime.UtcNow,
+            Options = r.Options.Select(o => new QuestionOption
+            {
+                Content = o.Content.Trim(),
+                IsCorrect = o.IsCorrect,
+                Explanation = o.Explanation,
+                DisplayOrder = o.DisplayOrder,
+                CreatedAt = DateTime.UtcNow
+            }).ToList()
+        };
+        _db.Questions.Add(question);
+        await _db.SaveChangesAsync(ct);
+        return ApiResponse<object>.Ok(new { question.Id }, "Tạo câu hỏi thành công");
+    }
+
+    private static List<ApiError> ValidateImportedQuestion(QuestionRequest r)
+    {
+        var errors = new List<ApiError>();
+        if (r.CategoryId <= 0) errors.Add(new() { Field = "categoryId", Message = "CategoryId không hợp lệ" });
+        if (string.IsNullOrWhiteSpace(r.Title)) errors.Add(new() { Field = "title", Message = "Title không được trống" });
+        if (string.IsNullOrWhiteSpace(r.Content)) errors.Add(new() { Field = "content", Message = "Content không được trống" });
+        if (r.Options.Count < 2) errors.Add(new() { Field = "options", Message = "Cần ít nhất 2 đáp án" });
+        if (!r.Options.Any(x => x.IsCorrect)) errors.Add(new() { Field = "options", Message = "Cần ít nhất 1 đáp án đúng" });
+        return errors;
     }
 
     private sealed class CsvQuestionBuildResult

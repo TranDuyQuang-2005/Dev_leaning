@@ -161,9 +161,9 @@ public sealed class DevLearningHubDbContext : DbContext
 
         b.Entity<Notification>(e => {
             e.ToTable("Notifications"); e.HasKey(x => x.Id);
-            e.Property(x => x.Type).HasMaxLength(100).IsRequired();
+            e.Property(x => x.NotificationType).HasColumnName("NotificationType").HasMaxLength(100).IsRequired();
             e.Property(x => x.Title).HasMaxLength(255).IsRequired();
-            e.Property(x => x.Message).HasMaxLength(1000).IsRequired();
+            e.Property(x => x.Content).IsRequired();
             e.Property(x => x.LinkUrl).HasMaxLength(500);
             e.HasIndex(x => x.UserId);
             e.HasIndex(x => x.IsRead);
@@ -268,9 +268,11 @@ public sealed class DevLearningHubDbContext : DbContext
             e.Property(x => x.Type).HasMaxLength(50).IsRequired();
             e.Property(x => x.VideoUrl).HasMaxLength(500);
             e.HasIndex(x => new { x.ModuleId, x.IsPublished, x.IsDeleted, x.SortOrder });
+            e.HasIndex(x => x.VideoFileId);
             e.HasIndex(x => x.QuizSetId);
             e.HasIndex(x => x.CodingProblemId);
             e.HasOne(x => x.Module).WithMany(x => x.Lessons).HasForeignKey(x => x.ModuleId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<AppFile>().WithMany().HasForeignKey(x => x.VideoFileId).OnDelete(DeleteBehavior.NoAction);
             e.HasOne<QuizSet>().WithMany().HasForeignKey(x => x.QuizSetId).OnDelete(DeleteBehavior.NoAction);
             e.HasOne<CodingProblem>().WithMany().HasForeignKey(x => x.CodingProblemId).OnDelete(DeleteBehavior.NoAction);
         });

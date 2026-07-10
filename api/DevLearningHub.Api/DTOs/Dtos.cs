@@ -59,6 +59,7 @@ public sealed class VerifyEmailRequest
 
 public sealed class CurrentUserResponse
 {
+    public long UserId { get; set; }
     public long Id { get; set; }
     public string FullName { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
@@ -66,6 +67,8 @@ public sealed class CurrentUserResponse
     public string? AvatarUrl { get; set; }
     public List<string> Roles { get; set; } = new();
     public List<string> Permissions { get; set; } = new();
+    public List<string> EffectivePermissions { get; set; } = new();
+    public bool IsAdminPortalAllowed { get; set; }
 }
 
 public sealed class NotificationDto
@@ -73,7 +76,9 @@ public sealed class NotificationDto
     public long Id { get; set; }
     public long UserId { get; set; }
     public string Type { get; set; } = string.Empty;
+    public string NotificationType { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
     public string? LinkUrl { get; set; }
     public bool IsRead { get; set; }
@@ -100,6 +105,7 @@ public sealed class CreateNotificationRequest
     public long UserId { get; set; }
     public string Type { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
+    public string? Content { get; set; }
     public string Message { get; set; } = string.Empty;
     public string? LinkUrl { get; set; }
     public object? Metadata { get; set; }
@@ -455,17 +461,24 @@ public class PersonalQuestionBankSummaryResponse
 
 public sealed class PersonalQuestionOptionTakeResponse
 {
+    public long Id { get; set; }
+    public string Key { get; set; } = string.Empty;
     public string Label { get; set; } = string.Empty;
     public string Text { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
 }
 
 public sealed class PersonalQuestionTakeResponse
 {
     public long Id { get; set; }
     public string QuestionText { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
     public string QuestionType { get; set; } = string.Empty;
     public string Difficulty { get; set; } = string.Empty;
+    public string? Topic { get; set; }
     public string? Tags { get; set; }
+    public string? SelectedOptionLabel { get; set; }
+    public string? SelectedAnswer { get; set; }
     public List<PersonalQuestionOptionTakeResponse> Options { get; set; } = new();
 }
 
@@ -485,6 +498,7 @@ public sealed class PersonalPracticeAttemptResponse
 {
     public long AttemptId { get; set; }
     public long BankId { get; set; }
+    public string BankTitle { get; set; } = string.Empty;
     public DateTime StartedAt { get; set; }
     public List<PersonalQuestionTakeResponse> Questions { get; set; } = new();
 }
@@ -492,7 +506,11 @@ public sealed class PersonalPracticeAttemptResponse
 public sealed class PersonalPracticeAnswerRequest
 {
     public long QuestionId { get; set; }
-    public string SelectedOptionLabel { get; set; } = string.Empty;
+    public string? SelectedOptionLabel { get; set; }
+    public string? SelectedOption { get; set; }
+    public string? SelectedOptionKey { get; set; }
+    public string? SelectedAnswer { get; set; }
+    public long? SelectedOptionId { get; set; }
 }
 
 public sealed class SubmitPersonalPracticeAttemptRequest
@@ -504,13 +522,59 @@ public sealed class PersonalPracticeAnswerResultResponse
 {
     public long QuestionId { get; set; }
     public string? SelectedOptionLabel { get; set; }
-    public string CorrectOptionLabel { get; set; } = string.Empty;
+    public string? SelectedOption { get; set; }
+    public string? SelectedOptionKey { get; set; }
+    public string? CorrectOptionLabel { get; set; }
+    public string? CorrectOption { get; set; }
+    public string? CorrectOptionKey { get; set; }
+    public string? SelectedAnswerText { get; set; }
+    public string? CorrectAnswerText { get; set; }
     public bool IsCorrect { get; set; }
     public string? Explanation { get; set; }
+    public string? Warning { get; set; }
+    public List<PersonalPracticeOptionReviewResponse> Options { get; set; } = new();
+}
+
+public sealed class PersonalPracticeOptionReviewResponse
+{
+    public long Id { get; set; }
+    public string Key { get; set; } = string.Empty;
+    public string Label { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
+    public string Text { get; set; } = string.Empty;
+    public bool IsSelected { get; set; }
+    public bool IsCorrect { get; set; }
+}
+
+public sealed class PersonalPracticeQuestionResultResponse
+{
+    public long QuestionId { get; set; }
+    public long Id { get; set; }
+    public string QuestionText { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
+    public string QuestionType { get; set; } = string.Empty;
+    public string Difficulty { get; set; } = string.Empty;
+    public string? Topic { get; set; }
+    public string? Tags { get; set; }
+    public string? SelectedOptionLabel { get; set; }
+    public string? SelectedOption { get; set; }
+    public string? SelectedOptionKey { get; set; }
+    public string? SelectedAnswer { get; set; }
+    public string? CorrectOptionLabel { get; set; }
+    public string? CorrectOption { get; set; }
+    public string? CorrectOptionKey { get; set; }
+    public string? CorrectAnswer { get; set; }
+    public string? SelectedAnswerText { get; set; }
+    public string? CorrectAnswerText { get; set; }
+    public bool IsCorrect { get; set; }
+    public string? Explanation { get; set; }
+    public string? Warning { get; set; }
+    public List<PersonalPracticeOptionReviewResponse> Options { get; set; } = new();
 }
 
 public sealed class PersonalPracticeAttemptResultResponse
 {
+    public long Id { get; set; }
     public long AttemptId { get; set; }
     public long BankId { get; set; }
     public string BankTitle { get; set; } = string.Empty;
@@ -520,6 +584,7 @@ public sealed class PersonalPracticeAttemptResultResponse
     public string Status { get; set; } = string.Empty;
     public DateTime StartedAt { get; set; }
     public DateTime? SubmittedAt { get; set; }
+    public List<PersonalPracticeQuestionResultResponse> Questions { get; set; } = new();
     public List<PersonalPracticeAnswerResultResponse> Details { get; set; } = new();
 }
 
@@ -743,6 +808,40 @@ public sealed class CodingProblemRequest
     public List<CodingTestCaseRequest> TestCases { get; set; } = new();
 }
 
+public sealed class CodingProblemImportRequest
+{
+    public string Title { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public byte Difficulty { get; set; } = 1;
+    public object? Tags { get; set; }
+    public string? InputFormat { get; set; }
+    public string? OutputFormat { get; set; }
+    public string? Constraints { get; set; }
+    public string? ExamplesJson { get; set; }
+    public string? StarterCodeJavaScript { get; set; }
+    public string? StarterCodePython { get; set; }
+    public string? StarterCodeTypeScript { get; set; }
+    public string? StarterCodeJava { get; set; }
+    public string? StarterCodeC { get; set; }
+    public string? StarterCodeCpp { get; set; }
+    public string? StarterCodeCsharp { get; set; }
+    public string? StarterCodeGo { get; set; }
+    public byte Status { get; set; } = 1;
+    public int TimeLimitMs { get; set; } = 2000;
+    public int MemoryLimitKb { get; set; } = 131072;
+    public List<CodingTestCaseRequest> TestCases { get; set; } = new();
+}
+
+public sealed class CodingProblemImportResult
+{
+    public int Total { get; set; }
+    public int Created { get; set; }
+    public int Updated { get; set; }
+    public int Skipped { get; set; }
+    public List<string> Errors { get; set; } = new();
+}
+
 public sealed class CodingTestCaseResponse
 {
     public long Id { get; set; }
@@ -836,6 +935,7 @@ public sealed class RoadmapLessonRequest
     public string Type { get; set; } = "Reading";
     public string? Content { get; set; }
     public string? VideoUrl { get; set; }
+    public long? VideoFileId { get; set; }
     public long? QuizSetId { get; set; }
     public long? CodingProblemId { get; set; }
     public int EstimatedMinutes { get; set; }
@@ -864,6 +964,8 @@ public sealed class RoadmapLessonResponse
     public string Type { get; set; } = string.Empty;
     public string? Content { get; set; }
     public string? VideoUrl { get; set; }
+    public long? VideoFileId { get; set; }
+    public string? VideoFileUrl { get; set; }
     public long? QuizSetId { get; set; }
     public long? CodingProblemId { get; set; }
     public int EstimatedMinutes { get; set; }
@@ -1027,7 +1129,9 @@ public sealed class CodeTestCaseResultResponse
     public string? Error { get; set; }
     public string Status { get; set; } = string.Empty;
     public bool Passed { get; set; }
+    public bool IsHidden { get; set; }
     public int ExecutionTimeMs { get; set; }
+    public int RuntimeMs { get; set; }
 }
 
 public sealed class CodeSubmissionResponse
@@ -1036,15 +1140,36 @@ public sealed class CodeSubmissionResponse
     public long? ProblemId { get; set; }
     public string ProblemTitle { get; set; } = string.Empty;
     public string Language { get; set; } = string.Empty;
+    public string SourceCode { get; set; } = string.Empty;
+    public string Code { get; set; } = string.Empty;
+    public string SubmittedCode { get; set; } = string.Empty;
+    public string UserCode { get; set; } = string.Empty;
+    public string? Stdin { get; set; }
     public string Status { get; set; } = string.Empty;
     public string Verdict { get; set; } = string.Empty;
     public string Output { get; set; } = string.Empty;
+    public string Stdout { get; set; } = string.Empty;
     public string Error { get; set; } = string.Empty;
+    public string Stderr { get; set; } = string.Empty;
+    public string CompileOutput { get; set; } = string.Empty;
+    public decimal? Score { get; set; }
     public int ExecutionTimeMs { get; set; }
+    public int RuntimeMs { get; set; }
     public int MemoryUsedKb { get; set; }
+    public int MemoryKb { get; set; }
     public int PassedTestCases { get; set; }
     public int TotalTestCases { get; set; }
     public bool IsAccepted { get; set; }
     public DateTime CreatedAt { get; set; }
+    public DateTime SubmittedAt { get; set; }
     public List<CodeTestCaseResultResponse> TestCaseResults { get; set; } = new();
+}
+
+public sealed class CodeSubmissionListQuery
+{
+    public long? ProblemId { get; set; }
+    public string? Verdict { get; set; }
+    public string? Language { get; set; }
+    public int PageIndex { get; set; } = 1;
+    public int PageSize { get; set; } = 20;
 }

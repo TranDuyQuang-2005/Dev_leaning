@@ -30,18 +30,21 @@ public sealed class NotificationService : INotificationService
     public async Task<NotificationDto> CreateAsync(long userId, string type, string title, string message, string? linkUrl, object? metadata, CancellationToken ct)
     {
         var metadataJson = SerializeMetadata(metadata);
+        var cleanType = string.IsNullOrWhiteSpace(type) ? "general" : type.Trim();
+        var cleanTitle = string.IsNullOrWhiteSpace(title) ? "Thông báo" : title.Trim();
+        var content = NormalizeContent(cleanTitle, message);
         var eventKey = ExtractEventKey(metadataJson);
         if (!string.IsNullOrWhiteSpace(eventKey))
         {
             var tracked = _db.ChangeTracker.Entries<Notification>()
                 .Where(x => x.State != EntityState.Deleted)
                 .Select(x => x.Entity)
-                .FirstOrDefault(x => x.UserId == userId && x.Type == type && EventKeyMatches(x.MetadataJson, eventKey));
+                .FirstOrDefault(x => x.UserId == userId && x.NotificationType == cleanType && EventKeyMatches(x.MetadataJson, eventKey));
             if (tracked != null) return Map(tracked);
 
             var existing = await _db.Notifications
                 .AsNoTracking()
-                .Where(x => x.UserId == userId && x.Type == type && x.MetadataJson != null && x.MetadataJson.Contains(eventKey))
+                .Where(x => x.UserId == userId && x.NotificationType == cleanType && x.MetadataJson != null && x.MetadataJson.Contains(eventKey))
                 .OrderByDescending(x => x.CreatedAt)
                 .FirstOrDefaultAsync(ct);
             if (existing != null) return Map(existing);
@@ -50,9 +53,9 @@ public sealed class NotificationService : INotificationService
         var notification = new Notification
         {
             UserId = userId,
-            Type = type.Trim(),
-            Title = title.Trim(),
-            Message = message.Trim(),
+            NotificationType = cleanType,
+            Title = cleanTitle,
+            Content = content,
             LinkUrl = string.IsNullOrWhiteSpace(linkUrl) ? null : linkUrl.Trim(),
             IsRead = false,
             CreatedAt = DateTime.UtcNow,
@@ -78,7 +81,7 @@ public sealed class NotificationService : INotificationService
         if (!string.IsNullOrWhiteSpace(query.Type))
         {
             var type = query.Type.Trim();
-            rows = rows.Where(x => x.Type == type);
+            rows = rows.Where(x => x.NotificationType == type);
         }
 
         var total = await rows.CountAsync(ct);
@@ -160,6 +163,13 @@ public sealed class NotificationService : INotificationService
         return null;
     }
 
+    private static string NormalizeContent(string title, string? message)
+    {
+        var content = (message ?? string.Empty).Trim();
+        if (!string.IsNullOrWhiteSpace(content)) return content;
+        return string.IsNullOrWhiteSpace(title) ? "You have a new notification." : title.Trim();
+    }
+
     private static bool EventKeyMatches(string? metadataJson, string eventKey)
         => string.Equals(ExtractEventKey(metadataJson), eventKey, StringComparison.Ordinal);
 
@@ -167,9 +177,11 @@ public sealed class NotificationService : INotificationService
     {
         Id = x.Id,
         UserId = x.UserId,
-        Type = x.Type,
+        Type = x.NotificationType,
+        NotificationType = x.NotificationType,
         Title = x.Title,
-        Message = x.Message,
+        Content = x.Content,
+        Message = x.Content,
         LinkUrl = x.LinkUrl,
         IsRead = x.IsRead,
         ReadAt = x.ReadAt,

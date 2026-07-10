@@ -12,7 +12,18 @@ import { AuthService } from '../core/services/auth.service';
   templateUrl: './dashboard.component.html'
 })
 export class DashboardComponent implements OnInit {
-  tab = 'questions';
+  tab = '';
+  readonly tabPermissions: Record<string, string[]> = {
+    questions: ['question.manage'],
+    categories: ['category.manage'],
+    quizsets: ['quiz.manage'],
+    users: ['user.manage'],
+    access: ['permission.manage'],
+    roadmaps: ['roadmap.manage'],
+    audit: ['audit.view'],
+    analytics: ['quiz.manage'],
+    import: ['question.manage']
+  };
   users: any[] = [];
   roles: any[] = [];
   permissions: any[] = [];
@@ -48,6 +59,8 @@ export class DashboardComponent implements OnInit {
   selectedRoadmapTrackId: any = '';
   selectedRoadmapCourseId: any = '';
   selectedRoadmapModuleId: any = '';
+  roadmapVideoFile?: File;
+  roadmapVideoUploading = false;
 
   userPermissionDetail: any = null;
   permissionSaving = false;
@@ -81,26 +94,46 @@ export class DashboardComponent implements OnInit {
   constructor(private api: ApiService, public auth: AuthService) {}
 
   ngOnInit(): void {
+    this.tab = this.firstAllowedTab();
     this.loadAll();
   }
 
   loadAll(): void {
-    this.api.get<any>('/api/v1/admin/users').subscribe({ next: r => this.users = r.data || [] });
-    this.api.get<any>('/api/v1/admin/roles').subscribe({ next: r => this.roles = r.data || [] });
-    this.api.get<any>('/api/v1/admin/permissions').subscribe({ next: r => this.permissions = r.data || [] });
-    this.api.get<any>('/api/v1/categories?pageSize=100').subscribe({ next: r => this.categories = r.data?.items || r.data || [] });
-    this.api.get<any>('/api/v1/questions?pageSize=100').subscribe({ next: r => this.questions = r.data?.items || r.data || [] });
-    this.api.get<any>('/api/v1/quiz-sets?pageSize=100').subscribe({ next: r => this.quizSets = r.data?.items || r.data || [] });
-    this.loadPermissionGroups();
-    this.loadRoadmaps();
+    if (this.can('user.manage')) this.api.get<any>('/api/v1/admin/users').subscribe({ next: r => this.users = r.data || [] });
+    if (this.canAny(['user.manage', 'permission.manage'])) this.api.get<any>('/api/v1/admin/roles').subscribe({ next: r => this.roles = r.data || [] });
+    if (this.canAny(['user.manage', 'permission.manage'])) this.api.get<any>('/api/v1/admin/permissions').subscribe({ next: r => this.permissions = r.data || [] });
+    if (this.canAny(['category.manage', 'question.manage', 'quiz.manage'])) this.api.get<any>('/api/v1/categories?pageSize=100').subscribe({ next: r => this.categories = r.data?.items || r.data || [] });
+    if (this.canAny(['question.manage', 'quiz.manage'])) this.api.get<any>('/api/v1/questions?pageSize=100').subscribe({ next: r => this.questions = r.data?.items || r.data || [] });
+    if (this.can('quiz.manage')) this.api.get<any>('/api/v1/quiz-sets?pageSize=100').subscribe({ next: r => this.quizSets = r.data?.items || r.data || [] });
+    if (this.can('permission.manage')) this.loadPermissionGroups();
+    if (this.can('roadmap.manage')) this.loadRoadmaps();
   }
 
   setTab(next: string): void {
+    if (!this.canSeeTab(next)) return;
     this.tab = next;
     if (next === 'access') this.loadPermissionGroups();
     if (next === 'audit') this.loadAuditLogs();
     if (next === 'analytics') this.loadQuizOverview();
     if (next === 'roadmaps') this.loadRoadmaps();
+  }
+
+  can(permission: string): boolean {
+    return this.auth.hasRole('Admin') || this.auth.hasPermission(permission);
+  }
+
+  canAny(permissions: string[]): boolean {
+    return this.auth.hasRole('Admin') || this.auth.hasAnyPermission(permissions);
+  }
+
+  canSeeTab(tab: string): boolean {
+    const permissions = this.tabPermissions[tab] || [];
+    return !permissions.length || this.canAny(permissions);
+  }
+
+  firstAllowedTab(): string {
+    return ['questions', 'categories', 'quizsets', 'users', 'access', 'roadmaps', 'audit', 'analytics', 'import']
+      .find(tab => this.canSeeTab(tab)) || '';
   }
 
   get filteredQuestions(): any[] {
@@ -213,6 +246,8 @@ export class DashboardComponent implements OnInit {
       type: 'Reading',
       content: '',
       videoUrl: '',
+      videoFileId: null,
+      videoFileUrl: '',
       quizSetId: null,
       codingProblemId: null,
       estimatedMinutes: 12,
@@ -533,7 +568,17 @@ export class DashboardComponent implements OnInit {
       ? this.api.put<any>(`/api/v1/admin/lessons/${this.editingRoadmapLessonId}`, body)
       : this.api.post<any>(`/api/v1/admin/modules/${moduleId}/lessons`, body);
     req.subscribe({
-      next: () => { this.notifyOk(this.editingRoadmapLessonId ? 'Cập nhật bài học thành công' : 'Tạo bài học thành công'); this.cancelRoadmapLessonEdit(); this.loadRoadmaps(); },
+      next: r => {
+        const lessonId = r.data?.id || this.editingRoadmapLessonId;
+        const success = this.editingRoadmapLessonId ? 'Cập nhật bài học thành công' : 'Tạo bài học thành công';
+        if (this.roadmapVideoFile && body.type === 'Video' && lessonId) {
+          this.uploadRoadmapLessonVideo(lessonId, success);
+          return;
+        }
+        this.notifyOk(success);
+        this.cancelRoadmapLessonEdit();
+        this.loadRoadmaps();
+      },
       error: e => this.notifyErr(e, 'Không lưu được bài học')
     });
   }
@@ -541,9 +586,38 @@ export class DashboardComponent implements OnInit {
   editRoadmapLesson(lesson: any): void {
     this.editingRoadmapLessonId = lesson.id;
     this.roadmapLessonForm = { ...this.blankRoadmapLesson(), ...lesson };
+    this.roadmapVideoFile = undefined;
   }
 
-  cancelRoadmapLessonEdit(): void { this.editingRoadmapLessonId = null; this.roadmapLessonForm = this.blankRoadmapLesson(); }
+  cancelRoadmapLessonEdit(): void {
+    this.editingRoadmapLessonId = null;
+    this.roadmapLessonForm = this.blankRoadmapLesson();
+    this.roadmapVideoFile = undefined;
+    this.roadmapVideoUploading = false;
+  }
+
+  pickRoadmapVideo(e: Event): void {
+    this.roadmapVideoFile = (e.target as HTMLInputElement).files?.[0];
+  }
+
+  uploadRoadmapLessonVideo(lessonId: number, successMessage: string): void {
+    if (!this.roadmapVideoFile) return;
+    const fd = new FormData();
+    fd.append('file', this.roadmapVideoFile);
+    this.roadmapVideoUploading = true;
+    this.api.upload<any>(`/api/v1/admin/lessons/${lessonId}/video`, fd).subscribe({
+      next: () => {
+        this.roadmapVideoUploading = false;
+        this.notifyOk(`${successMessage}. Video uploaded.`);
+        this.cancelRoadmapLessonEdit();
+        this.loadRoadmaps();
+      },
+      error: e => {
+        this.roadmapVideoUploading = false;
+        this.notifyErr(e, 'Không upload được video bài học');
+      }
+    });
+  }
 
   deleteRoadmapLesson(lesson: any): void {
     if (!confirm(`Xóa bài học "${lesson.title}"?`)) return;

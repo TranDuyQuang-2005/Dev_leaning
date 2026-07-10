@@ -30,9 +30,9 @@ public sealed class Notification
 {
     public long Id { get; set; }
     public long UserId { get; set; }
-    public string Type { get; set; } = string.Empty;
+    public string NotificationType { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
-    public string Message { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
     public string? LinkUrl { get; set; }
     public bool IsRead { get; set; }
     public DateTime? ReadAt { get; set; }

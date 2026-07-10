@@ -111,9 +111,27 @@
         </div>
         <button class="btn btn-outline" type="button" (click)="closeLesson()">Đóng</button>
       </div>
-      <div class="video-box" *ngIf="selectedLesson.videoUrl">
-        <span>Video</span>
-        <p>{{selectedLesson.videoUrl}}</p>
+      <div class="video-box" *ngIf="isVideoLesson(selectedLesson) && (selectedLesson.videoFileUrl || selectedLesson.videoUrl)">
+        <ng-container *ngIf="selectedLesson.videoFileUrl; else externalVideo">
+          <video class="lesson-video-player" controls preload="metadata" [src]="absoluteUrl(selectedLesson.videoFileUrl)"></video>
+        </ng-container>
+        <ng-template #externalVideo>
+          <ng-container *ngIf="safeYouTubeUrl(selectedLesson.videoUrl) as youtubeUrl; else nonYoutubeVideo">
+            <iframe
+              class="lesson-video-player"
+              [src]="youtubeUrl"
+              title="Lesson video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen>
+            </iframe>
+          </ng-container>
+        </ng-template>
+        <ng-template #nonYoutubeVideo>
+          <video *ngIf="isDirectVideoUrl(selectedLesson.videoUrl); else plainVideoLink" class="lesson-video-player" controls preload="metadata" [src]="absoluteUrl(selectedLesson.videoUrl)"></video>
+          <ng-template #plainVideoLink>
+            <a class="btn btn-outline" [href]="externalVideoUrl(selectedLesson.videoUrl)" target="_blank" rel="noopener">Open video</a>
+          </ng-template>
+        </ng-template>
       </div>
       <div class="lesson-content">{{selectedLesson.content || 'Admin chưa nhập nội dung chi tiết cho bài học này.'}}</div>
       <div class="action-row">

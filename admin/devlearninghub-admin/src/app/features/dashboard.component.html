@@ -5,7 +5,7 @@
       <span>Admin Panel</span>
     </a>
     <div class="action-row">
-      <a class="btn btn-outline" routerLink="/code">Code Judge</a>
+      <a class="btn btn-outline" routerLink="/code" *ngIf="can('code.manage')">Code Judge</a>
       <button type="button" class="admin-sso-link" (click)="openUserWorkspace()">Back to User Workspace</button>
       <button class="btn btn-ghost" type="button" (click)="auth.logout()">Logout</button>
     </div>
@@ -30,17 +30,19 @@
     <div class="card card-pad">
       <h2>Content Management</h2>
       <div class="admin-tabs">
-        <button class="admin-tab" [class.active]="tab==='questions'" (click)="setTab('questions')">Questions</button>
-        <button class="admin-tab" [class.active]="tab==='categories'" (click)="setTab('categories')">Categories</button>
-        <button class="admin-tab" [class.active]="tab==='quizsets'" (click)="setTab('quizsets')">Quiz Sets</button>
-        <button class="admin-tab" [class.active]="tab==='users'" (click)="setTab('users')">Users</button>
-        <button class="admin-tab" [class.active]="tab==='access'" (click)="setTab('access')">Access Control</button>
-        <button class="admin-tab" [class.active]="tab==='roadmaps'" (click)="setTab('roadmaps')">Roadmaps</button>
-        <button class="admin-tab" [class.active]="tab==='audit'" (click)="setTab('audit')">Audit Logs</button>
-        <button class="admin-tab" [class.active]="tab==='analytics'" (click)="setTab('analytics')">Quiz Analytics</button>
-        <button class="admin-tab" [class.active]="tab==='import'" (click)="setTab('import')">Import Questions</button>
-        <a class="admin-tab" routerLink="/forum">Forum Management</a>
+        <button class="admin-tab" *ngIf="canSeeTab('questions')" [class.active]="tab==='questions'" (click)="setTab('questions')">Questions</button>
+        <button class="admin-tab" *ngIf="canSeeTab('categories')" [class.active]="tab==='categories'" (click)="setTab('categories')">Categories</button>
+        <button class="admin-tab" *ngIf="canSeeTab('quizsets')" [class.active]="tab==='quizsets'" (click)="setTab('quizsets')">Quiz Sets</button>
+        <button class="admin-tab" *ngIf="canSeeTab('users')" [class.active]="tab==='users'" (click)="setTab('users')">Users</button>
+        <button class="admin-tab" *ngIf="canSeeTab('access')" [class.active]="tab==='access'" (click)="setTab('access')">Access Control</button>
+        <button class="admin-tab" *ngIf="canSeeTab('roadmaps')" [class.active]="tab==='roadmaps'" (click)="setTab('roadmaps')">Roadmaps</button>
+        <button class="admin-tab" *ngIf="canSeeTab('audit')" [class.active]="tab==='audit'" (click)="setTab('audit')">Audit Logs</button>
+        <button class="admin-tab" *ngIf="canSeeTab('analytics')" [class.active]="tab==='analytics'" (click)="setTab('analytics')">Quiz Analytics</button>
+        <button class="admin-tab" *ngIf="canSeeTab('import')" [class.active]="tab==='import'" (click)="setTab('import')">Import Questions</button>
+        <a class="admin-tab" *ngIf="can('forum.moderate')" routerLink="/forum">Forum Management</a>
       </div>
+
+      <div class="empty-state" *ngIf="!tab">Tài khoản đã có quyền vào Admin Portal nhưng chưa được gán quyền quản trị chức năng.</div>
 
       <section class="admin-panel" [class.active]="tab==='questions'">
         <div class="filters">
@@ -238,7 +240,17 @@
               <div class="form-group"><label>Type</label><select class="select" name="roadmapLessonType" [(ngModel)]="roadmapLessonForm.type"><option>Reading</option><option>Video</option><option>Quiz</option><option>CodePractice</option><option>Assignment</option></select></div>
               <div class="form-group"><label>Sort order</label><input class="input" type="number" name="roadmapLessonSort" [(ngModel)]="roadmapLessonForm.sortOrder"></div>
               <div class="form-group"><label>Estimated minutes</label><input class="input" type="number" name="roadmapLessonMinutes" [(ngModel)]="roadmapLessonForm.estimatedMinutes"></div>
-              <div class="form-group" *ngIf="roadmapLessonForm.type==='Video'"><label>Video URL</label><input class="input" name="roadmapLessonVideo" [(ngModel)]="roadmapLessonForm.videoUrl"></div>
+              <div class="form-group" *ngIf="roadmapLessonForm.type==='Video'">
+                <label>Video URL</label>
+                <input class="input" name="roadmapLessonVideo" [(ngModel)]="roadmapLessonForm.videoUrl" placeholder="https://www.youtube.com/watch?v=...">
+                <small class="muted">Paste a YouTube URL or upload an mp4/webm video file.</small>
+              </div>
+              <div class="form-group" *ngIf="roadmapLessonForm.type==='Video'">
+                <label>Upload Video File</label>
+                <input class="input" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" (change)="pickRoadmapVideo($event)">
+                <small class="muted" *ngIf="roadmapVideoFile">Selected: {{roadmapVideoFile.name}}</small>
+                <small class="muted" *ngIf="!roadmapVideoFile && roadmapLessonForm.videoFileId">Current file #{{roadmapLessonForm.videoFileId}}</small>
+              </div>
               <div class="form-group" *ngIf="roadmapLessonForm.type==='Quiz'"><label>Quiz set</label><select class="select" name="roadmapLessonQuizSet" [(ngModel)]="roadmapLessonForm.quizSetId"><option [ngValue]="null">Choose quiz set</option><option *ngFor="let q of quizSets" [ngValue]="q.id">#{{q.id}} {{q.title}}</option></select></div>
               <div class="form-group" *ngIf="roadmapLessonForm.type==='CodePractice'"><label>Coding problem ID</label><input class="input" type="number" name="roadmapLessonProblem" [(ngModel)]="roadmapLessonForm.codingProblemId"></div>
               <div class="form-group"><label>Unlock after lesson ID</label><input class="input" type="number" name="roadmapLessonUnlock" [(ngModel)]="roadmapLessonForm.unlockAfterLessonId"></div>
@@ -250,7 +262,7 @@
               <label><input type="checkbox" name="roadmapLessonPublished" [(ngModel)]="roadmapLessonForm.isPublished"> Published</label>
             </div>
             <div class="form-group"><label>Content</label><textarea class="textarea" name="roadmapLessonContent" [(ngModel)]="roadmapLessonForm.content"></textarea></div>
-            <div class="action-row"><button class="btn btn-primary">{{editingRoadmapLessonId ? 'Update Lesson' : 'Save Lesson'}}</button><button class="btn btn-outline" type="button" (click)="cancelRoadmapLessonEdit()">Cancel</button></div>
+            <div class="action-row"><button class="btn btn-primary" [disabled]="roadmapVideoUploading">{{roadmapVideoUploading ? 'Uploading video...' : (editingRoadmapLessonId ? 'Update Lesson' : 'Save Lesson')}}</button><button class="btn btn-outline" type="button" (click)="cancelRoadmapLessonEdit()">Cancel</button></div>
           </form>
 
           <div class="card card-pad">

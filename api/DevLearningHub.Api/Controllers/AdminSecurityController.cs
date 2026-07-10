@@ -3,6 +3,7 @@ using DevLearningHub.Api.Common;
 using DevLearningHub.Api.Data;
 using DevLearningHub.Api.DTOs;
 using DevLearningHub.Api.Entities;
+using DevLearningHub.Api.Security;
 using DevLearningHub.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +13,7 @@ namespace DevLearningHub.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/admin")]
-[Authorize(Roles = "Admin")]
+[RequirePermission("permission.manage")]
 public sealed class AdminPermissionGroupsController : BaseApiController
 {
     private readonly IPermissionService _permissions;
@@ -138,7 +139,7 @@ public sealed class AdminPermissionGroupsController : BaseApiController
 
 [ApiController]
 [Route("api/v1/admin")]
-[Authorize(Roles = "Admin")]
+[Authorize]
 public sealed class AdminUsersSecurityController : BaseApiController
 {
     private readonly DevLearningHubDbContext _db;
@@ -151,6 +152,7 @@ public sealed class AdminUsersSecurityController : BaseApiController
     }
 
     [HttpPost("users/{userId:long}/lock")]
+    [RequirePermission("user.manage")]
     public async Task<ActionResult<ApiResponse<object>>> LockUser(long userId, LockUserRequest request, CancellationToken ct)
     {
         var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == userId && !x.IsDeleted, ct);
@@ -179,6 +181,7 @@ public sealed class AdminUsersSecurityController : BaseApiController
     }
 
     [HttpPost("users/{userId:long}/unlock")]
+    [RequirePermission("user.manage")]
     public async Task<ActionResult<ApiResponse<object>>> UnlockUser(long userId, CancellationToken ct)
     {
         var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == userId && !x.IsDeleted, ct);
@@ -202,6 +205,7 @@ public sealed class AdminUsersSecurityController : BaseApiController
     }
 
     [HttpGet("audit-logs")]
+    [RequirePermission("audit.view")]
     public async Task<ActionResult<ApiResponse<PagedResult<AuditLogResponse>>>> AuditLogs(
         [FromQuery] long? actorUserId,
         [FromQuery] string? action,
