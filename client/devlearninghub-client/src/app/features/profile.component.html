@@ -1,1 +1,200 @@
-<div class="page"><div class="card card-pad"><div class="page-head"><div style="display:flex;gap:18px;align-items:center"><div class="avatar avatar-xl">{{initials}}</div><div><h1 style="margin:0">{{auth.currentUser()?.fullName || profile.fullName || 'User'}}</h1><p class="muted">{{auth.currentUser()?.email}}</p><p class="muted">Member of Dev-Learning Hub</p></div></div><button class="btn btn-primary" type="button" (click)="editing=!editing">Edit Profile</button></div><div class="grid grid-3" style="margin:16px 0"><div class="example" style="text-align:center"><div class="stat-value" style="color:var(--blue)">Level {{level}}</div><span class="muted">Current Level</span></div><div class="example" style="text-align:center"><div class="stat-value" style="color:#ca8a04">{{stats.reputation||0}}</div><span class="muted">Total XP</span></div><div class="example" style="text-align:center"><div class="stat-value" style="color:#ea580c">{{stats.streakDays||0}} days</div><span class="muted">Current Streak</span></div></div><div style="display:flex;justify-content:space-between;font-size:14px"><span>Progress to Level {{level+1}}</span><b>{{stats.reputation||0}} / {{nextLevelXp}} XP</b></div><div class="progress"><span [style.width.%]="xpPercent"></span></div></div><form class="card card-pad" *ngIf="editing" (ngSubmit)="save()"><h3>Update Profile</h3><div class="grid grid-2"><div class="form-group"><label>Full name</label><input class="input" name="fullName" [(ngModel)]="profile.fullName"></div><div class="form-group"><label>Headline</label><input class="input" name="headline" [(ngModel)]="profile.headline"></div></div><div class="form-group"><label>Bio</label><textarea class="textarea" name="bio" [(ngModel)]="profile.bio"></textarea></div><div class="alert alert-ok" *ngIf="message">{{message}}</div><button class="btn btn-primary">Save Profile</button></form><div class="grid grid-4"><div class="card card-pad" style="text-align:center;color:#2563eb"><div class="stat-value" style="color:var(--gray-900)">{{stats.totalQuizAttempts||0}}</div><p class="muted">Quizzes Completed</p></div><div class="card card-pad" style="text-align:center;color:#16a34a"><div class="stat-value" style="color:var(--gray-900)">{{stats.acceptedCodeSubmissions||0}}</div><p class="muted">Problems Solved</p></div><div class="card card-pad" style="text-align:center;color:#7c3aed"><div class="stat-value" style="color:var(--gray-900)">{{stats.totalPosts||0}}</div><p class="muted">Forum Posts</p></div><div class="card card-pad" style="text-align:center;color:#ea580c"><div class="stat-value" style="color:var(--gray-900)">{{stats.totalCorrectAnswers||0}}</div><p class="muted">Correct Answers</p></div></div><div class="card card-pad"><h3>Earned Badges</h3><div class="grid badge-grid"><div class="badge-card"><div class="benefit-icon">🎯</div><b>First Steps</b><p class="muted" style="font-size:12px">Completed first quiz</p></div><div class="badge-card"><div class="benefit-icon">🔥</div><b>Streak</b><p class="muted" style="font-size:12px">Keep learning</p></div></div></div></div>
+﻿<section class="profile-pro-page">
+  <div class="profile-hero-card">
+    <div class="profile-hero-main">
+      <div class="profile-avatar-xl">{{ initials }}</div>
+      <div class="profile-hero-copy">
+        <span class="profile-kicker">Hồ sơ học tập</span>
+        <h1>{{ displayName }}</h1>
+        <p>{{ auth.currentUser()?.email || 'Tài khoản DevLearningHub' }}</p>
+        <div class="profile-hero-actions">
+          <button type="button" class="profile-primary-btn" (click)="editing = !editing">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+            </svg>
+            {{ editing ? 'Đóng chỉnh sửa' : 'Chỉnh sửa hồ sơ' }}
+          </button>
+          <a class="profile-secondary-btn" routerLink="/learner/create-post">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14" />
+              <path d="M5 12h14" />
+            </svg>
+            Tạo bài viết
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-level-card">
+      <div class="profile-level-top">
+        <span>Cấp độ {{ level }}</span>
+        <strong>{{ stats.reputation || 0 }} XP</strong>
+      </div>
+      <div class="profile-progress-track">
+        <div class="profile-progress-fill" [style.width.%]="xpPercent"></div>
+      </div>
+      <p>Tiến độ tới cấp {{ level + 1 }} · {{ stats.reputation || 0 }} / {{ nextLevelXp }} XP</p>
+    </div>
+  </div>
+
+  <div class="profile-stat-grid">
+    <article class="profile-stat-card">
+      <span>{{ stats.totalQuizAttempts || 0 }}</span>
+      <p>Bài quiz đã làm</p>
+    </article>
+    <article class="profile-stat-card">
+      <span>{{ stats.acceptedCodeSubmissions || 0 }}</span>
+      <p>Bài code đã giải</p>
+    </article>
+    <article class="profile-stat-card">
+      <span>{{ stats.totalPosts || 0 }}</span>
+      <p>Bài viết forum</p>
+    </article>
+    <article class="profile-stat-card">
+      <span>{{ stats.streakDays || 0 }}</span>
+      <p>Ngày streak</p>
+    </article>
+  </div>
+
+  <div class="profile-content-grid">
+    <section class="profile-panel profile-edit-panel" *ngIf="editing">
+      <div class="profile-panel-header">
+        <span class="profile-panel-eyebrow">Thông tin cá nhân</span>
+        <h2>Cập nhật hồ sơ</h2>
+      </div>
+
+      <label class="profile-form-field">
+        <span>Họ và tên</span>
+        <input [(ngModel)]="profile.fullName" placeholder="Nhập họ tên của bạn" />
+      </label>
+
+      <label class="profile-form-field">
+        <span>Tiêu đề ngắn</span>
+        <input [(ngModel)]="profile.headline" placeholder="Ví dụ: Frontend Developer, .NET Learner" />
+      </label>
+
+      <label class="profile-form-field">
+        <span>Giới thiệu</span>
+        <textarea [(ngModel)]="profile.bio" rows="5" placeholder="Viết vài dòng giới thiệu về mục tiêu học tập của bạn"></textarea>
+      </label>
+
+      <div class="profile-form-footer">
+        <p class="profile-message" *ngIf="message">{{ message }}</p>
+        <button type="button" class="profile-primary-btn" (click)="save()">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+          Lưu hồ sơ
+        </button>
+      </div>
+    </section>
+
+    <section class="profile-panel saved-posts-panel">
+      <div class="profile-panel-header profile-saved-header">
+        <div>
+          <span class="profile-panel-eyebrow">Forum</span>
+          <h2>Bài viết đã lưu</h2>
+          <p>Xem lại nhanh các thảo luận bạn đã đánh dấu lưu trong diễn đàn.</p>
+        </div>
+        <button type="button" class="profile-refresh-btn" (click)="loadSavedPosts()" [disabled]="savedLoading">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+            <path d="M21 3v6h-6" />
+          </svg>
+          Làm mới
+        </button>
+      </div>
+
+      <div class="profile-saved-loading" *ngIf="savedLoading">
+        <span></span>
+        Đang tải bài viết đã lưu...
+      </div>
+
+      <div class="profile-empty-state" *ngIf="!savedLoading && !savedError && savedPosts.length === 0">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19 21 12 17 5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+        </svg>
+        <h3>Chưa có bài viết đã lưu</h3>
+        <p>Khi bạn bấm lưu một bài viết trong Forum, bài đó sẽ xuất hiện tại đây.</p>
+        <a routerLink="/learner/forum">Khám phá Forum</a>
+      </div>
+
+      <div class="profile-error-state" *ngIf="!savedLoading && savedError">
+        {{ savedError }}
+      </div>
+
+      <div class="profile-saved-list" *ngIf="!savedLoading && savedPosts.length > 0">
+        <article class="profile-saved-card" *ngFor="let post of visibleSavedPosts">
+          <div class="profile-saved-card-main">
+            <div class="profile-saved-meta-row">
+              <span class="profile-saved-author">{{ post.authorName || post.authorFullName || 'Thành viên' }}</span>
+              <span>{{ date(post.updatedAt || post.createdAt) }}</span>
+            </div>
+
+            <a class="profile-saved-title" [routerLink]="['/learner/forum-post', post.id]">
+              {{ post.title || 'Bài viết không có tiêu đề' }}
+            </a>
+
+            <p class="profile-saved-excerpt">
+              {{ shortText(post.content || post.excerpt || post.description || 'Không có mô tả.') }}
+            </p>
+
+            <div class="profile-saved-tags" *ngIf="postTags(post).length">
+              <span *ngFor="let tag of postTags(post).slice(0, 4)">{{ tag }}</span>
+            </div>
+          </div>
+
+          <div class="profile-saved-actions">
+            <a class="profile-icon-action" [routerLink]="['/learner/forum-post', post.id]" title="Mở bài viết">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 17 17 7" />
+                <path d="M8 7h9v9" />
+              </svg>
+            </a>
+            <button type="button" class="profile-icon-action danger" title="Bỏ lưu" (click)="removeSavedPost(post)" [disabled]="removingSavedId === post.id">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M19 21 12 17 5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+                <path d="M9 10h6" />
+              </svg>
+            </button>
+          </div>
+        </article>
+
+        <button type="button" class="profile-show-more-btn" *ngIf="savedPosts.length > savedLimit" (click)="showAllSaved = !showAllSaved">
+          {{ showAllSaved ? 'Thu gọn danh sách' : 'Xem tất cả ' + savedPosts.length + ' bài đã lưu' }}
+        </button>
+      </div>
+    </section>
+
+    <section class="profile-panel profile-badges-panel">
+      <div class="profile-panel-header">
+        <span class="profile-panel-eyebrow">Thành tích</span>
+        <h2>Huy hiệu đã đạt</h2>
+      </div>
+
+      <div class="profile-badge-list">
+        <article class="profile-badge-item">
+          <span>FS</span>
+          <div>
+            <strong>First Steps</strong>
+            <p>Hoàn thành bài quiz đầu tiên.</p>
+          </div>
+        </article>
+        <article class="profile-badge-item">
+          <span>ST</span>
+          <div>
+            <strong>Streak</strong>
+            <p>Duy trì thói quen học tập hằng ngày.</p>
+          </div>
+        </article>
+        <article class="profile-badge-item">
+          <span>QA</span>
+          <div>
+            <strong>Community Helper</strong>
+            <p>Tham gia hỏi đáp và hỗ trợ cộng đồng.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+</section>
