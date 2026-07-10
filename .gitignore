@@ -7,3 +7,20 @@ uploads/*
 !uploads/.gitkeep
 **/uploads/*
 !**/uploads/.gitkeep
+# Node / Angular
+**/node_modules/
+**/.angular/
+**/dist/
+
+# .NET
+bin/
+obj/
+.vs/
+*.user
+*.suo
+
+# Upload/runtime
+uploads/*
+!uploads/.gitkeep
+**/uploads/*
+!**/uploads/.gitkeep
