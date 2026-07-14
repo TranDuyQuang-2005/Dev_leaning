@@ -1,9 +1,10 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using DevLearningHub.Api.Common;
 using DevLearningHub.Api.DTOs;
 using DevLearningHub.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DevLearningHub.Api.Controllers;
 
@@ -16,6 +17,7 @@ public sealed class AuthController : BaseApiController
 
     [HttpPost("register")]
     [AllowAnonymous]
+    [EnableRateLimiting("auth-register")]
     public async Task<ActionResult<ApiResponse<object>>> Register(RegisterRequest request, CancellationToken ct)
     {
         var res = await _service.Register(request, ct);
@@ -24,6 +26,7 @@ public sealed class AuthController : BaseApiController
 
     [HttpPost("login")]
     [AllowAnonymous]
+    [EnableRateLimiting("auth-login")]
     public async Task<ActionResult<ApiResponse<AuthResponse>>> Login(LoginRequest request, CancellationToken ct)
     {
         var res = await _service.Login(request, HttpContext.Connection.RemoteIpAddress?.ToString(), Request.Headers.UserAgent.ToString(), ct);
@@ -40,14 +43,64 @@ public sealed class AuthController : BaseApiController
 
     [HttpPost("logout")]
     [Authorize]
-    public async Task<ActionResult<ApiResponse<object>>> Logout(LogoutRequest request, CancellationToken ct) => Ok(await _service.Logout(CurrentUserId ?? 0, request, ct));
+    public async Task<ActionResult<ApiResponse<object>>> Logout(LogoutRequest request, CancellationToken ct)
+    {
+        if (CurrentUserId is null)
+            return Unauthorized(ApiResponse<object>.Fail("Token khong hop le"));
+
+        var res = await _service.Logout(CurrentUserId.Value, request, ct);
+        return Ok(res);
+    }
+
+    [HttpPut("change-password")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse<object>>> ChangePassword(ChangePasswordRequest request, CancellationToken ct)
+    {
+        if (CurrentUserId is null) return Unauthorized(ApiResponse<object>.Fail("Invalid token"));
+        var res = await _service.ChangePassword(CurrentUserId.Value, request, ct);
+        return res.Success ? Ok(res) : BadRequest(res);
+    }
+
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    [EnableRateLimiting("auth-sensitive")]
+    public async Task<ActionResult<ApiResponse<object>>> ForgotPassword(ForgotPasswordRequest request, CancellationToken ct)
+    {
+        var res = await _service.ForgotPassword(request, ct);
+        return res.Success ? Ok(res) : BadRequest(res);
+    }
+
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<object>>> ResetPassword(ResetPasswordRequest request, CancellationToken ct)
+    {
+        var res = await _service.ResetPassword(request, ct);
+        return res.Success ? Ok(res) : BadRequest(res);
+    }
+
+    [HttpPost("resend-email-verification")]
+    [HttpPost("resend-verification")]
+    [AllowAnonymous]
+    [EnableRateLimiting("auth-sensitive")]
+    public async Task<ActionResult<ApiResponse<object>>> ResendEmailVerification(ResendEmailVerificationRequest request, CancellationToken ct)
+    {
+        var res = await _service.ResendEmailVerification(request, ct);
+        return res.Success ? Ok(res) : BadRequest(res);
+    }
+
+    [HttpPost("verify-email")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<object>>> VerifyEmail(VerifyEmailRequest request, CancellationToken ct)
+    {
+        var res = await _service.VerifyEmail(request, ct);
+        return res.Success ? Ok(res) : BadRequest(res);
+    }
 
     [HttpGet("me")]
     [Authorize]
     public async Task<ActionResult<ApiResponse<CurrentUserResponse>>> Me(CancellationToken ct)
     {
-        if (CurrentUserId is null) return Unauthorized(ApiResponse<CurrentUserResponse>.Fail("Token khÃ´ng há»£p lá»‡"));
+        if (CurrentUserId is null) return Unauthorized(ApiResponse<CurrentUserResponse>.Fail("Token không hợp lệ"));
         return Ok(await _service.Me(CurrentUserId.Value, ct));
     }
 }
-

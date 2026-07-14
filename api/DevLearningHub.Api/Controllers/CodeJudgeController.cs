@@ -3,6 +3,7 @@ using DevLearningHub.Api.DTOs;
 using DevLearningHub.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DevLearningHub.Api.Controllers;
 
@@ -20,9 +21,12 @@ public sealed class CodeJudgeController : BaseApiController
 
     [HttpPost("run")]
     [Authorize]
-    public async Task<ActionResult<ApiResponse<CodeRunResponse>>> Run(CodeRunRequest request, CancellationToken ct)
+    [EnableRateLimiting("code-run")]
+    public async Task<ActionResult<ApiResponse<CodeRunResponse>>> Run(CodeRunRequest request, [FromQuery] long? lessonId, [FromQuery] long? roadmapLessonId, CancellationToken ct)
     {
         if (CurrentUserId is null) return Unauthorized();
+        request.LessonId ??= lessonId;
+        request.RoadmapLessonId ??= roadmapLessonId;
         var res = await _service.Run(CurrentUserId.Value, request, ct);
         return res.Success ? Ok(res) : BadRequest(res);
     }
@@ -42,17 +46,21 @@ public sealed class CodeJudgeController : BaseApiController
 
     [HttpGet("problems/{id:long}")]
     [Authorize]
-    public async Task<ActionResult<ApiResponse<CodingProblemDetailResponse>>> Problem(long id, CancellationToken ct)
+    public async Task<ActionResult<ApiResponse<CodingProblemDetailResponse>>> Problem(long id, [FromQuery] long? lessonId, [FromQuery] long? roadmapLessonId, CancellationToken ct)
     {
-        var res = await _service.Problem(CurrentUserId, id, false, ct);
-        return res.Success ? Ok(res) : NotFound(res);
+        var contextLessonId = lessonId ?? roadmapLessonId;
+        var res = await _service.Problem(CurrentUserId, id, false, ct, contextLessonId);
+        return res.Success ? Ok(res) : contextLessonId.HasValue ? BadRequest(res) : NotFound(res);
     }
 
     [HttpPost("problems/{id:long}/submit")]
     [Authorize]
-    public async Task<ActionResult<ApiResponse<CodeSubmissionResponse>>> Submit(long id, CodeSubmitRequest request, CancellationToken ct)
+    [EnableRateLimiting("code-submit")]
+    public async Task<ActionResult<ApiResponse<CodeSubmissionResponse>>> Submit(long id, CodeSubmitRequest request, [FromQuery] long? lessonId, [FromQuery] long? roadmapLessonId, CancellationToken ct)
     {
         if (CurrentUserId is null) return Unauthorized();
+        request.LessonId ??= lessonId;
+        request.RoadmapLessonId ??= roadmapLessonId;
         var res = await _service.Submit(CurrentUserId.Value, id, request, ct);
         return res.Success ? Ok(res) : BadRequest(res);
     }
@@ -63,5 +71,22 @@ public sealed class CodeJudgeController : BaseApiController
     {
         if (CurrentUserId is null) return Unauthorized();
         return Ok(await _service.MySubmissions(CurrentUserId.Value, problemId, ct));
+    }
+
+    [HttpGet("submissions/mine")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse<PagedResult<CodeSubmissionResponse>>>> Mine([FromQuery] CodeSubmissionListQuery query, CancellationToken ct)
+    {
+        if (CurrentUserId is null) return Unauthorized();
+        return Ok(await _service.MySubmissions(CurrentUserId.Value, query, ct));
+    }
+
+    [HttpGet("submissions/{submissionId:long}")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse<CodeSubmissionResponse>>> Submission(long submissionId, CancellationToken ct)
+    {
+        if (CurrentUserId is null) return Unauthorized();
+        var res = await _service.SubmissionDetail(CurrentUserId.Value, submissionId, false, ct);
+        return res.Success ? Ok(res) : NotFound(res);
     }
 }

@@ -1,1 +1,46 @@
-<div class="page"><div class="page-head"><div class="page-title"><h1>Notifications</h1><p>Stay updated with your learning activities</p></div><button class="btn btn-outline">Mark All as Read</button></div><div class="grid"><div class="card card-pad notification unread"><div class="forum-row"><div class="stat-icon yellow-bg"><svg aria-hidden="true" class="icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9H4a2 2 0 0 1-2-2V5h4"></path><path d="M18 9h2a2 2 0 0 0 2-2V5h-4"></path><path d="M6 2h12v7a6 6 0 0 1-12 0V2z"></path><path d="M12 15v5"></path><path d="M8 20h8"></path></svg></div><div style="flex:1"><div style="display:flex;justify-content:space-between"><h3 style="margin:0">Achievement Unlocked!</h3><span class="badge badge-solid">New</span></div><p>You earned 100 XP for completing 10 quizzes</p><span class="muted">5 minutes ago</span></div></div></div><div class="card card-pad notification unread"><div class="forum-row"><div class="stat-icon blue-bg"><svg aria-hidden="true" class="icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path></svg></div><div style="flex:1"><div style="display:flex;justify-content:space-between"><h3 style="margin:0">New Reply to Your Post</h3><span class="badge badge-solid">New</span></div><p>Jane Smith replied to "How to implement authentication in React?"</p><span class="muted">1 hour ago</span></div></div></div><div class="card card-pad notification unread"><div class="forum-row"><div class="stat-icon green-bg"><svg aria-hidden="true" class="icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline><line x1="14" x2="10" y1="4" y2="20"></line></svg></div><div style="flex:1"><div style="display:flex;justify-content:space-between"><h3 style="margin:0">Code Submission Accepted</h3><span class="badge badge-solid">New</span></div><p>Your solution for "Two Sum" problem was accepted!</p><span class="muted">2 hours ago</span></div></div></div><div class="card card-pad notification"><div class="forum-row"><div class="stat-icon yellow-bg"><svg aria-hidden="true" class="icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9H4a2 2 0 0 1-2-2V5h4"></path><path d="M18 9h2a2 2 0 0 0 2-2V5h-4"></path><path d="M6 2h12v7a6 6 0 0 1-12 0V2z"></path><path d="M12 15v5"></path><path d="M8 20h8"></path></svg></div><div style="flex:1"><div style="display:flex;justify-content:space-between"><h3 style="margin:0">7-Day Streak!</h3></div><p>Keep up the great work! You've learned for 7 days in a row</p><span class="muted">1 day ago</span></div></div></div><div class="card card-pad notification"><div class="forum-row"><div class="stat-icon blue-bg"><svg aria-hidden="true" class="icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path></svg></div><div style="flex:1"><div style="display:flex;justify-content:space-between"><h3 style="margin:0">Your Answer Was Accepted</h3></div><p>Your answer on "Best practices for Spring Boot" was marked as accepted</p><span class="muted">2 days ago</span></div></div></div><div class="card card-pad notification"><div class="forum-row"><div class="stat-icon green-bg"><svg aria-hidden="true" class="icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><path d="M22 4 12 14.01l-3-3"></path></svg></div><div style="flex:1"><div style="display:flex;justify-content:space-between"><h3 style="margin:0">Quiz Completed</h3></div><p>You completed "JavaScript ES6+" quiz with 92% score</p><span class="muted">3 days ago</span></div></div></div></div></div>
+<div class="page">
+  <div class="page-head">
+    <div class="page-title">
+      <h1>Notifications</h1>
+      <p>{{ unreadCount ? unreadCount + ' thông báo chưa đọc' : 'Bạn đã đọc hết thông báo' }}</p>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-outline" type="button" (click)="load()">Refresh</button>
+      <button class="btn btn-outline" type="button" (click)="markAllRead()" [disabled]="!unreadCount">Mark All as Read</button>
+    </div>
+  </div>
+
+  <div class="alert" *ngIf="error">{{ error }}</div>
+  <div class="empty-state card" *ngIf="!loading && !notifications.length">Chưa có thông báo nào.</div>
+  <div class="empty-state card" *ngIf="loading">Đang tải thông báo...</div>
+
+  <div class="grid" *ngIf="!loading && notifications.length">
+    <div class="card card-pad notification" *ngFor="let item of notifications" [class.unread]="!item.isRead">
+      <div class="forum-row">
+        <div class="stat-icon" [ngClass]="typeClass(item)">
+          <svg aria-hidden="true" class="icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
+          </svg>
+        </div>
+
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;gap:12px">
+            <div>
+              <span class="badge">{{ typeLabel(item) }}</span>
+              <h3 style="margin:6px 0 0">{{ item.title }}</h3>
+            </div>
+            <span class="badge badge-solid" *ngIf="!item.isRead">New</span>
+          </div>
+          <p>{{ item.message || item.content }}</p>
+          <span class="muted">{{ date(item.createdAt) }}</span>
+
+          <div class="action-row" style="margin-top:10px">
+            <button class="btn btn-outline" type="button" *ngIf="item.linkUrl" (click)="open(item)">Mở</button>
+            <button class="btn btn-ghost" type="button" *ngIf="!item.isRead" (click)="markRead(item)">Đã đọc</button>
+            <button class="btn btn-ghost" type="button" (click)="delete(item)">Xóa</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

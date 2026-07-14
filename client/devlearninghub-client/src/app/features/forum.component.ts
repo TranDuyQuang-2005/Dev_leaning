@@ -121,9 +121,19 @@ export class ForumComponent implements OnInit {
     return post?.authorInitials || (post?.authorName || 'U').trim().charAt(0).toUpperCase();
   }
 
-  fileViewUrl(url: any) {
-    const value = url || '';
-    return value.startsWith('/') ? `${this.api.baseUrl}${value}` : value;
+  fileViewUrl(value: any) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+
+    if (/^\d+$/.test(raw)) return `${this.api.baseUrl}/api/v1/files/${raw}/view`;
+
+    const proxyMatch = raw.match(/\/api\/v1\/files\/([^/?#]+)\/view/i);
+    if (proxyMatch?.[1]) return `${this.api.baseUrl}/api/v1/files/${proxyMatch[1]}/view`;
+
+    if (raw.startsWith('api/v1/files/')) return `${this.api.baseUrl}/${raw}`;
+    if (raw.startsWith('/api/v1/files/')) return `${this.api.baseUrl}${raw}`;
+
+    return raw.startsWith(this.api.baseUrl) ? raw : '';
   }
 
   trackByPost(_: number, post: any) {

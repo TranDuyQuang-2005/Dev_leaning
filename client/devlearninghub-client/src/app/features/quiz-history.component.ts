@@ -16,7 +16,7 @@ export class QuizHistoryComponent implements OnInit {
   ngOnInit(): void {
     this.api.get<any>('/api/v1/quiz-attempts/me').subscribe({
       next: (r: any) => this.attempts = r.data || [],
-      error: (e: any) => this.error = e?.error?.message || 'KhÃ´ng táº£i Ä‘Æ°á»£c lá»‹ch sá»­ lÃ m bÃ i.'
+      error: (e: any) => this.error = e?.error?.message || 'Không tải được lịch sử làm bài.'
     });
   }
 }

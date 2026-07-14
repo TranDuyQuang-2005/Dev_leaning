@@ -187,8 +187,13 @@ export class CreatePostComponent implements OnInit {
     const id = attachment?.fileId || attachment?.id;
     if (id) return `${this.api.baseUrl}/api/v1/files/${id}/view`;
 
-    const url = attachment?.fileUrl || '';
-    return url.startsWith('/') ? `${this.api.baseUrl}${url}` : url;
+    const url = String(attachment?.fileUrl || '').trim();
+    const proxyMatch = url.match(/\/api\/v1\/files\/([^/?#]+)\/view/i);
+    if (proxyMatch?.[1]) return `${this.api.baseUrl}/api/v1/files/${proxyMatch[1]}/view`;
+    if (url.startsWith('api/v1/files/')) return `${this.api.baseUrl}/${url}`;
+    if (url.startsWith('/api/v1/files/')) return `${this.api.baseUrl}${url}`;
+
+    return url.startsWith(this.api.baseUrl) ? url : '';
   }
 
   attachmentName(attachment: ForumAttachment): string {
@@ -196,9 +201,7 @@ export class CreatePostComponent implements OnInit {
   }
 
   attachmentMeta(attachment: ForumAttachment): string {
-    const type = attachment.fileType || attachment.mimeType || 'File';
-    const provider = attachment.storageProvider ? ` · ${attachment.storageProvider}` : '';
-    return `${type}${provider}`;
+    return attachment.fileType || attachment.mimeType || 'File';
   }
 
   save(): void {

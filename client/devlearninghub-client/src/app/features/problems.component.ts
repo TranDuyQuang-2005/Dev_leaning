@@ -22,7 +22,7 @@ export class ProblemsComponent implements OnInit {
     const q = `?pageSize=100&keyword=${encodeURIComponent(this.keyword || '')}&difficulty=${encodeURIComponent(this.difficulty || 'all')}`;
     this.api.get<any>(`/api/v1/code/problems${q}`).subscribe({
       next: (r: any) => { this.problems = r.data?.items || []; this.loading = false; },
-      error: (e: any) => { this.error = e?.error?.message || 'KhÃ´ng táº£i Ä‘Æ°á»£c danh sÃ¡ch bÃ i láº­p trÃ¬nh. Kiá»ƒm tra API vÃ  script DB v12.'; this.loading = false; }
+      error: (e: any) => { this.error = e?.error?.message || 'Không tải được danh sách bài lập trình. Kiểm tra API và script DB v12.'; this.loading = false; }
     });
   }
 

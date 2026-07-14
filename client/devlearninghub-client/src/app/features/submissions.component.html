@@ -1,0 +1,73 @@
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Bài nộp của tôi</h1>
+      <p class="muted">Lịch sử Code Problems và Playground runs của bạn.</p>
+    </div>
+    <a class="btn btn-outline" routerLink="/learner/problems">Problems</a>
+  </div>
+
+  <section class="card card-pad">
+    <div class="filters">
+      <select class="select" style="max-width:180px" [(ngModel)]="filters.language" (change)="load(1)">
+        <option value="">Tất cả ngôn ngữ</option>
+        <option value="javascript">JavaScript</option>
+        <option value="typescript">TypeScript</option>
+        <option value="python">Python</option>
+        <option value="java">Java</option>
+        <option value="c">C</option>
+        <option value="cpp">C++17</option>
+        <option value="csharp">C#</option>
+        <option value="go">Go</option>
+      </select>
+      <select class="select" style="max-width:200px" [(ngModel)]="filters.verdict" (change)="load(1)">
+        <option value="">Tất cả verdict</option>
+        <option value="Accepted">Accepted</option>
+        <option value="WrongAnswer">Wrong Answer</option>
+        <option value="RuntimeError">Runtime Error</option>
+        <option value="CompilationError">Compilation Error</option>
+        <option value="TimeLimitExceeded">Time Limit Exceeded</option>
+      </select>
+      <button class="btn btn-outline" type="button" (click)="resetFilters()">Xóa lọc</button>
+    </div>
+  </section>
+
+  <div class="alert alert-error" *ngIf="error" style="white-space:pre-line">{{error}}</div>
+  <div class="empty-state" *ngIf="loading">Đang tải lịch sử nộp bài...</div>
+  <div class="empty-state" *ngIf="!loading && !submissions.length">Bạn chưa có bài nộp nào.</div>
+
+  <section class="card card-pad" *ngIf="!loading && submissions.length" style="margin-top:18px">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Problem</th>
+          <th>Language</th>
+          <th>Verdict</th>
+          <th>Testcases</th>
+          <th>Runtime</th>
+          <th>Memory</th>
+          <th>SubmittedAt</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of submissions">
+          <td><b>{{item.problemTitle || ('Problem #' + item.problemId)}}</b></td>
+          <td>{{item.language}}</td>
+          <td><span class="badge" [ngClass]="item.isAccepted ? 'badge-green' : 'badge-gray'">{{verdictText(item)}}</span></td>
+          <td>{{item.passedTestCases || 0}}/{{item.totalTestCases || 0}}</td>
+          <td>{{runtimeText(item)}}</td>
+          <td>{{memoryText(item)}}</td>
+          <td>{{submittedAt(item) ? (submittedAt(item) | date:'short') : '-'}}</td>
+          <td><a class="btn btn-outline" [routerLink]="['/learner/submissions', item.id || item.submissionId]">Xem chi tiết</a></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="action-row" style="margin-top:16px">
+      <button class="btn btn-outline" type="button" [disabled]="filters.pageIndex <= 1" (click)="load(filters.pageIndex - 1)">Trước</button>
+      <span class="muted">Trang {{filters.pageIndex}} / {{totalPages}}</span>
+      <button class="btn btn-outline" type="button" [disabled]="filters.pageIndex >= totalPages" (click)="load(filters.pageIndex + 1)">Sau</button>
+    </div>
+  </section>
+</div>

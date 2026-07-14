@@ -1,4 +1,4 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -14,9 +14,12 @@ import { ApiService } from '../core/services/api.service';
 export class ProfileComponent implements OnInit {
   profile: any = {};
   stats: any = {};
-
   editing = false;
   message = '';
+  error = '';
+  passwordMessage = '';
+  passwordError = '';
+  passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
 
   savedPosts: any[] = [];
   savedLoading = false;
@@ -32,31 +35,14 @@ export class ProfileComponent implements OnInit {
   }
 
   get initials(): string {
-    const name = this.displayName || 'User';
-    return name
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((x: string) => x[0])
-      .join('')
-      .toUpperCase();
+    return this.displayName.split(' ').filter(Boolean).slice(0, 2)
+      .map((part: string) => part[0]).join('').toUpperCase();
   }
 
-  get level(): number {
-    return Math.max(1, Math.floor((this.stats.reputation || 0) / 1000) + 1);
-  }
-
-  get nextLevelXp(): number {
-    return this.level * 1000;
-  }
-
-  get xpPercent(): number {
-    return Math.min(100, Math.round(((this.stats.reputation || 0) % 1000) / 10));
-  }
-
-  get visibleSavedPosts(): any[] {
-    return this.showAllSaved ? this.savedPosts : this.savedPosts.slice(0, this.savedLimit);
-  }
+  get level(): number { return Math.max(1, Math.floor((this.stats.reputation || 0) / 1000) + 1); }
+  get nextLevelXp(): number { return this.level * 1000; }
+  get xpPercent(): number { return Math.min(100, Math.round(((this.stats.reputation || 0) % 1000) / 10)); }
+  get visibleSavedPosts(): any[] { return this.showAllSaved ? this.savedPosts : this.savedPosts.slice(0, this.savedLimit); }
 
   ngOnInit(): void {
     this.loadProfile();
@@ -65,25 +51,18 @@ export class ProfileComponent implements OnInit {
   }
 
   loadProfile(): void {
-    this.api.get('/api/v1/users/me/profile').subscribe({
-      next: (r: any) => {
-        const data = r?.data || {};
-        this.profile = {
-          ...data,
-          fullName: data.fullName || this.auth.currentUser()?.fullName || ''
-        };
+    this.api.get<any>('/api/v1/users/me/profile').subscribe({
+      next: (response: any) => {
+        const data = response?.data || {};
+        this.profile = { ...data, fullName: data.fullName || this.auth.currentUser()?.fullName || '' };
       },
-      error: () => {
-        this.profile = {
-          fullName: this.auth.currentUser()?.fullName || ''
-        };
-      }
+      error: () => this.profile = { fullName: this.auth.currentUser()?.fullName || '' }
     });
   }
 
   loadStats(): void {
-    this.api.get('/api/v1/users/me/stats').subscribe({
-      next: (r: any) => this.stats = r?.data || {},
+    this.api.get<any>('/api/v1/users/me/stats').subscribe({
+      next: (response: any) => this.stats = response?.data || {},
       error: () => this.stats = {}
     });
   }
@@ -91,10 +70,9 @@ export class ProfileComponent implements OnInit {
   loadSavedPosts(): void {
     this.savedLoading = true;
     this.savedError = '';
-
-    this.api.get('/api/v1/forum/posts?pageIndex=1&pageSize=100').subscribe({
-      next: (r: any) => {
-        const data = r?.data;
+    this.api.get<any>('/api/v1/forum/posts?pageIndex=1&pageSize=100').subscribe({
+      next: (response: any) => {
+        const data = response?.data;
         const items = Array.isArray(data) ? data : (data?.items || []);
         this.savedPosts = items
           .filter((post: any) => post?.isBookmarked || post?.isSaved || post?.bookmarked)
@@ -102,45 +80,61 @@ export class ProfileComponent implements OnInit {
         this.savedLoading = false;
       },
       error: (e: any) => {
-        this.savedError = e?.error?.message || 'Không tải được danh sách bài viết đã lưu.';
+        this.savedError = this.api.errorMessage(e, 'Không tải được danh sách bài viết đã lưu.');
         this.savedLoading = false;
       }
     });
   }
 
   save(): void {
-    this.api.put('/api/v1/users/me/profile', this.profile).subscribe({
+    this.message = '';
+    this.error = '';
+    this.api.put<any>('/api/v1/users/me/profile', this.profile).subscribe({
       next: () => {
         this.message = 'Đã lưu hồ sơ.';
         this.editing = false;
       },
-      error: () => this.message = 'Không lưu được hồ sơ.'
+      error: e => this.error = this.api.errorMessage(e, 'Không lưu được hồ sơ.')
+    });
+  }
+
+  changePassword(): void {
+    this.passwordMessage = '';
+    this.passwordError = '';
+    if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) {
+      this.passwordError = 'Mật khẩu xác nhận không khớp.';
+      return;
+    }
+
+    this.api.changePassword(this.passwordForm).subscribe({
+      next: () => {
+        this.passwordMessage = 'Đổi mật khẩu thành công.';
+        this.passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+      },
+      error: e => this.passwordError = this.api.errorMessage(e, 'Không đổi được mật khẩu.')
     });
   }
 
   removeSavedPost(post: any): void {
-    if (!post?.id || this.removingSavedId) return;
-
-    const oldPosts = [...this.savedPosts];
+    if (!post?.id || this.removingSavedId !== null) return;
+    const previousPosts = [...this.savedPosts];
     this.removingSavedId = post.id;
-    this.savedPosts = this.savedPosts.filter((item: any) => item.id !== post.id);
+    this.savedPosts = this.savedPosts.filter(item => item.id !== post.id);
 
-    this.api.delete(`/api/v1/forum/posts/${post.id}/bookmark`).subscribe({
+    this.api.delete<any>(`/api/v1/forum/posts/${post.id}/bookmark`).subscribe({
       next: () => {
         this.removingSavedId = null;
         this.message = 'Đã bỏ lưu bài viết.';
       },
       error: (e: any) => {
-        this.savedPosts = oldPosts;
+        this.savedPosts = previousPosts;
         this.removingSavedId = null;
-        alert(e?.error?.message || 'Không bỏ lưu được bài viết.');
+        this.savedError = this.api.errorMessage(e, 'Không bỏ lưu được bài viết.');
       }
     });
   }
 
-  date(value: any): string {
-    return value ? new Date(value).toLocaleString('vi-VN') : '';
-  }
+  date(value: any): string { return value ? new Date(value).toLocaleString('vi-VN') : ''; }
 
   shortText(value: string, max = 150): string {
     const text = (value || '').replace(/<[^>]*>/g, '').trim();
@@ -152,7 +146,7 @@ export class ProfileComponent implements OnInit {
       return post.tags.map((tag: any) => typeof tag === 'string' ? tag : (tag?.name || tag?.tagName || '')).filter(Boolean);
     }
     if (typeof post?.tagNames === 'string') {
-      return post.tagNames.split(',').map((x: string) => x.trim()).filter(Boolean);
+      return post.tagNames.split(',').map((tag: string) => tag.trim()).filter(Boolean);
     }
     return [];
   }

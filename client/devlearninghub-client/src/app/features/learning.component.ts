@@ -20,7 +20,7 @@ export class LearningComponent implements OnInit {
 
   load(): void {
     this.api.get<any>('/api/v1/categories?pageSize=100').subscribe({ next: (r: any) => this.categories = r.data?.items || [] });
-    this.api.get<any>('/api/v1/quiz-sets?pageSize=100').subscribe({ next: (r: any) => this.quizSets = r.data?.items || [], error: (e: any) => this.error = e?.error?.message || 'KhÃ´ng táº£i Ä‘Æ°á»£c dá»¯ liá»‡u quiz set tá»« API.' });
+    this.api.get<any>('/api/v1/quiz-sets?pageSize=100').subscribe({ next: (r: any) => this.quizSets = r.data?.items || [], error: (e: any) => this.error = e?.error?.message || 'Không tải được dữ liệu quiz set từ API.' });
     this.api.get<any>('/api/v1/quiz-attempts/me').subscribe({ next: (r: any) => this.attempts = r.data || [], error: () => this.attempts = [] });
   }
 
@@ -41,7 +41,7 @@ export class LearningComponent implements OnInit {
   progress(id: number): number { return Number(localStorage.getItem('quiz-progress-' + id) || 0); }
   attemptsFor(q: any): any[] { return this.attempts.filter(a => Number(a.quizSetId) === Number(q.id)); }
   remainingAttempts(q: any): string {
-    if (!q.maxAttempts) return 'KhÃ´ng giá»›i háº¡n';
+    if (!q.maxAttempts) return 'Không giới hạn';
     const done = this.attemptsFor(q).filter(a => a.submittedAt).length;
     return Math.max(0, q.maxAttempts - done) + ' / ' + q.maxAttempts;
   }

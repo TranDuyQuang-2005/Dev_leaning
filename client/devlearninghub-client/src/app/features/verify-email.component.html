@@ -1,0 +1,16 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <a class="logo" routerLink="/"><span class="logo-mark">&lt;/&gt;</span><span><span class="dev">Dev</span>-Learning Hub</span></a>
+    <div class="card card-pad">
+      <h1 style="text-align:center;margin-bottom:6px">Xác thực email</h1>
+      <div class="empty-state" *ngIf="loading">Đang xác thực email...</div>
+      <div class="alert alert-ok" *ngIf="message">{{message}}</div>
+      <div class="alert alert-error" *ngIf="error">{{error}}</div>
+
+      <div class="action-row" style="justify-content:center;margin-top:14px">
+        <a class="btn btn-primary" routerLink="/login" *ngIf="message">Về Login</a>
+        <a class="btn btn-outline" routerLink="/resend-verification" *ngIf="canResend">Gửi lại email xác thực</a>
+      </div>
+    </div>
+  </div>
+</div>

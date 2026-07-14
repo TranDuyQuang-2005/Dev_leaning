@@ -14,6 +14,27 @@
       <div><h3>Output Format</h3><p class="muted" style="white-space:pre-line">{{problem.outputFormat || 'In kết quả ra stdout.'}}</p></div>
       <div><h3>Examples</h3><div class="grid"><div class="example" *ngFor="let tc of problem.testCases"><b>Input:</b><pre class="output-box">{{tc.input}}</pre><b>Expected Output:</b><pre class="output-box">{{tc.expectedOutput}}</pre><p class="muted" *ngIf="tc.explanation">{{tc.explanation}}</p></div></div></div>
       <div><h3>Constraints</h3><p style="white-space:pre-line">{{problem.constraints || 'Không có ràng buộc bổ sung.'}}</p></div>
+      <section class="card card-pad" style="margin-top:18px">
+        <div class="filters">
+          <h3 style="margin:0">Bài nộp của tôi</h3>
+          <button class="btn btn-outline" type="button" (click)="loadMySubmissions()">Refresh</button>
+        </div>
+        <div class="empty-state" *ngIf="submissionsLoading">Đang tải lịch sử nộp bài...</div>
+        <div class="empty-state" *ngIf="!submissionsLoading && !mySubmissions.length">Bạn chưa nộp bài này.</div>
+        <table class="table" *ngIf="!submissionsLoading && mySubmissions.length">
+          <thead><tr><th>Verdict</th><th>Testcases</th><th>Runtime</th><th>Memory</th><th>SubmittedAt</th><th></th></tr></thead>
+          <tbody>
+            <tr *ngFor="let item of mySubmissions">
+              <td><span class="badge" [ngClass]="item.isAccepted ? 'badge-green' : 'badge-gray'">{{verdictText(item)}}</span></td>
+              <td>{{item.passedTestCases || 0}}/{{item.totalTestCases || 0}}</td>
+              <td>{{item.executionTimeMs || item.runtimeMs || 0}} ms</td>
+              <td>{{memoryText(item)}}</td>
+              <td>{{submittedAt(item) ? (submittedAt(item) | date:'short') : '-'}}</td>
+              <td><a class="btn btn-outline" [routerLink]="['/learner/submissions', item.id || item.submissionId]">Chi tiết</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
     </div>
   </section>
 
@@ -37,13 +58,14 @@
     <div class="test-panel" *ngIf="runResult">
       <b>Run Result: {{runResult.verdict}}</b>
       <span class="muted"> · {{runResult.executionTimeMs}} ms</span>
-      <pre class="output-box">{{runResult.output || '(no output)'}}</pre>
-      <pre class="output-box" *ngIf="runResult.error">{{runResult.error}}</pre>
+      <pre class="output-box">{{runResult.output || runResult.stdout || '(no output)'}}</pre>
+      <pre class="output-box" *ngIf="runResult.error || runResult.stderr || runResult.compileOutput">{{runResult.error || runResult.stderr || runResult.compileOutput}}</pre>
     </div>
 
     <div class="test-panel" *ngIf="submitResult">
       <b>Submit Result: <span [class.status-ok]="submitResult.isAccepted">{{submitResult.verdict}}</span></b>
       <p>{{submitResult.passedTestCases}} / {{submitResult.totalTestCases}} test cases passed · {{submitResult.executionTimeMs}} ms</p>
+      <a class="btn btn-outline" *ngIf="submitResult.id || submitResult.submissionId" [routerLink]="['/learner/submissions', submitResult.id || submitResult.submissionId]">Xem chi tiết submission</a>
       <div class="example" *ngFor="let tc of submitResult.testCaseResults">
         <b>#{{tc.displayOrder}} {{tc.status}}</b>
         <span [class.status-ok]="tc.passed"> {{tc.passed ? 'Passed' : 'Failed'}}</span>

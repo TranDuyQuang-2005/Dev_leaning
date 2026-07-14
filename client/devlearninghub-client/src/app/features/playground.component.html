@@ -1,151 +1,189 @@
 ﻿<section class="playground-pro-page">
-  <div class="playground-hero-card">
+  <div class="playground-pro-hero">
     <div>
-      <span class="playground-kicker">Online Judge</span>
+      <p class="playground-pro-eyebrow">Online Judge</p>
       <h1>Code Playground</h1>
       <p>Viết code, nhập dữ liệu đầu vào và chạy trực tiếp qua API Judge của hệ thống.</p>
     </div>
 
-    <div class="playground-hero-actions">
-      <button class="pg-btn pg-btn-light" type="button" (click)="reset()" [disabled]="isRunning">
-        <svg viewBox="0 0 24 24" class="pg-icon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <div class="playground-pro-hero-actions">
+      <button type="button" class="playground-pro-btn secondary" (click)="reset()" [disabled]="isRunning">
+        <svg viewBox="0 0 24 24" class="playground-pro-icon" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M3 12a9 9 0 1 0 3-6.7"></path>
-          <path d="M3 3v6h6"></path>
+          <path d="M3 4v6h6"></path>
         </svg>
         Reset
       </button>
-
-      <button class="pg-btn pg-btn-primary" type="button" (click)="run()" [disabled]="isRunning">
-        <svg viewBox="0 0 24 24" class="pg-icon" fill="currentColor">
+      <button type="button" class="playground-pro-btn primary" (click)="run()" [disabled]="isRunning">
+        <svg *ngIf="!isRunning" viewBox="0 0 24 24" class="playground-pro-icon" fill="currentColor">
           <path d="M8 5v14l11-7z"></path>
         </svg>
+        <span *ngIf="isRunning" class="playground-pro-spinner"></span>
         {{ isRunning ? 'Đang chạy...' : 'Run Code' }}
       </button>
     </div>
   </div>
 
-  <div class="playground-workspace">
-    <aside class="playground-sidebar-card">
-      <div class="pg-panel-heading">
-        <span>Ngôn ngữ</span>
-        <small>{{ currentLanguage().runtime || 'Runtime mặc định' }}</small>
+  <div class="playground-pro-shell">
+    <aside class="playground-pro-sidebar">
+      <div class="playground-pro-panel">
+        <div class="playground-pro-panel-title">
+          <svg viewBox="0 0 24 24" class="playground-pro-icon" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3h8l4 4v14H4V3h4z"></path>
+            <path d="M14 3v5h5"></path>
+          </svg>
+          Ngôn ngữ
+        </div>
+
+        <div class="playground-pro-language-list">
+          <button
+            type="button"
+            class="playground-pro-language"
+            *ngFor="let item of languages; trackBy: trackByLanguage"
+            [class.active]="item.value === language"
+            [disabled]="item.enabled === false || isRunning"
+            (click)="setLanguage(item.value)">
+            <span class="playground-pro-language-dot"></span>
+            <span>
+              <strong>{{ item.label }}</strong>
+              <small>{{ item.runtime || 'Runtime mặc định' }}</small>
+            </span>
+          </button>
+        </div>
       </div>
 
-      <div class="language-list">
-        <button
-          type="button"
-          class="language-option"
-          *ngFor="let item of languages; trackBy: trackByLanguage"
-          [class.active]="item.value === language"
-          [disabled]="isRunning || item.enabled === false"
-          (click)="setLanguage(item.value)">
-          <span class="language-dot"></span>
-          <span>
-            <strong>{{ item.label }}</strong>
-            <small>{{ item.runtime || 'Runtime mặc định' }}</small>
-          </span>
+      <div class="playground-pro-panel">
+        <div class="playground-pro-panel-title">
+          <svg viewBox="0 0 24 24" class="playground-pro-icon" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 7h16"></path>
+            <path d="M4 12h16"></path>
+            <path d="M4 17h10"></path>
+          </svg>
+          STDIN
+        </div>
+        <textarea
+          class="playground-pro-input"
+          [(ngModel)]="stdin"
+          spellcheck="false"
+          placeholder="Nhập input cho chương trình..."></textarea>
+
+        <button type="button" class="playground-pro-btn soft full" (click)="useSampleInput()" [disabled]="isRunning">
+          Dùng input mẫu
         </button>
       </div>
 
-      <div class="stdin-card">
-        <div class="pg-panel-heading compact">
-          <span>STDIN</span>
-          <button type="button" class="pg-link-btn" (click)="useSampleInput()" [disabled]="isRunning">Dùng mẫu</button>
+      <div class="playground-pro-panel playground-pro-hints">
+        <div class="playground-pro-panel-title">
+          <svg viewBox="0 0 24 24" class="playground-pro-icon" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"></path>
+            <path d="M9 21h6"></path>
+          </svg>
+          Gợi ý thao tác
         </div>
-
-        <textarea
-          class="stdin-input"
-          [(ngModel)]="stdin"
-          [disabled]="isRunning"
-          placeholder="Nhập input cho chương trình..."></textarea>
-      </div>
-
-      <div class="shortcut-card">
-        <h3>Gợi ý thao tác</h3>
         <ul>
-          <li><kbd>Ctrl</kbd> + <kbd>Enter</kbd> để chạy nhanh.</li>
-          <li>Class Java nên đặt tên là <strong>Main</strong>.</li>
-          <li>C++ dùng chuẩn <strong>C++17</strong>.</li>
+          <li>Dùng <kbd>Ctrl</kbd> + <kbd>Enter</kbd> để chạy nhanh.</li>
+          <li>Class Java nên đặt tên là <b>Main</b>.</li>
+          <li>C++ dùng chuẩn <b>C++17</b>.</li>
         </ul>
       </div>
     </aside>
 
-    <main class="playground-editor-card">
-      <div class="editor-header">
-        <div>
-          <span class="playground-kicker subtle">Editor</span>
-          <h2>{{ currentLanguage().label }}</h2>
+    <main class="playground-pro-main">
+      <div class="playground-pro-editor-card">
+        <div class="playground-pro-card-head">
+          <div>
+            <p class="playground-pro-eyebrow">Editor</p>
+            <h2>{{ currentLanguage().label }}</h2>
+          </div>
+
+          <div class="playground-pro-meta-row">
+            <span>{{ lineCount }} dòng</span>
+            <span>{{ codeLength }} ký tự</span>
+            <span>Limit {{ timeLimitMs }}ms</span>
+          </div>
         </div>
 
-        <div class="editor-meta">
-          <span>{{ lineCount }} dòng</span>
-          <span>{{ codeLength }} ký tự</span>
-          <span>Limit {{ timeLimitMs }}ms</span>
+        <div class="playground-pro-editor-wrap">
+          <div class="playground-pro-editor-topbar">
+            <span class="playground-pro-dot red"></span>
+            <span class="playground-pro-dot yellow"></span>
+            <span class="playground-pro-dot green"></span>
+            <span class="playground-pro-file-name">main.{{ fileExtension() }}</span>
+            <button type="button" class="playground-pro-icon-btn" (click)="copyCode()">
+              <svg viewBox="0 0 24 24" class="playground-pro-icon" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                <rect x="2" y="2" width="13" height="13" rx="2"></rect>
+              </svg>
+              {{ copiedCode ? 'Copied' : 'Copy' }}
+            </button>
+          </div>
+
+          <textarea
+            class="playground-pro-code"
+            [(ngModel)]="code"
+            spellcheck="false"
+            [disabled]="isRunning"
+            (keydown.control.enter)="run()"
+            (keydown.meta.enter)="run()"></textarea>
         </div>
       </div>
 
-      <div class="code-window">
-        <div class="code-toolbar">
-          <span>{{ fileName }}</span>
-          <button type="button" class="pg-link-btn light" (click)="copyCode()">
-            {{ copiedCode ? 'Đã copy' : 'Copy code' }}
-          </button>
-        </div>
+      <div class="playground-pro-result-grid">
+        <section class="playground-pro-result-card">
+          <div class="playground-pro-card-head compact">
+            <div>
+              <p class="playground-pro-eyebrow">Result</p>
+              <h3>Execution Summary</h3>
+            </div>
+            <span class="playground-pro-status" [ngClass]="statusClass">
+              <span></span>
+              {{ verdict || 'N/A' }}
+            </span>
+          </div>
 
-        <textarea
-          class="code-editor"
-          spellcheck="false"
-          [(ngModel)]="code"
-          [disabled]="isRunning"
-          (keydown)="onEditorKeydown($event)"
-          style="background:#0b1120;color:#e5e7eb;caret-color:#60a5fa;"></textarea>
+          <div class="playground-pro-metrics">
+            <div>
+              <small>Time</small>
+              <strong>{{ executionTimeMs || 0 }} ms</strong>
+            </div>
+            <div>
+              <small>Memory</small>
+              <strong>{{ memoryUsedKb || 0 }} KB</strong>
+            </div>
+            <div>
+              <small>Last run</small>
+              <strong>{{ lastRunAt || '--:--:--' }}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="playground-pro-result-card output-card">
+          <div class="playground-pro-card-head compact">
+            <div>
+              <p class="playground-pro-eyebrow">STDOUT</p>
+              <h3>Kết quả in ra</h3>
+            </div>
+            <button type="button" class="playground-pro-icon-btn" (click)="copyOutput()">
+              <svg viewBox="0 0 24 24" class="playground-pro-icon" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                <rect x="2" y="2" width="13" height="13" rx="2"></rect>
+              </svg>
+              {{ copiedOutput ? 'Copied' : 'Copy' }}
+            </button>
+          </div>
+          <pre class="playground-pro-console stdout">{{ output }}</pre>
+        </section>
+
+        <section class="playground-pro-result-card output-card" *ngIf="error">
+          <div class="playground-pro-card-head compact">
+            <div>
+              <p class="playground-pro-eyebrow danger">STDERR</p>
+              <h3>Lỗi khi chạy</h3>
+            </div>
+          </div>
+          <pre class="playground-pro-console stderr">{{ error }}</pre>
+        </section>
       </div>
     </main>
-
-    <aside class="playground-result-card">
-      <div class="pg-panel-heading">
-        <span>Kết quả</span>
-        <button type="button" class="pg-link-btn" (click)="clearOutput()" [disabled]="isRunning">Xóa</button>
-      </div>
-
-      <div class="execution-summary">
-        <div class="summary-status" [class]="statusClass">
-          <span>Trạng thái</span>
-          <strong>{{ verdict || 'N/A' }}</strong>
-        </div>
-
-        <div class="summary-grid">
-          <div>
-            <span>Time</span>
-            <strong>{{ executionTimeMs || 0 }} ms</strong>
-          </div>
-          <div>
-            <span>Memory</span>
-            <strong>{{ memoryUsedKb || 0 }} KB</strong>
-          </div>
-          <div>
-            <span>Last run</span>
-            <strong>{{ lastRunAt || '--:--:--' }}</strong>
-          </div>
-        </div>
-      </div>
-
-      <div class="output-window">
-        <div class="output-toolbar">
-          <span>STDOUT</span>
-          <button type="button" class="pg-link-btn light" (click)="copyOutput()">
-            {{ copiedOutput ? 'Đã copy' : 'Copy output' }}
-          </button>
-        </div>
-        <pre>{{ output }}</pre>
-      </div>
-
-      <div class="output-window error" *ngIf="error">
-        <div class="output-toolbar">
-          <span>STDERR</span>
-        </div>
-        <pre>{{ error }}</pre>
-      </div>
-    </aside>
   </div>
 </section>

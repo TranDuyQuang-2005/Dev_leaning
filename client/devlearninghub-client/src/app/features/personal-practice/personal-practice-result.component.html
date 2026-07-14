@@ -1,0 +1,41 @@
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Kết quả tự luyện</h1>
+      <p class="muted">{{attempt?.bankTitle || attempt?.practiceBank?.title}}</p>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-primary" type="button" (click)="retry()">Luyện lại từ bank này</button>
+      <a class="btn btn-outline" routerLink="/learner/practice-attempts">Lịch sử</a>
+    </div>
+  </div>
+
+  <div class="alert alert-error" *ngIf="error" style="white-space:pre-line">{{error}}</div>
+
+  <section class="grid grid-3" *ngIf="attempt">
+    <div class="card card-pad" style="text-align:center"><div class="stat-value">{{attempt.score ?? 0}}</div><p class="muted">Điểm</p></div>
+    <div class="card card-pad" style="text-align:center"><div class="stat-value">{{attempt.correctCount ?? 0}}</div><p class="muted">Câu đúng</p></div>
+    <div class="card card-pad" style="text-align:center"><div class="stat-value">{{attempt.totalQuestions ?? questions.length}}</div><p class="muted">Tổng câu</p></div>
+  </section>
+
+  <section class="card card-pad" *ngFor="let q of questions; let i=index" style="margin-top:14px">
+    <h3 style="margin-top:0">Câu {{i + 1}}</h3>
+    <p style="white-space:pre-line">{{q.questionText || q.content || q.title}}</p>
+
+    <div class="result-option" [ngClass]="isCorrect(q) ? 'result-option-correct' : 'result-option-wrong'">
+      <b>{{isCorrect(q) ? 'Đúng' : 'Sai'}}</b>
+      <span>Đáp án đã chọn: {{selectedOption(q) || 'Chưa chọn'}}<ng-container *ngIf="selectedAnswerText(q)"> - {{selectedAnswerText(q)}}</ng-container></span>
+      <span>Đáp án đúng: <ng-container *ngIf="correctOption(q); else missingCorrect">{{correctOption(q)}}<ng-container *ngIf="correctAnswerText(q)"> - {{correctAnswerText(q)}}</ng-container></ng-container></span>
+      <ng-template #missingCorrect>Chưa có đáp án đúng</ng-template>
+      <p class="muted" *ngIf="explanation(q)">{{explanation(q)}}</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px" *ngIf="options(q).length">
+      <div class="quiz-option result-option" *ngFor="let option of options(q); let oi=index" [ngClass]="optionClass(q, option, oi)">
+        <span><b>{{optionKey(option, oi)}}.</b> {{optionText(option)}}</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="empty-state" *ngIf="loading">Đang tải kết quả...</div>
+</div>

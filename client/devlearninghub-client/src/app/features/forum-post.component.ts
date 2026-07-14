@@ -1,7 +1,8 @@
 ﻿import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { ApiService } from '../core/services/api.service';
 
 @Component({
@@ -10,7 +11,7 @@ import { ApiService } from '../core/services/api.service';
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './forum-post.component.html'
 })
-export class ForumPostComponent implements OnInit {
+export class ForumPostComponent implements OnInit, OnDestroy {
   post: any;
   postId = 0;
   answers: any[] = [];
@@ -24,18 +25,30 @@ export class ForumPostComponent implements OnInit {
   error = '';
   message = '';
   acceptingId: number | null = null;
+  highlightedCommentId: number | null = null;
 
   visibleAnswerLimit = 6;
   visibleReplyLimit = 4;
   showAllAnswers = false;
   expandedReplyThreads = new Set<number>();
+  private destroy$ = new Subject<void>();
+  private pendingFragment = '';
 
   constructor(private api: ApiService, private route: ActivatedRoute, private router: Router) {}
 
   ngOnInit() {
     this.postId = Number(this.route.snapshot.paramMap.get('id') || 0);
+    this.route.fragment.pipe(takeUntil(this.destroy$)).subscribe(fragment => {
+      this.pendingFragment = fragment || '';
+      this.revealFragmentComment();
+    });
     if (!this.postId) this.router.navigate(['/learner/forum']);
     else this.load();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get visibleAnswers(): any[] {
@@ -52,6 +65,7 @@ export class ForumPostComponent implements OnInit {
       next: (r: any) => {
         this.post = r?.data;
         this.normalizeComments();
+        this.revealFragmentComment();
       },
       error: (e: any) => this.error = e?.error?.message || 'Không tải được bài viết'
     });
@@ -82,7 +96,7 @@ export class ForumPostComponent implements OnInit {
       const id = Number(comment?.id ?? comment?.commentId ?? 0);
       if (!id) return;
 
-      const parentCommentId = parentOverride ?? this.getParentId(comment);
+      const parentCommentId = this.getParentId(comment) ?? parentOverride;
       const current = map.get(id) || {};
       map.set(id, {
         ...current,
@@ -94,9 +108,17 @@ export class ForumPostComponent implements OnInit {
         threadReplies: []
       });
 
-      if (Array.isArray(comment?.replies)) {
-        comment.replies.forEach((reply: any) => add(reply, id));
-      }
+      const nestedReplies = [
+        ...(Array.isArray(comment?.replies) ? comment.replies : []),
+        ...(Array.isArray(comment?.threadReplies) ? comment.threadReplies : [])
+      ];
+      const seenNestedIds = new Set<number>();
+      nestedReplies.forEach((reply: any) => {
+        const replyId = Number(reply?.id ?? reply?.commentId ?? 0);
+        if (replyId && seenNestedIds.has(replyId)) return;
+        if (replyId) seenNestedIds.add(replyId);
+        add(reply, id);
+      });
     };
 
     source.forEach((comment: any) => add(comment));
@@ -228,6 +250,32 @@ export class ForumPostComponent implements OnInit {
     return null;
   }
 
+  private revealFragmentComment(): void {
+    const commentId = this.commentIdFromFragment();
+    if (!commentId || !this.answers.length) return;
+
+    const rootId = this.findRootAnswerId(commentId);
+    if (rootId) {
+      if (rootId !== commentId) this.expandedReplyThreads.add(rootId);
+      const rootIndex = this.answers.findIndex((answer: any) => answer.id === rootId);
+      if (rootIndex >= this.visibleAnswerLimit) this.showAllAnswers = true;
+    }
+
+    this.highlightedCommentId = commentId;
+    setTimeout(() => {
+      const element = document.getElementById(`comment-${commentId}`);
+      element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 80);
+    setTimeout(() => {
+      if (this.highlightedCommentId === commentId) this.highlightedCommentId = null;
+    }, 3500);
+  }
+
+  private commentIdFromFragment(): number {
+    const match = /^comment-(\d+)$/.exec(this.pendingFragment || '');
+    return match ? Number(match[1]) : 0;
+  }
+
   deletePost() {
     if (!confirm('Xóa bài viết này?')) return;
     this.api.delete<any>(`/api/v1/forum/posts/${this.postId}`).subscribe({
@@ -307,8 +355,18 @@ export class ForumPostComponent implements OnInit {
   fileViewUrl(attachment: any) {
     const id = attachment?.fileId || attachment?.id;
     if (id) return `${this.api.baseUrl}/api/v1/files/${id}/view`;
-    const url = attachment?.fileUrl || '';
-    return url.startsWith('/') ? `${this.api.baseUrl}${url}` : url;
+
+    const url = String(attachment?.fileUrl || '').trim();
+    const proxyMatch = url.match(/\/api\/v1\/files\/([^/?#]+)\/view/i);
+    if (proxyMatch?.[1]) return `${this.api.baseUrl}/api/v1/files/${proxyMatch[1]}/view`;
+    if (url.startsWith('api/v1/files/')) return `${this.api.baseUrl}/${url}`;
+    if (url.startsWith('/api/v1/files/')) return `${this.api.baseUrl}${url}`;
+
+    return url.startsWith(this.api.baseUrl) ? url : '';
+  }
+
+  attachmentMeta(attachment: any): string {
+    return attachment?.fileType || attachment?.mimeType || 'File';
   }
 
   date(value: any) {

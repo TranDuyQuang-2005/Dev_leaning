@@ -14,8 +14,12 @@ public sealed class CodingProblem
     public string? Tags { get; set; }
     public string? StarterCodeJavaScript { get; set; }
     public string? StarterCodePython { get; set; }
+    public string? StarterCodeTypeScript { get; set; }
     public string? StarterCodeJava { get; set; }
+    public string? StarterCodeC { get; set; }
     public string? StarterCodeCpp { get; set; }
+    public string? StarterCodeCsharp { get; set; }
+    public string? StarterCodeGo { get; set; }
     public byte Difficulty { get; set; } = 1;
     public byte Status { get; set; } = 1;
     public int TimeLimitMs { get; set; } = 2000;

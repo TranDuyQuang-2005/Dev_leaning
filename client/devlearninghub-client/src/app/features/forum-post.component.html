@@ -29,7 +29,7 @@
         <div *ngIf="!isImage(a)" class="file-icon"><svg class="forum-ui-icon forum-ui-icon-paperclip" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.4 11.6 12 21a6 6 0 0 1-8.5-8.5l10-10a4 4 0 0 1 5.7 5.7l-10 10a2 2 0 0 1-2.8-2.8l9.4-9.4"/></svg></div>
         <div class="attachment-info">
           <b>{{a.originalFileName}}</b>
-          <span>{{a.fileType}} · {{a.storageProvider}}</span>
+          <span>{{attachmentMeta(a)}}</span>
         </div>
       </a>
     </div>
@@ -69,7 +69,7 @@
   <div class="empty-state card" *ngIf="!answers.length">Chưa có câu trả lời. Hãy là người trả lời đầu tiên.</div>
 
   <section class="forum-answer-list-pro">
-    <article class="forum-answer-card-pro" *ngFor="let c of visibleAnswers; trackBy: trackByComment" [class.accepted-root]="c.isAcceptedAnswer">
+    <article class="forum-answer-card-pro" *ngFor="let c of visibleAnswers; trackBy: trackByComment" [id]="'comment-' + c.id" [class.accepted-root]="c.isAcceptedAnswer" [style.box-shadow]="highlightedCommentId===c.id ? '0 0 0 3px rgba(37, 99, 235, 0.28)' : null">
       <div class="accepted-ribbon-pro" *ngIf="c.isAcceptedAnswer">Accepted Answer</div>
 
       <div class="comment-header-pro">
@@ -110,7 +110,7 @@
           <span>{{c.threadReplies.length}} phản hồi</span>
         </div>
 
-        <div class="reply-item-pro" *ngFor="let r of getVisibleReplies(c); trackBy: trackByComment" [class.accepted-reply]="r.isAcceptedAnswer" [style.margin-left.px]="replyIndent(r)">
+        <div class="reply-item-pro" *ngFor="let r of getVisibleReplies(c); trackBy: trackByComment" [id]="'comment-' + r.id" [class.accepted-reply]="r.isAcceptedAnswer" [style.margin-left.px]="replyIndent(r)" [style.box-shadow]="highlightedCommentId===r.id ? '0 0 0 3px rgba(37, 99, 235, 0.28)' : null">
           <div class="accepted-ribbon-pro mini" *ngIf="r.isAcceptedAnswer">Accepted Answer</div>
 
           <div class="comment-header-pro small">

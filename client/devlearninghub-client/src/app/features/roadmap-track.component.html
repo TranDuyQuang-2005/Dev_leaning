@@ -1,0 +1,49 @@
+<div class="page roadmap-page">
+  <a class="linklike" routerLink="/learner/roadmap">Quay lại Roadmap</a>
+
+  <div class="alert alert-error" *ngIf="error">{{error}}</div>
+  <div class="empty-state" *ngIf="loading">Đang tải lộ trình...</div>
+
+  <ng-container *ngIf="!loading && track">
+    <section class="roadmap-hero compact">
+      <div>
+        <span class="eyebrow">{{track.level}}</span>
+        <h1>{{track.title}}</h1>
+        <p>{{track.description}}</p>
+      </div>
+      <div class="roadmap-summary-pill">
+        <b>{{track.progressPercent || 0}}%</b>
+        <span>{{track.courseCount || 0}} khóa · {{track.estimatedHours || 0}} giờ</span>
+      </div>
+    </section>
+
+    <section class="track-course-list">
+      <article class="card card-pad track-course-card" *ngFor="let course of track.courses; let i = index" [class.locked]="course.isLocked">
+        <div class="course-order">{{i + 1}}</div>
+        <div class="track-course-main">
+          <div class="course-card-head">
+            <div>
+              <span class="badge" [ngClass]="statusClass(course)">{{course.status}}</span>
+              <h2>{{course.title}}</h2>
+            </div>
+            <a class="btn" [ngClass]="course.isLocked ? 'btn-outline' : 'btn-primary'" [class.disabled-link]="course.isLocked" [routerLink]="course.isLocked ? null : ['/learner/courses', course.slug]">
+              {{buttonText(course)}}
+            </a>
+          </div>
+          <p>{{course.shortDescription || course.description}}</p>
+          <div class="roadmap-card-meta">
+            <span>{{course.totalModules || 0}} chương</span>
+            <span>{{course.totalLessons || 0}} bài học</span>
+            <span>{{course.estimatedHours || 0}} giờ</span>
+          </div>
+          <div class="progress">
+            <span [style.width]="progressWidth(course.progressPercent)"></span>
+          </div>
+          <p class="lock-note" *ngIf="course.isLocked">{{course.lockReason}}</p>
+        </div>
+      </article>
+    </section>
+
+    <div class="empty-state" *ngIf="!track.courses?.length">Lộ trình này chưa có khóa học được xuất bản.</div>
+  </ng-container>
+</div>

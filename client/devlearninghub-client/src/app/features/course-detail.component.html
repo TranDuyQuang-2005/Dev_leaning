@@ -1,0 +1,145 @@
+<div class="page roadmap-page">
+  <a class="linklike" [routerLink]="course ? ['/learner/roadmaps', course.trackSlug] : '/learner/roadmap'">Quay lại lộ trình</a>
+
+  <div class="alert alert-error" *ngIf="error">{{error}}</div>
+  <div class="alert alert-error" *ngIf="actionError">{{actionError}}</div>
+  <div class="empty-state" *ngIf="loading">Đang tải khóa học...</div>
+
+  <ng-container *ngIf="!loading && course">
+    <section class="course-detail-layout">
+      <main class="course-main">
+        <div class="course-title-block">
+          <span class="eyebrow">{{course.trackTitle}} · {{course.level}}</span>
+          <h1>{{course.title}}</h1>
+          <p>{{course.description}}</p>
+          <p class="lock-note" *ngIf="course.isLocked">{{course.lockReason}}</p>
+        </div>
+
+        <section class="card card-pad" *ngIf="course.learningOutcomes?.length">
+          <h2>Bạn sẽ học được gì?</h2>
+          <div class="outcome-grid">
+            <div class="outcome-item" *ngFor="let item of course.learningOutcomes">
+              <span></span>
+              <p>{{item}}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="card card-pad">
+          <div class="course-section-head">
+            <div>
+              <h2>Nội dung khóa học</h2>
+              <p class="muted">{{course.totalModules || 0}} chương · {{course.totalLessons || 0}} bài học</p>
+            </div>
+            <span class="badge badge-blue">{{course.completedLessons || 0}} bài đã xong</span>
+          </div>
+
+          <div class="module-list">
+            <article class="module-item" *ngFor="let module of course.modules">
+              <button class="module-toggle" type="button" [disabled]="module.isLocked" (click)="toggleModule(module)">
+                <span class="module-caret">{{expanded[module.id] ? '−' : '+'}}</span>
+                <span class="module-title">{{module.title}}</span>
+                <span class="module-meta">{{module.lessons?.length || 0}} bài · {{module.estimatedMinutes || 0}} phút</span>
+                <span class="badge badge-green" *ngIf="module.isCompleted">Completed</span>
+                <span class="badge badge-gray" *ngIf="module.isLocked">Locked</span>
+              </button>
+              <p class="lock-note module-lock" *ngIf="module.isLocked">{{module.lockReason}}</p>
+
+              <div class="lesson-list" *ngIf="expanded[module.id] && !module.isLocked">
+                <button class="lesson-row" type="button" *ngFor="let lesson of module.lessons" [class.locked]="lesson.isLocked && !lesson.isPreview" [class.done]="lesson.status === 'Completed'" (click)="selectLesson(lesson)">
+                  <span class="lesson-kind">{{lessonKind(lesson)}}</span>
+                  <span class="lesson-title">{{lesson.title}}</span>
+                  <span class="badge badge-green" *ngIf="lesson.status === 'Completed'">Done</span>
+                  <span class="badge badge-blue" *ngIf="lesson.isPreview">Xem thử</span>
+                  <span class="badge badge-gray" *ngIf="lesson.isLocked && !lesson.isPreview">Locked</span>
+                  <small>{{lesson.estimatedMinutes || 0}} phút</small>
+                  <span class="lesson-lock-text" *ngIf="lesson.isLocked && !lesson.isPreview">{{lesson.lockReason}}</span>
+                </button>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <aside class="course-sidebar">
+        <section class="card card-pad course-summary-card">
+          <h2>Thông tin khóa học</h2>
+          <div class="course-facts">
+            <span>Level</span><b>{{course.level}}</b>
+            <span>Bài học</span><b>{{course.totalLessons || 0}}</b>
+            <span>Thời lượng</span><b>{{course.estimatedHours || 0}} giờ</b>
+            <span>Hoàn thành</span><b>{{course.isCompleted ? 'Có' : 'Đang học'}}</b>
+          </div>
+          <div class="progress">
+            <span [style.width]="progressWidth(course.progressPercent)"></span>
+          </div>
+          <p class="muted">{{course.progressPercent || 0}}% hoàn thành</p>
+          <button class="btn btn-primary full" type="button" [disabled]="course.isLocked || !course.nextUnlockedLesson" (click)="startNextLesson()">
+            {{course.progressPercent > 0 ? 'Tiếp tục học' : 'Bắt đầu học'}}
+          </button>
+          <div class="next-lesson-box">
+            <span>Bài tiếp theo</span>
+            <b>{{nextLessonTitle()}}</b>
+          </div>
+          <p class="lock-note" *ngIf="course.lockedLessonCount">{{course.lockedLessonCount}} bài học đang khóa</p>
+        </section>
+
+        <section class="card card-pad" *ngIf="course.requirements?.length">
+          <h2>Yêu cầu đầu vào</h2>
+          <ul class="clean-list">
+            <li *ngFor="let item of course.requirements">{{item}}</li>
+          </ul>
+        </section>
+
+        <section class="card card-pad" *ngIf="course.relatedCourses?.length">
+          <h2>Khóa học liên quan</h2>
+          <a class="related-course" *ngFor="let related of course.relatedCourses" [routerLink]="['/learner/courses', related.slug]">
+            <b>{{related.title}}</b>
+            <span>{{related.level}} · {{related.estimatedHours || 0}} giờ</span>
+          </a>
+        </section>
+      </aside>
+    </section>
+  </ng-container>
+
+  <div class="modal-backdrop" *ngIf="selectedLesson">
+    <div class="lesson-modal card card-pad">
+      <div class="course-section-head">
+        <div>
+          <span class="badge badge-blue">{{lessonKind(selectedLesson)}}</span>
+          <h2>{{selectedLesson.title}}</h2>
+        </div>
+        <button class="btn btn-outline" type="button" (click)="closeLesson()">Đóng</button>
+      </div>
+      <div class="video-box" *ngIf="isVideoLesson(selectedLesson) && (selectedLesson.videoFileUrl || selectedLesson.videoUrl)">
+        <ng-container *ngIf="selectedLesson.videoFileUrl; else externalVideo">
+          <video class="lesson-video-player" controls preload="metadata" [src]="absoluteUrl(selectedLesson.videoFileUrl)"></video>
+        </ng-container>
+        <ng-template #externalVideo>
+          <ng-container *ngIf="safeYouTubeUrl(selectedLesson.videoUrl) as youtubeUrl; else nonYoutubeVideo">
+            <iframe
+              class="lesson-video-player"
+              [src]="youtubeUrl"
+              title="Lesson video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen>
+            </iframe>
+          </ng-container>
+        </ng-template>
+        <ng-template #nonYoutubeVideo>
+          <video *ngIf="isDirectVideoUrl(selectedLesson.videoUrl); else plainVideoLink" class="lesson-video-player" controls preload="metadata" [src]="absoluteUrl(selectedLesson.videoUrl)"></video>
+          <ng-template #plainVideoLink>
+            <a class="btn btn-outline" [href]="externalVideoUrl(selectedLesson.videoUrl)" target="_blank" rel="noopener">Open video</a>
+          </ng-template>
+        </ng-template>
+      </div>
+      <div class="lesson-content">{{selectedLesson.content || 'Admin chưa nhập nội dung chi tiết cho bài học này.'}}</div>
+      <div class="action-row">
+        <button class="btn btn-primary" type="button" [disabled]="saving || !selectedLesson.canComplete" (click)="completeSelectedLesson()">
+          {{selectedLesson.status === 'Completed' ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành'}}
+        </button>
+        <span class="muted" *ngIf="!selectedLesson.canComplete && selectedLesson.status !== 'Completed'">Bài này chưa thể hoàn thành thủ công.</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,9 +1,9 @@
-using System.Diagnostics;
 using DevLearningHub.Api.Common;
 using DevLearningHub.Api.Data;
 using DevLearningHub.Api.DTOs;
 using DevLearningHub.Api.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace DevLearningHub.Api.Services;
 
@@ -12,60 +12,99 @@ public interface ICodeJudgeService
     List<SupportedLanguageResponse> Languages();
     Task<ApiResponse<CodeRunResponse>> Run(long userId, CodeRunRequest request, CancellationToken ct);
     Task<ApiResponse<PagedResult<CodingProblemSummaryResponse>>> Problems(long? userId, string? keyword, string? difficulty, int pageIndex, int pageSize, CancellationToken ct);
-    Task<ApiResponse<CodingProblemDetailResponse>> Problem(long? userId, long id, bool includeHidden, CancellationToken ct);
+    Task<ApiResponse<CodingProblemDetailResponse>> Problem(long? userId, long id, bool includeHidden, CancellationToken ct, long? lessonId = null);
     Task<ApiResponse<CodeSubmissionResponse>> Submit(long userId, long problemId, CodeSubmitRequest request, CancellationToken ct);
     Task<ApiResponse<List<CodeSubmissionResponse>>> MySubmissions(long userId, long? problemId, CancellationToken ct);
+    Task<ApiResponse<PagedResult<CodeSubmissionResponse>>> MySubmissions(long userId, CodeSubmissionListQuery query, CancellationToken ct);
+    Task<ApiResponse<CodeSubmissionResponse>> SubmissionDetail(long userId, long submissionId, bool includeHiddenResults, CancellationToken ct);
     Task<ApiResponse<List<CodingProblemDetailResponse>>> AdminProblems(CancellationToken ct);
     Task<ApiResponse<CodingProblemDetailResponse>> AdminSaveProblem(long adminId, long? id, CodingProblemRequest request, CancellationToken ct);
+    Task<ApiResponse<CodingProblemImportResult>> AdminImportProblems(long adminId, List<CodingProblemImportRequest> requests, CancellationToken ct);
     Task<ApiResponse<object>> AdminDeleteProblem(long id, CancellationToken ct);
 }
 
 public sealed class CodeJudgeService : ICodeJudgeService
 {
-    private readonly DevLearningHubDbContext _db;
-    private readonly IWebHostEnvironment _env;
-    private readonly ILogger<CodeJudgeService> _logger;
+    private const int MaxSourceLength = 20000;
 
-    public CodeJudgeService(DevLearningHubDbContext db, IWebHostEnvironment env, ILogger<CodeJudgeService> logger)
+    private static readonly IReadOnlyList<CodeLanguageDefinition> LanguageDefinitions = new List<CodeLanguageDefinition>
+    {
+        new("python", "Python", "3.x", "py", "print(\"Hello, World!\")", null, "python main.py", false, true, 5000, 262144, 1, "Python 3"),
+        new("javascript", "JavaScript", "Node.js", "js", "console.log(\"Hello, World!\");", null, "node main.js", false, true, 5000, 262144, 2, "Node.js"),
+        new("typescript", "TypeScript", "ES2020", "ts", "const message: string = \"Hello, World!\";\nconsole.log(message);", "npx tsc main.ts --target ES2020 --module commonjs --outDir out", "node out/main.js", true, true, 5000, 262144, 3, "Node.js + TypeScript compiler"),
+        new("java", "Java", "JDK", "java", "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello, World!\");\n    }\n}", "javac Main.java", "java Main", true, true, 5000, 262144, 4, "JDK"),
+        new("c", "C", "C11", "c", "#include <stdio.h>\nint main() {\n    printf(\"Hello, World!\\n\");\n    return 0;\n}", "gcc main.c -O2 -o main", "./main", true, true, 5000, 262144, 5, "GCC"),
+        new("cpp", "C++17", "C++17", "cpp", "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    cout << \"Hello, World!\" << endl;\n    return 0;\n}", "g++ main.cpp -std=c++17 -O2 -o main", "./main", true, true, 5000, 262144, 6, "G++"),
+        new("csharp", "C#", ".NET", "cs", "using System;\npublic class Program {\n    public static void Main() {\n        Console.WriteLine(\"Hello, World!\");\n    }\n}", "dotnet build Main.csproj --nologo -v quiet", "dotnet bin/Debug/net9.0/Main.dll", true, true, 5000, 262144, 7, ".NET SDK"),
+        new("go", "Go", "1.x", "go", "package main\nimport \"fmt\"\nfunc main() {\n    fmt.Println(\"Hello, World!\")\n}", null, "go run main.go", false, true, 5000, 262144, 8, "Go")
+    };
+
+    private readonly DevLearningHubDbContext _db;
+    private readonly ICodeExecutionProvider _executionProvider;
+    private readonly INotificationService _notifications;
+    private readonly IRoadmapProgressService _roadmapProgress;
+
+    public CodeJudgeService(
+        DevLearningHubDbContext db,
+        ICodeExecutionProvider executionProvider,
+        INotificationService notifications,
+        IRoadmapProgressService roadmapProgress)
     {
         _db = db;
-        _env = env;
-        _logger = logger;
+        _executionProvider = executionProvider;
+        _notifications = notifications;
+        _roadmapProgress = roadmapProgress;
     }
 
-    public List<SupportedLanguageResponse> Languages() => new()
-    {
-        new SupportedLanguageResponse { Value = "javascript", Label = "JavaScript", Runtime = "node main.js" },
-        new SupportedLanguageResponse { Value = "python", Label = "Python", Runtime = "python main.py" },
-        new SupportedLanguageResponse { Value = "cpp", Label = "C++17", Runtime = "g++ + executable" },
-        new SupportedLanguageResponse { Value = "java", Label = "Java", Runtime = "javac + java Main" }
-    };
+    public List<SupportedLanguageResponse> Languages()
+        => LanguageDefinitions
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.SortOrder)
+            .Select(MapLanguage)
+            .ToList();
 
     public async Task<ApiResponse<CodeRunResponse>> Run(long userId, CodeRunRequest request, CancellationToken ct)
     {
         var errors = ValidateRunRequest(request);
-        if (errors.Count > 0) return ApiResponse<CodeRunResponse>.Fail("Dữ liệu chạy code không hợp lệ", errors);
+        if (errors.Count > 0) return ApiResponse<CodeRunResponse>.Fail("Code run request is invalid", errors);
 
-        var result = await Execute(request.Language, request.SourceCode, request.Stdin ?? string.Empty, Math.Clamp(request.TimeLimitMs ?? 3000, 500, 10000), ct);
-        _db.CodeSubmissions.Add(new CodeSubmission
+        var lessonId = RoadmapContextLessonId(request.LessonId, request.RoadmapLessonId);
+        if (lessonId.HasValue)
+        {
+            var access = request.CodingProblemId.HasValue
+                ? await _roadmapProgress.CanAccessCodeLessonAsync(userId, lessonId.Value, request.CodingProblemId.Value, ct)
+                : await _roadmapProgress.CanStartLessonAsync(userId, lessonId.Value, ct);
+            if (!access.CanAccess)
+                return ApiResponse<CodeRunResponse>.Fail(access.Message ?? "Bài code practice đang bị khóa. Hãy hoàn thành bài học trước đó.");
+        }
+
+        var language = GetLanguage(request.Language)!;
+        var result = await _executionProvider.RunAsync(language.Code, request.SourceCode, request.Stdin ?? string.Empty, Math.Clamp(request.TimeLimitMs ?? language.TimeLimitMs, 500, 10000), ct);
+        var submission = new CodeSubmission
         {
             UserId = userId,
-            Language = NormalizeLanguage(request.Language),
+            Language = language.Code,
             SourceCode = request.SourceCode,
             Stdin = request.Stdin,
             Status = result.Status,
             Verdict = result.Verdict,
-            Output = result.Output,
-            Error = result.Error,
+            Output = result.Stdout,
+            Error = string.IsNullOrWhiteSpace(result.Stderr) ? result.CompileOutput : result.Stderr,
             ExecutionTimeMs = result.ExecutionTimeMs,
             MemoryUsedKb = result.MemoryUsedKb,
             TotalTestCases = 0,
             PassedTestCases = 0,
-            IsAccepted = result.Verdict == "Accepted",
+            IsAccepted = result.Verdict == JudgeVerdict.Accepted,
             CreatedAt = DateTime.UtcNow
-        });
+        };
+        _db.CodeSubmissions.Add(submission);
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<CodeRunResponse>.Ok(result, result.Verdict == "Accepted" ? "Chạy code thành công" : "Chạy code hoàn tất nhưng có lỗi");
+
+        result.SubmissionId = submission.Id;
+        result.Language = language.Code;
+        MirrorLegacyOutputFields(result);
+
+        return ApiResponse<CodeRunResponse>.Ok(result, result.Verdict == JudgeVerdict.Accepted ? "Code executed successfully" : result.Verdict);
     }
 
     public async Task<ApiResponse<PagedResult<CodingProblemSummaryResponse>>> Problems(long? userId, string? keyword, string? difficulty, int pageIndex, int pageSize, CancellationToken ct)
@@ -92,30 +131,48 @@ public sealed class CodeJudgeService : ICodeJudgeService
         return ApiResponse<PagedResult<CodingProblemSummaryResponse>>.Ok(PagedResult<CodingProblemSummaryResponse>.Create(items, pageIndex, pageSize, total));
     }
 
-    public async Task<ApiResponse<CodingProblemDetailResponse>> Problem(long? userId, long id, bool includeHidden, CancellationToken ct)
+    public async Task<ApiResponse<CodingProblemDetailResponse>> Problem(long? userId, long id, bool includeHidden, CancellationToken ct, long? lessonId = null)
     {
         var problem = await _db.CodingProblems.AsNoTracking().Include(x => x.TestCases).FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, ct);
-        if (problem == null || (problem.Status != 1 && !includeHidden)) return ApiResponse<CodingProblemDetailResponse>.Fail("Không tìm thấy bài lập trình");
+        if (problem == null || (problem.Status != 1 && !includeHidden)) return ApiResponse<CodingProblemDetailResponse>.Fail("Coding problem not found");
+        if (lessonId.HasValue)
+        {
+            if (!userId.HasValue) return ApiResponse<CodingProblemDetailResponse>.Fail("Unauthorized");
+            var access = await _roadmapProgress.CanAccessCodeLessonAsync(userId.Value, lessonId.Value, id, ct);
+            if (!access.CanAccess)
+                return ApiResponse<CodingProblemDetailResponse>.Fail(access.Message ?? "Bài code practice đang bị khóa. Hãy hoàn thành bài học trước đó.");
+        }
         var solved = userId.HasValue && await _db.CodeSubmissions.AsNoTracking().AnyAsync(x => x.UserId == userId.Value && x.ProblemId == id && x.IsAccepted, ct);
         return ApiResponse<CodingProblemDetailResponse>.Ok(MapDetail(problem, solved, includeHidden));
     }
 
     public async Task<ApiResponse<CodeSubmissionResponse>> Submit(long userId, long problemId, CodeSubmitRequest request, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(request.SourceCode) || request.SourceCode.Length > 20000)
-            return ApiResponse<CodeSubmissionResponse>.Fail("Source code không hợp lệ hoặc quá dài");
-        if (!IsSupportedLanguage(request.Language)) return ApiResponse<CodeSubmissionResponse>.Fail("Ngôn ngữ chưa được hỗ trợ");
+        if (string.IsNullOrWhiteSpace(request.SourceCode) || request.SourceCode.Length > MaxSourceLength)
+            return ApiResponse<CodeSubmissionResponse>.Fail("Source code is empty or too long");
+
+        var language = GetLanguage(request.Language);
+        if (language == null) return ApiResponse<CodeSubmissionResponse>.Fail("Language is not supported");
 
         var problem = await _db.CodingProblems.Include(x => x.TestCases).FirstOrDefaultAsync(x => x.Id == problemId && !x.IsDeleted && x.Status == 1, ct);
-        if (problem == null) return ApiResponse<CodeSubmissionResponse>.Fail("Không tìm thấy bài lập trình");
+        if (problem == null) return ApiResponse<CodeSubmissionResponse>.Fail("Coding problem not found");
+
+        var lessonId = RoadmapContextLessonId(request.LessonId, request.RoadmapLessonId);
+        if (lessonId.HasValue)
+        {
+            var access = await _roadmapProgress.CanAccessCodeLessonAsync(userId, lessonId.Value, problem.Id, ct);
+            if (!access.CanAccess)
+                return ApiResponse<CodeSubmissionResponse>.Fail(access.Message ?? "Bài code practice đang bị khóa. Hãy hoàn thành bài học trước đó.");
+        }
+
         var testCases = problem.TestCases.OrderBy(x => x.DisplayOrder).ToList();
-        if (testCases.Count == 0) return ApiResponse<CodeSubmissionResponse>.Fail("Bài lập trình chưa có test case");
+        if (testCases.Count == 0) return ApiResponse<CodeSubmissionResponse>.Fail("Coding problem has no test cases");
 
         var submission = new CodeSubmission
         {
             ProblemId = problem.Id,
             UserId = userId,
-            Language = NormalizeLanguage(request.Language),
+            Language = language.Code,
             SourceCode = request.SourceCode,
             Status = "Running",
             Verdict = "Running",
@@ -127,24 +184,27 @@ public sealed class CodeJudgeService : ICodeJudgeService
 
         var totalTime = 0;
         var passed = 0;
-        var finalVerdict = "Accepted";
+        var finalVerdict = JudgeVerdict.Accepted;
         var finalStatus = "Completed";
         var finalOutput = string.Empty;
         var finalError = string.Empty;
 
         foreach (var tc in testCases)
         {
-            var result = await Execute(request.Language, request.SourceCode, tc.Input, Math.Clamp(problem.TimeLimitMs, 500, 10000), ct);
-            var actual = NormalizeOutput(result.Output);
+            var result = await _executionProvider.RunAsync(language.Code, request.SourceCode, tc.Input, Math.Clamp(problem.TimeLimitMs, 500, 10000), ct);
+            var actual = NormalizeOutput(result.Stdout);
             var expected = NormalizeOutput(tc.ExpectedOutput);
-            var ok = result.Verdict == "Accepted" && actual == expected;
+            var ok = result.Verdict == JudgeVerdict.Accepted && actual == expected;
+            var caseVerdict = ok ? JudgeVerdict.Accepted : (result.Verdict == JudgeVerdict.Accepted ? JudgeVerdict.WrongAnswer : result.Verdict);
+
             if (ok) passed++;
-            else if (finalVerdict == "Accepted")
+            else if (finalVerdict == JudgeVerdict.Accepted)
             {
-                finalVerdict = result.Verdict == "Accepted" ? "Wrong Answer" : result.Verdict;
-                finalOutput = result.Output;
-                finalError = result.Error;
+                finalVerdict = caseVerdict;
+                finalOutput = result.Stdout;
+                finalError = string.IsNullOrWhiteSpace(result.Stderr) ? result.CompileOutput : result.Stderr;
             }
+
             totalTime += result.ExecutionTimeMs;
             submission.TestCaseResults.Add(new CodeSubmissionTestCaseResult
             {
@@ -152,9 +212,9 @@ public sealed class CodeJudgeService : ICodeJudgeService
                 DisplayOrder = tc.DisplayOrder,
                 Input = tc.IsHidden ? "[hidden]" : tc.Input,
                 ExpectedOutput = tc.IsHidden ? "[hidden]" : tc.ExpectedOutput,
-                ActualOutput = tc.IsHidden ? (ok ? "[accepted]" : "[wrong]") : result.Output,
-                Error = result.Error,
-                Status = ok ? "Accepted" : finalVerdict,
+                ActualOutput = tc.IsHidden ? (ok ? "[accepted]" : "[wrong]") : result.Stdout,
+                Error = string.IsNullOrWhiteSpace(result.Stderr) ? result.CompileOutput : result.Stderr,
+                Status = caseVerdict,
                 Passed = ok,
                 ExecutionTimeMs = result.ExecutionTimeMs
             });
@@ -164,16 +224,31 @@ public sealed class CodeJudgeService : ICodeJudgeService
         submission.ExecutionTimeMs = totalTime;
         submission.IsAccepted = passed == testCases.Count;
         submission.Status = finalStatus;
-        submission.Verdict = submission.IsAccepted ? "Accepted" : finalVerdict;
+        submission.Verdict = submission.IsAccepted ? JudgeVerdict.Accepted : finalVerdict;
         submission.Output = finalOutput;
         submission.Error = finalError;
         problem.TotalSubmissions += 1;
         if (submission.IsAccepted) problem.AcceptedSubmissions += 1;
         await UpdateCodeStats(userId, submission.IsAccepted, ct);
         await _db.SaveChangesAsync(ct);
+        if (submission.IsAccepted)
+        {
+            if (lessonId.HasValue)
+                await _roadmapProgress.CompleteCodeLessonIfAcceptedAsync(userId, lessonId.Value, problem.Id, submission.Id, ct);
+            else
+                await _roadmapProgress.CompleteCodeLessonIfAcceptedAsync(userId, problem.Id, submission.Id, ct);
+            await _notifications.CreateAsync(
+                userId,
+                "code.accepted",
+                "Bài nộp được chấp nhận",
+                $"Bài nộp của bạn cho {problem.Title} đã Accepted.",
+                $"/learner/submissions/{submission.Id}",
+                new { eventKey = $"code.accepted:{submission.Id}", submissionId = submission.Id, problemId = problem.Id },
+                ct);
+        }
 
         var saved = await _db.CodeSubmissions.AsNoTracking().Include(x => x.Problem).Include(x => x.TestCaseResults).FirstAsync(x => x.Id == submission.Id, ct);
-        return ApiResponse<CodeSubmissionResponse>.Ok(MapSubmission(saved, includeHiddenResults: false), submission.IsAccepted ? "Accepted" : submission.Verdict);
+        return ApiResponse<CodeSubmissionResponse>.Ok(MapSubmission(saved, includeHiddenResults: false, includeSourceCode: true), submission.IsAccepted ? JudgeVerdict.Accepted : submission.Verdict);
     }
 
     public async Task<ApiResponse<List<CodeSubmissionResponse>>> MySubmissions(long userId, long? problemId, CancellationToken ct)
@@ -181,7 +256,44 @@ public sealed class CodeJudgeService : ICodeJudgeService
         var query = _db.CodeSubmissions.AsNoTracking().Include(x => x.Problem).Where(x => x.UserId == userId);
         if (problemId.HasValue) query = query.Where(x => x.ProblemId == problemId.Value);
         var rows = await query.OrderByDescending(x => x.CreatedAt).Take(50).ToListAsync(ct);
-        return ApiResponse<List<CodeSubmissionResponse>>.Ok(rows.Select(x => MapSubmission(x, false)).ToList());
+        return ApiResponse<List<CodeSubmissionResponse>>.Ok(rows.Select(x => MapSubmission(x, false, includeSourceCode: false)).ToList());
+    }
+
+    public async Task<ApiResponse<PagedResult<CodeSubmissionResponse>>> MySubmissions(long userId, CodeSubmissionListQuery request, CancellationToken ct)
+    {
+        var query = _db.CodeSubmissions.AsNoTracking().Include(x => x.Problem).Where(x => x.UserId == userId);
+        if (request.ProblemId.HasValue) query = query.Where(x => x.ProblemId == request.ProblemId.Value);
+        if (!string.IsNullOrWhiteSpace(request.Verdict))
+        {
+            var verdict = request.Verdict.Trim();
+            query = query.Where(x => x.Verdict == verdict || x.Status == verdict);
+        }
+        if (!string.IsNullOrWhiteSpace(request.Language))
+        {
+            var language = NormalizeLanguage(request.Language);
+            query = query.Where(x => x.Language == language);
+        }
+
+        var pageIndex = Math.Max(1, request.PageIndex);
+        var pageSize = Math.Clamp(request.PageSize, 1, 100);
+        var total = await query.CountAsync(ct);
+        var rows = await query.OrderByDescending(x => x.CreatedAt)
+            .Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(ct);
+        var items = rows.Select(x => MapSubmission(x, false, includeSourceCode: false)).ToList();
+        return ApiResponse<PagedResult<CodeSubmissionResponse>>.Ok(PagedResult<CodeSubmissionResponse>.Create(items, pageIndex, pageSize, total));
+    }
+
+    public async Task<ApiResponse<CodeSubmissionResponse>> SubmissionDetail(long userId, long submissionId, bool includeHiddenResults, CancellationToken ct)
+    {
+        var submission = await _db.CodeSubmissions.AsNoTracking()
+            .Include(x => x.Problem)
+            .Include(x => x.TestCaseResults).ThenInclude(x => x.TestCase)
+            .FirstOrDefaultAsync(x => x.Id == submissionId, ct);
+        if (submission == null) return ApiResponse<CodeSubmissionResponse>.Fail("Submission not found");
+        if (!includeHiddenResults && submission.UserId != userId) return ApiResponse<CodeSubmissionResponse>.Fail("Submission not found");
+        return ApiResponse<CodeSubmissionResponse>.Ok(MapSubmission(submission, includeHiddenResults, includeSourceCode: true));
     }
 
     public async Task<ApiResponse<List<CodingProblemDetailResponse>>> AdminProblems(CancellationToken ct)
@@ -193,16 +305,16 @@ public sealed class CodeJudgeService : ICodeJudgeService
     public async Task<ApiResponse<CodingProblemDetailResponse>> AdminSaveProblem(long adminId, long? id, CodingProblemRequest request, CancellationToken ct)
     {
         var errors = ValidateProblem(request);
-        if (errors.Count > 0) return ApiResponse<CodingProblemDetailResponse>.Fail("Dữ liệu bài lập trình không hợp lệ", errors);
+        if (errors.Count > 0) return ApiResponse<CodingProblemDetailResponse>.Fail("Coding problem request is invalid", errors);
         var slug = string.IsNullOrWhiteSpace(request.Slug) ? Slugify(request.Title) : Slugify(request.Slug);
         if (await _db.CodingProblems.AnyAsync(x => x.Slug == slug && x.Id != (id ?? 0) && !x.IsDeleted, ct))
-            return ApiResponse<CodingProblemDetailResponse>.Fail("Slug đã tồn tại");
+            return ApiResponse<CodingProblemDetailResponse>.Fail("Slug already exists");
 
         CodingProblem problem;
         if (id.HasValue)
         {
             problem = await _db.CodingProblems.Include(x => x.TestCases).FirstOrDefaultAsync(x => x.Id == id.Value && !x.IsDeleted, ct)
-                ?? throw new InvalidOperationException("Không tìm thấy bài lập trình");
+                ?? throw new InvalidOperationException("Coding problem not found");
             problem.UpdatedAt = DateTime.UtcNow;
             _db.CodingTestCases.RemoveRange(problem.TestCases);
         }
@@ -214,7 +326,7 @@ public sealed class CodeJudgeService : ICodeJudgeService
 
         problem.Title = request.Title.Trim();
         problem.Slug = slug;
-        problem.Description = request.Description.Trim();
+        problem.Description = string.IsNullOrWhiteSpace(request.Description) ? request.Title.Trim() : request.Description.Trim();
         problem.InputFormat = request.InputFormat;
         problem.OutputFormat = request.OutputFormat;
         problem.Constraints = request.Constraints;
@@ -222,8 +334,12 @@ public sealed class CodeJudgeService : ICodeJudgeService
         problem.Tags = request.Tags;
         problem.StarterCodeJavaScript = request.StarterCodeJavaScript;
         problem.StarterCodePython = request.StarterCodePython;
+        problem.StarterCodeTypeScript = request.StarterCodeTypeScript;
         problem.StarterCodeJava = request.StarterCodeJava;
+        problem.StarterCodeC = request.StarterCodeC;
         problem.StarterCodeCpp = request.StarterCodeCpp;
+        problem.StarterCodeCsharp = request.StarterCodeCsharp;
+        problem.StarterCodeGo = request.StarterCodeGo;
         problem.Difficulty = request.Difficulty;
         problem.Status = request.Status;
         problem.TimeLimitMs = Math.Clamp(request.TimeLimitMs, 500, 10000);
@@ -238,18 +354,66 @@ public sealed class CodeJudgeService : ICodeJudgeService
             CreatedAt = DateTime.UtcNow
         }).ToList();
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<CodingProblemDetailResponse>.Ok(MapDetail(problem, false, true), id.HasValue ? "Cập nhật bài lập trình thành công" : "Tạo bài lập trình thành công");
+        return ApiResponse<CodingProblemDetailResponse>.Ok(MapDetail(problem, false, true), id.HasValue ? "Coding problem updated" : "Coding problem created");
     }
 
     public async Task<ApiResponse<object>> AdminDeleteProblem(long id, CancellationToken ct)
     {
         var problem = await _db.CodingProblems.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, ct);
-        if (problem == null) return ApiResponse<object>.Fail("Không tìm thấy bài lập trình");
+        if (problem == null) return ApiResponse<object>.Fail("Coding problem not found");
         problem.IsDeleted = true;
         problem.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<object>.Ok(new { id }, "Đã xóa bài lập trình");
+        return ApiResponse<object>.Ok(new { id }, "Coding problem deleted");
     }
+
+    public async Task<ApiResponse<CodingProblemImportResult>> AdminImportProblems(long adminId, List<CodingProblemImportRequest> requests, CancellationToken ct)
+    {
+        var rows = requests ?? new List<CodingProblemImportRequest>();
+        var result = new CodingProblemImportResult { Total = rows.Count };
+        for (var i = 0; i < rows.Count; i++)
+        {
+            var row = rows[i];
+            var request = ToProblemRequest(row);
+            var slug = string.IsNullOrWhiteSpace(request.Slug) ? Slugify(request.Title) : Slugify(request.Slug);
+            if (string.IsNullOrWhiteSpace(row.Title))
+            {
+                result.Skipped++;
+                result.Errors.Add($"Row {i + 1}: title is required");
+                continue;
+            }
+            if (string.IsNullOrWhiteSpace(slug))
+            {
+                result.Skipped++;
+                result.Errors.Add($"Row {i + 1}: slug is invalid");
+                continue;
+            }
+
+            var existingId = await _db.CodingProblems.AsNoTracking()
+                .Where(x => x.Slug == slug && !x.IsDeleted)
+                .Select(x => (long?)x.Id)
+                .FirstOrDefaultAsync(ct);
+
+            var save = await AdminSaveProblem(adminId, existingId, request, ct);
+            if (!save.Success)
+            {
+                result.Skipped++;
+                var details = save.Errors?.Count > 0
+                    ? string.Join("; ", save.Errors.Select(x => $"{x.Field}: {x.Message}"))
+                    : save.Message;
+                result.Errors.Add($"Row {i + 1} ({slug}): {details}");
+                continue;
+            }
+
+            if (existingId.HasValue) result.Updated++;
+            else result.Created++;
+        }
+
+        return ApiResponse<CodingProblemImportResult>.Ok(result, "Coding problem import completed");
+    }
+
+    private static long? RoadmapContextLessonId(long? lessonId, long? roadmapLessonId)
+        => lessonId ?? roadmapLessonId;
 
     private async Task UpdateCodeStats(long userId, bool accepted, CancellationToken ct)
     {
@@ -272,120 +436,63 @@ public sealed class CodeJudgeService : ICodeJudgeService
     private static List<ApiError> ValidateRunRequest(CodeRunRequest r)
     {
         var errors = new List<ApiError>();
-        if (string.IsNullOrWhiteSpace(r.SourceCode)) errors.Add(new ApiError { Field = "sourceCode", Message = "Source code không được trống" });
-        if (r.SourceCode?.Length > 20000) errors.Add(new ApiError { Field = "sourceCode", Message = "Source code tối đa 20.000 ký tự" });
-        if (!IsSupportedLanguage(r.Language)) errors.Add(new ApiError { Field = "language", Message = "Ngôn ngữ chưa được hỗ trợ" });
+        if (string.IsNullOrWhiteSpace(r.SourceCode)) errors.Add(new ApiError { Field = "sourceCode", Message = "Source code is required" });
+        if (r.SourceCode?.Length > MaxSourceLength) errors.Add(new ApiError { Field = "sourceCode", Message = $"Source code is limited to {MaxSourceLength} characters" });
+        if (GetLanguage(r.Language) == null) errors.Add(new ApiError { Field = "language", Message = "Language is not supported" });
         return errors;
     }
 
     private static List<ApiError> ValidateProblem(CodingProblemRequest r)
     {
         var errors = new List<ApiError>();
-        if (string.IsNullOrWhiteSpace(r.Title) || r.Title.Trim().Length < 5) errors.Add(new ApiError { Field = "title", Message = "Tiêu đề tối thiểu 5 ký tự" });
-        if (string.IsNullOrWhiteSpace(r.Description) || r.Description.Trim().Length < 20) errors.Add(new ApiError { Field = "description", Message = "Mô tả tối thiểu 20 ký tự" });
-        if (r.TestCases == null || r.TestCases.Count < 1) errors.Add(new ApiError { Field = "testCases", Message = "Cần ít nhất 1 test case" });
-        if (r.TestCases != null && r.TestCases.Any(x => x.ExpectedOutput == null)) errors.Add(new ApiError { Field = "expectedOutput", Message = "Expected output không hợp lệ" });
+        if (string.IsNullOrWhiteSpace(r.Title)) errors.Add(new ApiError { Field = "title", Message = "Title is required" });
+        if (r.TestCases == null || r.TestCases.Count < 1) errors.Add(new ApiError { Field = "testCases", Message = "At least one test case is required" });
+        if (r.TestCases != null && r.TestCases.Any(x => x.ExpectedOutput == null)) errors.Add(new ApiError { Field = "expectedOutput", Message = "Expected output is required" });
         return errors;
     }
 
-    private async Task<CodeRunResponse> Execute(string language, string sourceCode, string stdin, int timeLimitMs, CancellationToken ct)
+    private static CodingProblemRequest ToProblemRequest(CodingProblemImportRequest row) => new()
     {
-        var lang = NormalizeLanguage(language);
-        var workRoot = Path.Combine(_env.ContentRootPath, "judge-temp");
-        Directory.CreateDirectory(workRoot);
-        var workDir = Path.Combine(workRoot, Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(workDir);
-        try
+        Title = row.Title,
+        Slug = row.Slug,
+        Description = string.IsNullOrWhiteSpace(row.Description) ? row.Title : row.Description,
+        InputFormat = row.InputFormat,
+        OutputFormat = row.OutputFormat,
+        Constraints = row.Constraints,
+        ExamplesJson = row.ExamplesJson,
+        Tags = TagsToText(row.Tags),
+        StarterCodeJavaScript = row.StarterCodeJavaScript,
+        StarterCodePython = row.StarterCodePython,
+        StarterCodeTypeScript = row.StarterCodeTypeScript,
+        StarterCodeJava = row.StarterCodeJava,
+        StarterCodeC = row.StarterCodeC,
+        StarterCodeCpp = row.StarterCodeCpp,
+        StarterCodeCsharp = row.StarterCodeCsharp,
+        StarterCodeGo = row.StarterCodeGo,
+        Difficulty = row.Difficulty is >= 1 and <= 3 ? row.Difficulty : (byte)1,
+        Status = row.Status,
+        TimeLimitMs = row.TimeLimitMs <= 0 ? 2000 : row.TimeLimitMs,
+        MemoryLimitKb = row.MemoryLimitKb <= 0 ? 131072 : row.MemoryLimitKb,
+        TestCases = row.TestCases ?? new List<CodingTestCaseRequest>()
+    };
+
+    private static string? TagsToText(object? tags)
+    {
+        if (tags == null) return null;
+        if (tags is string text) return text;
+        if (tags is JsonElement element)
         {
-            return lang switch
+            if (element.ValueKind == JsonValueKind.String) return element.GetString();
+            if (element.ValueKind == JsonValueKind.Array)
             {
-                "javascript" => await RunProcess("node", "main.js", workDir, "main.js", sourceCode, stdin, timeLimitMs, ct),
-                "python" => await RunProcess("python", "main.py", workDir, "main.py", sourceCode, stdin, timeLimitMs, ct),
-                "java" => await CompileAndRunJava(sourceCode, stdin, workDir, timeLimitMs, ct),
-                "cpp" => await CompileAndRunCpp(sourceCode, stdin, workDir, timeLimitMs, ct),
-                _ => new CodeRunResponse { Status = "Failed", Verdict = "Unsupported Language", Error = "Ngôn ngữ chưa được hỗ trợ" }
-            };
+                return string.Join(", ", element.EnumerateArray()
+                    .Select(x => x.ValueKind == JsonValueKind.String ? x.GetString() : x.ToString())
+                    .Where(x => !string.IsNullOrWhiteSpace(x)));
+            }
+            return element.ToString();
         }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Code execution failed");
-            return new CodeRunResponse { Status = "Failed", Verdict = "Runtime Error", Error = "Runtime trên server chưa sẵn sàng hoặc code chạy lỗi: " + ex.Message };
-        }
-        finally
-        {
-            try { Directory.Delete(workDir, true); } catch { }
-        }
-    }
-
-    private async Task<CodeRunResponse> CompileAndRunCpp(string sourceCode, string stdin, string workDir, int timeLimitMs, CancellationToken ct)
-    {
-        await File.WriteAllTextAsync(Path.Combine(workDir, "main.cpp"), sourceCode, ct);
-        var exe = OperatingSystem.IsWindows() ? "main.exe" : "main";
-        var compile = await ExecuteProcess("g++", $"main.cpp -O2 -std=c++17 -o {exe}", workDir, string.Empty, 10000, ct);
-        if (compile.ExitCode != 0) return new CodeRunResponse { Status = "Failed", Verdict = "Compile Error", Error = compile.Error + compile.Output, ExecutionTimeMs = compile.ElapsedMs };
-        return await ExecuteProcessToResponse(Path.Combine(workDir, exe), string.Empty, workDir, stdin, timeLimitMs, ct);
-    }
-
-    private async Task<CodeRunResponse> CompileAndRunJava(string sourceCode, string stdin, string workDir, int timeLimitMs, CancellationToken ct)
-    {
-        await File.WriteAllTextAsync(Path.Combine(workDir, "Main.java"), sourceCode, ct);
-        var compile = await ExecuteProcess("javac", "Main.java", workDir, string.Empty, 10000, ct);
-        if (compile.ExitCode != 0) return new CodeRunResponse { Status = "Failed", Verdict = "Compile Error", Error = compile.Error + compile.Output, ExecutionTimeMs = compile.ElapsedMs };
-        return await ExecuteProcessToResponse("java", "-cp . Main", workDir, stdin, timeLimitMs, ct);
-    }
-
-    private async Task<CodeRunResponse> RunProcess(string fileName, string args, string workDir, string sourceFile, string sourceCode, string stdin, int timeLimitMs, CancellationToken ct)
-    {
-        await File.WriteAllTextAsync(Path.Combine(workDir, sourceFile), sourceCode, ct);
-        return await ExecuteProcessToResponse(fileName, args, workDir, stdin, timeLimitMs, ct);
-    }
-
-    private async Task<CodeRunResponse> ExecuteProcessToResponse(string fileName, string args, string workDir, string stdin, int timeLimitMs, CancellationToken ct)
-    {
-        var p = await ExecuteProcess(fileName, args, workDir, stdin, timeLimitMs, ct);
-        var outputLimit = TrimLong(p.Output);
-        var errorLimit = TrimLong(p.Error);
-        if (p.TimedOut) return new CodeRunResponse { Status = "Failed", Verdict = "Time Limit Exceeded", Output = outputLimit, Error = errorLimit, ExecutionTimeMs = p.ElapsedMs };
-        if (p.ExitCode != 0) return new CodeRunResponse { Status = "Failed", Verdict = "Runtime Error", Output = outputLimit, Error = errorLimit, ExecutionTimeMs = p.ElapsedMs };
-        return new CodeRunResponse { Status = "Completed", Verdict = "Accepted", Output = outputLimit, Error = errorLimit, ExecutionTimeMs = p.ElapsedMs };
-    }
-
-    private sealed record ProcResult(int ExitCode, string Output, string Error, int ElapsedMs, bool TimedOut);
-
-    private static async Task<ProcResult> ExecuteProcess(string fileName, string args, string workDir, string stdin, int timeoutMs, CancellationToken ct)
-    {
-        var psi = new ProcessStartInfo
-        {
-            FileName = fileName,
-            Arguments = args,
-            WorkingDirectory = workDir,
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-        using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
-        var sw = Stopwatch.StartNew();
-        process.Start();
-        if (!string.IsNullOrEmpty(stdin)) await process.StandardInput.WriteAsync(stdin);
-        process.StandardInput.Close();
-        var outputTask = process.StandardOutput.ReadToEndAsync();
-        var errorTask = process.StandardError.ReadToEndAsync();
-        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeoutCts.CancelAfter(timeoutMs);
-        try
-        {
-            await process.WaitForExitAsync(timeoutCts.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            try { process.Kill(entireProcessTree: true); } catch { }
-            sw.Stop();
-            return new ProcResult(-1, await outputTask, await errorTask, (int)sw.ElapsedMilliseconds, true);
-        }
-        sw.Stop();
-        return new ProcResult(process.ExitCode, await outputTask, await errorTask, (int)sw.ElapsedMilliseconds, false);
+        if (tags is IEnumerable<string> values) return string.Join(", ", values.Where(x => !string.IsNullOrWhiteSpace(x)));
+        return tags.ToString();
     }
 
     private static CodingProblemSummaryResponse MapSummary(CodingProblem p, bool solved) => new()
@@ -426,8 +533,12 @@ public sealed class CodeJudgeService : ICodeJudgeService
         ExamplesJson = p.ExamplesJson,
         StarterCodeJavaScript = p.StarterCodeJavaScript,
         StarterCodePython = p.StarterCodePython,
+        StarterCodeTypeScript = p.StarterCodeTypeScript,
         StarterCodeJava = p.StarterCodeJava,
+        StarterCodeC = p.StarterCodeC,
         StarterCodeCpp = p.StarterCodeCpp,
+        StarterCodeCsharp = p.StarterCodeCsharp,
+        StarterCodeGo = p.StarterCodeGo,
         TestCases = p.TestCases.OrderBy(x => x.DisplayOrder).Where(x => includeHidden || !x.IsHidden).Select(x => new CodingTestCaseResponse
         {
             Id = x.Id,
@@ -439,53 +550,149 @@ public sealed class CodeJudgeService : ICodeJudgeService
         }).ToList()
     };
 
-    private static CodeSubmissionResponse MapSubmission(CodeSubmission s, bool includeHiddenResults) => new()
+    private static CodeSubmissionResponse MapSubmission(CodeSubmission s, bool includeHiddenResults, bool includeSourceCode = true) => new()
     {
         Id = s.Id,
         ProblemId = s.ProblemId,
         ProblemTitle = s.Problem?.Title ?? "Playground Run",
         Language = s.Language,
+        SourceCode = includeSourceCode ? s.SourceCode ?? string.Empty : string.Empty,
+        Code = includeSourceCode ? s.SourceCode ?? string.Empty : string.Empty,
+        SubmittedCode = includeSourceCode ? s.SourceCode ?? string.Empty : string.Empty,
+        UserCode = includeSourceCode ? s.SourceCode ?? string.Empty : string.Empty,
+        Stdin = s.Stdin,
         Status = s.Status,
         Verdict = s.Verdict,
         Output = s.Output ?? string.Empty,
+        Stdout = s.Output ?? string.Empty,
         Error = s.Error ?? string.Empty,
+        Stderr = s.Error ?? string.Empty,
+        CompileOutput = string.Empty,
+        Score = SubmissionScore(s),
         ExecutionTimeMs = s.ExecutionTimeMs,
+        RuntimeMs = s.ExecutionTimeMs,
         MemoryUsedKb = s.MemoryUsedKb,
+        MemoryKb = s.MemoryUsedKb,
         PassedTestCases = s.PassedTestCases,
         TotalTestCases = s.TotalTestCases,
         IsAccepted = s.IsAccepted,
         CreatedAt = s.CreatedAt,
+        SubmittedAt = s.CreatedAt,
         TestCaseResults = s.TestCaseResults.OrderBy(x => x.DisplayOrder).Select(x => new CodeTestCaseResultResponse
         {
             Id = x.Id,
             TestCaseId = x.TestCaseId,
             DisplayOrder = x.DisplayOrder,
-            Input = includeHiddenResults ? x.Input : x.Input,
-            ExpectedOutput = includeHiddenResults ? x.ExpectedOutput : x.ExpectedOutput,
+            Input = includeHiddenResults && x.TestCase != null ? x.TestCase.Input : x.Input,
+            ExpectedOutput = includeHiddenResults && x.TestCase != null ? x.TestCase.ExpectedOutput : x.ExpectedOutput,
             ActualOutput = x.ActualOutput,
             Error = x.Error,
             Status = x.Status,
             Passed = x.Passed,
-            ExecutionTimeMs = x.ExecutionTimeMs
+            IsHidden = x.TestCase?.IsHidden == true || x.Input == "[hidden]",
+            ExecutionTimeMs = x.ExecutionTimeMs,
+            RuntimeMs = x.ExecutionTimeMs
         }).ToList()
     };
 
-    private static bool IsSupportedLanguage(string language) => new[] { "javascript", "python", "cpp", "java" }.Contains(NormalizeLanguage(language));
+    private static decimal? SubmissionScore(CodeSubmission s)
+    {
+        if (s.TotalTestCases > 0)
+            return Math.Round(s.PassedTestCases * 100m / s.TotalTestCases, 2);
+
+        return s.IsAccepted ? 100 : null;
+    }
+
+    private static SupportedLanguageResponse MapLanguage(CodeLanguageDefinition language) => new()
+    {
+        Value = language.Code,
+        Label = language.DisplayName,
+        Runtime = language.RequiredRuntime,
+        Enabled = language.IsActive,
+        LanguageCode = language.Code,
+        DisplayName = language.DisplayName,
+        Version = language.Version,
+        FileExtension = language.FileExtension,
+        DefaultTemplate = language.DefaultTemplate,
+        CompileCommand = language.CompileCommand,
+        RunCommand = language.RunCommand,
+        IsCompiled = language.IsCompiled,
+        IsActive = language.IsActive,
+        TimeLimitMs = language.TimeLimitMs,
+        MemoryLimitKb = language.MemoryLimitKb,
+        SortOrder = language.SortOrder,
+        RequiredRuntime = language.RequiredRuntime
+    };
+
+    private static CodeLanguageDefinition? GetLanguage(string language)
+    {
+        var normalized = NormalizeLanguage(language);
+        return LanguageDefinitions.FirstOrDefault(x => x.Code == normalized && x.IsActive);
+    }
+
     private static string NormalizeLanguage(string language) => (language ?? string.Empty).Trim().ToLowerInvariant() switch
     {
         "js" or "node" or "javascript" => "javascript",
+        "ts" or "typescript" => "typescript",
         "py" or "python3" or "python" => "python",
-        "c++" or "cpp" or "cxx" => "cpp",
+        "c++" or "cplusplus" or "cpp" or "cxx" => "cpp",
+        "c#" or "cs" or "csharp" => "csharp",
+        "golang" or "go" => "go",
         "java" => "java",
+        "c" => "c",
         _ => (language ?? string.Empty).Trim().ToLowerInvariant()
     };
+
     private static byte DifficultyValue(string d) => d.Trim().ToLowerInvariant() switch { "easy" or "beginner" or "1" => 1, "medium" or "intermediate" or "2" => 2, "hard" or "advanced" or "3" => 3, _ => 0 };
-    private static string NormalizeOutput(string s) => (s ?? string.Empty).Replace("\r\n", "\n").Trim();
-    private static string TrimLong(string s) => string.IsNullOrEmpty(s) ? string.Empty : (s.Length <= 8000 ? s : s[..8000] + "\n...[output truncated]");
+
+    private static string NormalizeOutput(string s)
+    {
+        var normalized = (s ?? string.Empty).Replace("\r\n", "\n").Replace('\r', '\n');
+        var lines = normalized.Split('\n').Select(x => x.TrimEnd()).ToArray();
+        return string.Join('\n', lines).TrimEnd('\n');
+    }
+
     private static string Slugify(string value)
     {
         var chars = value.Trim().ToLowerInvariant().Select(ch => char.IsLetterOrDigit(ch) ? ch : '-').ToArray();
         var slug = string.Join('-', new string(chars).Split('-', StringSplitOptions.RemoveEmptyEntries));
         return string.IsNullOrWhiteSpace(slug) ? Guid.NewGuid().ToString("N") : slug;
+    }
+
+    private static void MirrorLegacyOutputFields(CodeRunResponse response)
+    {
+        response.Output = response.Stdout;
+        response.Error = string.IsNullOrWhiteSpace(response.Stderr) ? response.CompileOutput : response.Stderr;
+    }
+
+    private sealed record CodeLanguageDefinition(
+        string Code,
+        string DisplayName,
+        string Version,
+        string FileExtension,
+        string DefaultTemplate,
+        string? CompileCommand,
+        string RunCommand,
+        bool IsCompiled,
+        bool IsActive,
+        int TimeLimitMs,
+        int MemoryLimitKb,
+        int SortOrder,
+        string RequiredRuntime);
+
+    private static class JudgeStatus
+    {
+        public const string Success = "Success";
+        public const string Failed = "Failed";
+    }
+
+    private static class JudgeVerdict
+    {
+        public const string Accepted = "Accepted";
+        public const string CompilationError = "CompilationError";
+        public const string RuntimeError = "RuntimeError";
+        public const string TimeLimitExceeded = "TimeLimitExceeded";
+        public const string WrongAnswer = "WrongAnswer";
+        public const string InternalError = "InternalError";
     }
 }

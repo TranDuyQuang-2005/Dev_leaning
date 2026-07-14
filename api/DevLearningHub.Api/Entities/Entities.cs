@@ -21,7 +21,24 @@ public sealed class User
     public DateTime? DeletedAt { get; set; }
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     public ICollection<UserPermission> UserPermissions { get; set; } = new List<UserPermission>();
+    public ICollection<UserPermissionGroup> UserPermissionGroups { get; set; } = new List<UserPermissionGroup>();
     public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+    public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+}
+
+public sealed class Notification
+{
+    public long Id { get; set; }
+    public long UserId { get; set; }
+    public string NotificationType { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
+    public string? LinkUrl { get; set; }
+    public bool IsRead { get; set; }
+    public DateTime? ReadAt { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public string? MetadataJson { get; set; }
+    public User User { get; set; } = null!;
 }
 
 public sealed class Role
@@ -34,6 +51,7 @@ public sealed class Role
     public DateTime CreatedAt { get; set; }
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
+    public ICollection<RolePermissionGroup> RolePermissionGroups { get; set; } = new List<RolePermissionGroup>();
 }
 
 public sealed class Permission
@@ -46,6 +64,50 @@ public sealed class Permission
     public DateTime CreatedAt { get; set; }
     public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
     public ICollection<UserPermission> UserPermissions { get; set; } = new List<UserPermission>();
+    public ICollection<PermissionGroupPermission> PermissionGroupPermissions { get; set; } = new List<PermissionGroupPermission>();
+}
+
+public sealed class PermissionGroup
+{
+    public long Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Code { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public bool IsSystem { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    public bool IsDeleted { get; set; }
+    public ICollection<PermissionGroupPermission> PermissionGroupPermissions { get; set; } = new List<PermissionGroupPermission>();
+    public ICollection<RolePermissionGroup> RolePermissionGroups { get; set; } = new List<RolePermissionGroup>();
+    public ICollection<UserPermissionGroup> UserPermissionGroups { get; set; } = new List<UserPermissionGroup>();
+}
+
+public sealed class PermissionGroupPermission
+{
+    public long PermissionGroupId { get; set; }
+    public long PermissionId { get; set; }
+    public PermissionGroup PermissionGroup { get; set; } = null!;
+    public Permission Permission { get; set; } = null!;
+}
+
+public sealed class RolePermissionGroup
+{
+    public long RoleId { get; set; }
+    public long PermissionGroupId { get; set; }
+    public DateTime AssignedAt { get; set; }
+    public long? AssignedBy { get; set; }
+    public Role Role { get; set; } = null!;
+    public PermissionGroup PermissionGroup { get; set; } = null!;
+}
+
+public sealed class UserPermissionGroup
+{
+    public long UserId { get; set; }
+    public long PermissionGroupId { get; set; }
+    public DateTime AssignedAt { get; set; }
+    public long? AssignedBy { get; set; }
+    public User User { get; set; } = null!;
+    public PermissionGroup PermissionGroup { get; set; } = null!;
 }
 
 public sealed class UserRole
@@ -89,6 +151,28 @@ public sealed class RefreshToken
     public string? ReplacedByTokenHash { get; set; }
     public string? IpAddress { get; set; }
     public string? UserAgent { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public User User { get; set; } = null!;
+}
+
+public sealed class PasswordResetToken
+{
+    public long Id { get; set; }
+    public long UserId { get; set; }
+    public string TokenHash { get; set; } = string.Empty;
+    public DateTime ExpiresAt { get; set; }
+    public DateTime? UsedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public User User { get; set; } = null!;
+}
+
+public sealed class EmailVerificationToken
+{
+    public long Id { get; set; }
+    public long UserId { get; set; }
+    public string TokenHash { get; set; } = string.Empty;
+    public DateTime ExpiresAt { get; set; }
+    public DateTime? UsedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public User User { get; set; } = null!;
 }
@@ -356,4 +440,75 @@ public sealed class AuditLog
     public string? IpAddress { get; set; }
     public string? UserAgent { get; set; }
     public DateTime CreatedAt { get; set; }
+}
+
+public sealed class PersonalQuestionBank
+{
+    public long Id { get; set; }
+    public long UserId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string OriginalFileName { get; set; } = string.Empty;
+    public string FileStorageKey { get; set; } = string.Empty;
+    public int QuestionCount { get; set; }
+    public string Visibility { get; set; } = "Private";
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    public bool IsDeleted { get; set; }
+    public User User { get; set; } = null!;
+    public ICollection<PersonalQuestion> Questions { get; set; } = new List<PersonalQuestion>();
+    public ICollection<PersonalPracticeAttempt> Attempts { get; set; } = new List<PersonalPracticeAttempt>();
+}
+
+public sealed class PersonalQuestion
+{
+    public long Id { get; set; }
+    public long BankId { get; set; }
+    public long UserId { get; set; }
+    public string QuestionText { get; set; } = string.Empty;
+    public string QuestionType { get; set; } = "single_choice";
+    public string Difficulty { get; set; } = "medium";
+    public string? Explanation { get; set; }
+    public string? Tags { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    public bool IsDeleted { get; set; }
+    public PersonalQuestionBank Bank { get; set; } = null!;
+    public ICollection<PersonalQuestionOption> Options { get; set; } = new List<PersonalQuestionOption>();
+}
+
+public sealed class PersonalQuestionOption
+{
+    public long Id { get; set; }
+    public long QuestionId { get; set; }
+    public string Label { get; set; } = string.Empty;
+    public string Text { get; set; } = string.Empty;
+    public bool IsCorrect { get; set; }
+    public PersonalQuestion Question { get; set; } = null!;
+}
+
+public sealed class PersonalPracticeAttempt
+{
+    public long Id { get; set; }
+    public long UserId { get; set; }
+    public long BankId { get; set; }
+    public DateTime StartedAt { get; set; }
+    public DateTime? SubmittedAt { get; set; }
+    public decimal Score { get; set; }
+    public int TotalQuestions { get; set; }
+    public int CorrectCount { get; set; }
+    public string Status { get; set; } = "InProgress";
+    public PersonalQuestionBank Bank { get; set; } = null!;
+    public ICollection<PersonalPracticeAttemptAnswer> Answers { get; set; } = new List<PersonalPracticeAttemptAnswer>();
+}
+
+public sealed class PersonalPracticeAttemptAnswer
+{
+    public long Id { get; set; }
+    public long AttemptId { get; set; }
+    public long QuestionId { get; set; }
+    public string? SelectedOptionLabel { get; set; }
+    public bool IsCorrect { get; set; }
+    public PersonalPracticeAttempt Attempt { get; set; } = null!;
+    public PersonalQuestion Question { get; set; } = null!;
 }

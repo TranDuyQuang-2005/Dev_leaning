@@ -1,4 +1,4 @@
-﻿using DevLearningHub.Api.Common;
+using DevLearningHub.Api.Common;
 using DevLearningHub.Api.Data;
 using DevLearningHub.Api.DTOs;
 using DevLearningHub.Api.Entities;
@@ -41,11 +41,14 @@ public sealed class ForumModuleService : IForumModuleService
 {
     private readonly DevLearningHubDbContext _db;
     private readonly IObjectStorageService _storage;
+    private readonly INotificationService _notifications;
+    private static readonly TimeSpan ForumInteractionDuplicateWindow = TimeSpan.FromMinutes(5);
 
-    public ForumModuleService(DevLearningHubDbContext db, IObjectStorageService storage)
+    public ForumModuleService(DevLearningHubDbContext db, IObjectStorageService storage, INotificationService notifications)
     {
         _db = db;
         _storage = storage;
+        _notifications = notifications;
     }
 
     public async Task<ApiResponse<ForumAttachmentResponse>> UploadAttachment(long userId, IFormFile file, CancellationToken ct)
@@ -68,7 +71,7 @@ public sealed class ForumModuleService : IForumModuleService
             };
             _db.Files.Add(entity);
             await _db.SaveChangesAsync(ct);
-            return ApiResponse<ForumAttachmentResponse>.Ok(MapAttachment(entity), "Upload file thÃ nh cÃ´ng");
+            return ApiResponse<ForumAttachmentResponse>.Ok(MapAttachment(entity), "Upload file thành công");
         }
         catch (Exception ex)
         {
@@ -85,39 +88,39 @@ public sealed class ForumModuleService : IForumModuleService
     public async Task<ApiResponse<ForumTagResponse>> CreateTag(ForumTagRequest request, CancellationToken ct)
     {
         var errors = ValidateTag(request);
-        if (errors.Count > 0) return ApiResponse<ForumTagResponse>.Fail("Dá»¯ liá»‡u tag khÃ´ng há»£p lá»‡", errors);
+        if (errors.Count > 0) return ApiResponse<ForumTagResponse>.Fail("Dữ liệu tag không hợp lệ", errors);
         var slug = Slugify(string.IsNullOrWhiteSpace(request.Slug) ? request.Name : request.Slug);
-        if (await _db.Tags.AnyAsync(x => x.Slug == slug, ct)) return ApiResponse<ForumTagResponse>.Fail("Slug tag Ä‘Ã£ tá»“n táº¡i");
+        if (await _db.Tags.AnyAsync(x => x.Slug == slug, ct)) return ApiResponse<ForumTagResponse>.Fail("Slug tag đã tồn tại");
         var tag = new Tag { Name = request.Name.Trim(), Slug = slug, Description = request.Description, CreatedAt = DateTime.UtcNow };
         _db.Tags.Add(tag);
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<ForumTagResponse>.Ok(MapTag(tag), "Táº¡o tag thÃ nh cÃ´ng");
+        return ApiResponse<ForumTagResponse>.Ok(MapTag(tag), "Tạo tag thành công");
     }
 
     public async Task<ApiResponse<ForumTagResponse>> UpdateTag(long id, ForumTagRequest request, CancellationToken ct)
     {
         var tag = await _db.Tags.FirstOrDefaultAsync(x => x.Id == id, ct);
-        if (tag == null) return ApiResponse<ForumTagResponse>.Fail("KhÃ´ng tÃ¬m tháº¥y tag");
+        if (tag == null) return ApiResponse<ForumTagResponse>.Fail("Không tìm thấy tag");
         var errors = ValidateTag(request);
-        if (errors.Count > 0) return ApiResponse<ForumTagResponse>.Fail("Dá»¯ liá»‡u tag khÃ´ng há»£p lá»‡", errors);
+        if (errors.Count > 0) return ApiResponse<ForumTagResponse>.Fail("Dữ liệu tag không hợp lệ", errors);
         var slug = Slugify(string.IsNullOrWhiteSpace(request.Slug) ? request.Name : request.Slug);
-        if (await _db.Tags.AnyAsync(x => x.Id != id && x.Slug == slug, ct)) return ApiResponse<ForumTagResponse>.Fail("Slug tag Ä‘Ã£ tá»“n táº¡i");
+        if (await _db.Tags.AnyAsync(x => x.Id != id && x.Slug == slug, ct)) return ApiResponse<ForumTagResponse>.Fail("Slug tag đã tồn tại");
         tag.Name = request.Name.Trim();
         tag.Slug = slug;
         tag.Description = request.Description;
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<ForumTagResponse>.Ok(MapTag(tag), "Cáº­p nháº­t tag thÃ nh cÃ´ng");
+        return ApiResponse<ForumTagResponse>.Ok(MapTag(tag), "Cập nhật tag thành công");
     }
 
     public async Task<ApiResponse<object>> DeleteTag(long id, CancellationToken ct)
     {
         var used = await _db.PostTags.AnyAsync(x => x.TagId == id, ct);
-        if (used) return ApiResponse<object>.Fail("Tag Ä‘ang Ä‘Æ°á»£c sá»­ dá»¥ng, khÃ´ng thá»ƒ xÃ³a");
+        if (used) return ApiResponse<object>.Fail("Tag đang được sử dụng, không thể xóa");
         var tag = await _db.Tags.FirstOrDefaultAsync(x => x.Id == id, ct);
-        if (tag == null) return ApiResponse<object>.Fail("KhÃ´ng tÃ¬m tháº¥y tag");
+        if (tag == null) return ApiResponse<object>.Fail("Không tìm thấy tag");
         _db.Tags.Remove(tag);
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<object>.Ok(new { id }, "XÃ³a tag thÃ nh cÃ´ng");
+        return ApiResponse<object>.Ok(new { id }, "Xóa tag thành công");
     }
 
     public async Task<ApiResponse<PagedResult<ForumPostSummaryResponse>>> GetPosts(long? currentUserId, string? keyword, string? tag, int pageIndex, int pageSize, CancellationToken ct)
@@ -151,7 +154,7 @@ public sealed class ForumModuleService : IForumModuleService
     public async Task<ApiResponse<ForumPostDetailResponse>> GetPost(long? currentUserId, long postId, CancellationToken ct)
     {
         var post = await LoadPostDetail(postId, ct);
-        if (post == null || post.IsDeleted || post.Status != 1) return ApiResponse<ForumPostDetailResponse>.Fail("KhÃ´ng tÃ¬m tháº¥y bÃ i viáº¿t");
+        if (post == null || post.IsDeleted || post.Status != 1) return ApiResponse<ForumPostDetailResponse>.Fail("Không tìm thấy bài viết");
         post.ViewCount++;
         await _db.SaveChangesAsync(ct);
         return ApiResponse<ForumPostDetailResponse>.Ok(await MapPostDetailAsync(post, currentUserId, false, ct));
@@ -160,7 +163,7 @@ public sealed class ForumModuleService : IForumModuleService
     public async Task<ApiResponse<ForumPostDetailResponse>> CreatePost(long userId, ForumPostRequest request, CancellationToken ct)
     {
         var errors = ValidatePost(request);
-        if (errors.Count > 0) return ApiResponse<ForumPostDetailResponse>.Fail("Dá»¯ liá»‡u bÃ i viáº¿t khÃ´ng há»£p lá»‡", errors);
+        if (errors.Count > 0) return ApiResponse<ForumPostDetailResponse>.Fail("Dữ liệu bài viết không hợp lệ", errors);
         await using var tx = await _db.Database.BeginTransactionAsync(ct);
         var slug = await UniquePostSlug(request.Title, ct);
         var post = new Post { AuthorId = userId, Title = request.Title.Trim(), Slug = slug, Content = request.Content.Trim(), Status = 1, CreatedAt = DateTime.UtcNow, LastActivityAt = DateTime.UtcNow };
@@ -172,16 +175,16 @@ public sealed class ForumModuleService : IForumModuleService
         await UpdateUserForumStats(userId, postsDelta: 1, commentsDelta: 0, ct);
         await tx.CommitAsync(ct);
         var loaded = await LoadPostDetail(post.Id, ct);
-        return ApiResponse<ForumPostDetailResponse>.Ok(await MapPostDetailAsync(loaded!, userId, false, ct), "Táº¡o bÃ i viáº¿t thÃ nh cÃ´ng");
+        return ApiResponse<ForumPostDetailResponse>.Ok(await MapPostDetailAsync(loaded!, userId, false, ct), "Tạo bài viết thành công");
     }
 
     public async Task<ApiResponse<ForumPostDetailResponse>> UpdatePost(long userId, bool canModerate, long postId, ForumPostRequest request, CancellationToken ct)
     {
         var post = await _db.Posts.Include(x => x.PostTags).FirstOrDefaultAsync(x => x.Id == postId && !x.IsDeleted, ct);
-        if (post == null) return ApiResponse<ForumPostDetailResponse>.Fail("KhÃ´ng tÃ¬m tháº¥y bÃ i viáº¿t");
-        if (!canModerate && post.AuthorId != userId) return ApiResponse<ForumPostDetailResponse>.Fail("Báº¡n khÃ´ng cÃ³ quyá»n sá»­a bÃ i viáº¿t nÃ y");
+        if (post == null) return ApiResponse<ForumPostDetailResponse>.Fail("Không tìm thấy bài viết");
+        if (!canModerate && post.AuthorId != userId) return ApiResponse<ForumPostDetailResponse>.Fail("Bạn không có quyền sửa bài viết này");
         var errors = ValidatePost(request);
-        if (errors.Count > 0) return ApiResponse<ForumPostDetailResponse>.Fail("Dá»¯ liá»‡u bÃ i viáº¿t khÃ´ng há»£p lá»‡", errors);
+        if (errors.Count > 0) return ApiResponse<ForumPostDetailResponse>.Fail("Dữ liệu bài viết không hợp lệ", errors);
         await using var tx = await _db.Database.BeginTransactionAsync(ct);
         post.Title = request.Title.Trim();
         post.Content = request.Content.Trim();
@@ -194,31 +197,32 @@ public sealed class ForumModuleService : IForumModuleService
         if (attachError != null) return ApiResponse<ForumPostDetailResponse>.Fail(attachError);
         await tx.CommitAsync(ct);
         var loaded = await LoadPostDetail(post.Id, ct);
-        return ApiResponse<ForumPostDetailResponse>.Ok(await MapPostDetailAsync(loaded!, userId, canModerate, ct), "Cáº­p nháº­t bÃ i viáº¿t thÃ nh cÃ´ng");
+        return ApiResponse<ForumPostDetailResponse>.Ok(await MapPostDetailAsync(loaded!, userId, canModerate, ct), "Cập nhật bài viết thành công");
     }
 
     public async Task<ApiResponse<object>> DeletePost(long userId, bool canModerate, long postId, CancellationToken ct)
     {
         var post = await _db.Posts.FirstOrDefaultAsync(x => x.Id == postId && !x.IsDeleted, ct);
-        if (post == null) return ApiResponse<object>.Fail("KhÃ´ng tÃ¬m tháº¥y bÃ i viáº¿t");
-        if (!canModerate && post.AuthorId != userId) return ApiResponse<object>.Fail("Báº¡n khÃ´ng cÃ³ quyá»n xÃ³a bÃ i viáº¿t nÃ y");
+        if (post == null) return ApiResponse<object>.Fail("Không tìm thấy bài viết");
+        if (!canModerate && post.AuthorId != userId) return ApiResponse<object>.Fail("Bạn không có quyền xóa bài viết này");
         post.IsDeleted = true;
         post.Status = 0;
         post.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<object>.Ok(new { postId }, "XÃ³a bÃ i viáº¿t thÃ nh cÃ´ng");
+        return ApiResponse<object>.Ok(new { postId }, "Xóa bài viết thành công");
     }
 
     public async Task<ApiResponse<ForumCommentResponse>> AddComment(long userId, long postId, ForumCommentRequest request, CancellationToken ct)
     {
         var errors = ValidateComment(request);
-        if (errors.Count > 0) return ApiResponse<ForumCommentResponse>.Fail("Dá»¯ liá»‡u bÃ¬nh luáº­n khÃ´ng há»£p lá»‡", errors);
+        if (errors.Count > 0) return ApiResponse<ForumCommentResponse>.Fail("Dữ liệu bình luận không hợp lệ", errors);
         var post = await _db.Posts.FirstOrDefaultAsync(x => x.Id == postId && !x.IsDeleted && x.Status == 1, ct);
-        if (post == null) return ApiResponse<ForumCommentResponse>.Fail("KhÃ´ng tÃ¬m tháº¥y bÃ i viáº¿t hoáº·c bÃ i Ä‘Ã£ bá»‹ áº©n");
+        if (post == null) return ApiResponse<ForumCommentResponse>.Fail("Không tìm thấy bài viết hoặc bài đã bị ẩn");
+        Comment? parentComment = null;
         if (request.ParentCommentId.HasValue)
         {
-            var parentOk = await _db.Comments.AnyAsync(x => x.Id == request.ParentCommentId && x.PostId == postId && !x.IsDeleted && x.Status == 1, ct);
-            if (!parentOk) return ApiResponse<ForumCommentResponse>.Fail("BÃ¬nh luáº­n cha khÃ´ng há»£p lá»‡");
+            parentComment = await _db.Comments.FirstOrDefaultAsync(x => x.Id == request.ParentCommentId && x.PostId == postId && !x.IsDeleted && x.Status == 1, ct);
+            if (parentComment == null) return ApiResponse<ForumCommentResponse>.Fail("Bình luận cha không hợp lệ");
         }
         var comment = new Comment { PostId = postId, AuthorId = userId, ParentCommentId = request.ParentCommentId, Content = request.Content.Trim(), Status = 1, CreatedAt = DateTime.UtcNow };
         _db.Comments.Add(comment);
@@ -226,28 +230,82 @@ public sealed class ForumModuleService : IForumModuleService
         post.LastActivityAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
         await UpdateUserForumStats(userId, postsDelta: 0, commentsDelta: 1, ct);
+        var actorName = await GetActorName(userId, ct);
+        if (parentComment == null)
+        {
+            await CreateForumNotificationIfAllowed(
+                post.AuthorId,
+                userId,
+                "forum.post_reply",
+                "Có phản hồi mới trong bài viết của bạn",
+                $"{actorName} đã phản hồi bài viết \"{post.Title}\".",
+                ForumCommentLink(postId, comment.Id),
+                "reply",
+                post.Id,
+                post.Title,
+                comment.Id,
+                null,
+                $"forum.post_reply:{comment.Id}",
+                ct);
+        }
+        else
+        {
+            await CreateForumNotificationIfAllowed(
+                parentComment.AuthorId,
+                userId,
+                "forum.comment_reply",
+                "Có người trả lời bình luận của bạn",
+                $"{actorName} đã trả lời bình luận của bạn trong bài viết \"{post.Title}\".",
+                ForumCommentLink(postId, comment.Id),
+                "reply",
+                post.Id,
+                post.Title,
+                comment.Id,
+                parentComment.Id,
+                $"forum.comment_reply:{comment.Id}:parent:{parentComment.Id}",
+                ct);
+
+            if (post.AuthorId != parentComment.AuthorId)
+            {
+                await CreateForumNotificationIfAllowed(
+                    post.AuthorId,
+                    userId,
+                    "forum.post_reply",
+                    "Có phản hồi mới trong bài viết của bạn",
+                    $"{actorName} đã phản hồi bài viết \"{post.Title}\".",
+                    ForumCommentLink(postId, comment.Id),
+                    "reply",
+                    post.Id,
+                    post.Title,
+                    comment.Id,
+                    parentComment.Id,
+                    $"forum.post_reply:{comment.Id}:post:{post.Id}",
+                    ct);
+            }
+        }
+
         var loaded = await _db.Comments.Include(x => x.Author).Include(x => x.Votes).FirstAsync(x => x.Id == comment.Id, ct);
-        return ApiResponse<ForumCommentResponse>.Ok(MapComment(loaded, userId), "BÃ¬nh luáº­n thÃ nh cÃ´ng");
+        return ApiResponse<ForumCommentResponse>.Ok(MapComment(loaded, userId), "Bình luận thành công");
     }
 
     public async Task<ApiResponse<ForumCommentResponse>> UpdateComment(long userId, bool canModerate, long commentId, ForumCommentRequest request, CancellationToken ct)
     {
         var comment = await _db.Comments.Include(x => x.Author).Include(x => x.Votes).FirstOrDefaultAsync(x => x.Id == commentId && !x.IsDeleted, ct);
-        if (comment == null) return ApiResponse<ForumCommentResponse>.Fail("KhÃ´ng tÃ¬m tháº¥y bÃ¬nh luáº­n");
-        if (!canModerate && comment.AuthorId != userId) return ApiResponse<ForumCommentResponse>.Fail("Báº¡n khÃ´ng cÃ³ quyá»n sá»­a bÃ¬nh luáº­n nÃ y");
+        if (comment == null) return ApiResponse<ForumCommentResponse>.Fail("Không tìm thấy bình luận");
+        if (!canModerate && comment.AuthorId != userId) return ApiResponse<ForumCommentResponse>.Fail("Bạn không có quyền sửa bình luận này");
         var errors = ValidateComment(request);
-        if (errors.Count > 0) return ApiResponse<ForumCommentResponse>.Fail("Dá»¯ liá»‡u bÃ¬nh luáº­n khÃ´ng há»£p lá»‡", errors);
+        if (errors.Count > 0) return ApiResponse<ForumCommentResponse>.Fail("Dữ liệu bình luận không hợp lệ", errors);
         comment.Content = request.Content.Trim();
         comment.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<ForumCommentResponse>.Ok(MapComment(comment, userId), "Cáº­p nháº­t bÃ¬nh luáº­n thÃ nh cÃ´ng");
+        return ApiResponse<ForumCommentResponse>.Ok(MapComment(comment, userId), "Cập nhật bình luận thành công");
     }
 
     public async Task<ApiResponse<object>> DeleteComment(long userId, bool canModerate, long commentId, CancellationToken ct)
     {
         var comment = await _db.Comments.FirstOrDefaultAsync(x => x.Id == commentId && !x.IsDeleted, ct);
-        if (comment == null) return ApiResponse<object>.Fail("KhÃ´ng tÃ¬m tháº¥y bÃ¬nh luáº­n");
-        if (!canModerate && comment.AuthorId != userId) return ApiResponse<object>.Fail("Báº¡n khÃ´ng cÃ³ quyá»n xÃ³a bÃ¬nh luáº­n nÃ y");
+        if (comment == null) return ApiResponse<object>.Fail("Không tìm thấy bình luận");
+        if (!canModerate && comment.AuthorId != userId) return ApiResponse<object>.Fail("Bạn không có quyền xóa bình luận này");
         comment.IsDeleted = true;
         comment.Status = 0;
         comment.UpdatedAt = DateTime.UtcNow;
@@ -262,17 +320,17 @@ public sealed class ForumModuleService : IForumModuleService
             comment.IsAcceptedAnswer = false;
         }
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<object>.Ok(new { commentId }, "XÃ³a bÃ¬nh luáº­n thÃ nh cÃ´ng");
+        return ApiResponse<object>.Ok(new { commentId }, "Xóa bình luận thành công");
     }
 
     public async Task<ApiResponse<object>> AcceptCommentAsAnswer(long userId, bool canModerate, long postId, long commentId, CancellationToken ct)
     {
         var post = await _db.Posts.FirstOrDefaultAsync(x => x.Id == postId && !x.IsDeleted && x.Status == 1, ct);
-        if (post == null) return ApiResponse<object>.Fail("KhÃ´ng tÃ¬m tháº¥y bÃ i viáº¿t hoáº·c bÃ i viáº¿t Ä‘Ã£ bá»‹ áº©n");
-        if (!canModerate && post.AuthorId != userId) return ApiResponse<object>.Fail("Chá»‰ chá»§ bÃ i viáº¿t, Admin hoáº·c Moderator Ä‘Æ°á»£c Ä‘Ã¡nh dáº¥u cÃ¢u tráº£ lá»i Ä‘Ãºng");
+        if (post == null) return ApiResponse<object>.Fail("Không tìm thấy bài viết hoặc bài viết đã bị ẩn");
+        if (!canModerate && post.AuthorId != userId) return ApiResponse<object>.Fail("Chỉ chủ bài viết, Admin hoặc Moderator được đánh dấu câu trả lời đúng");
 
         var comment = await _db.Comments.FirstOrDefaultAsync(x => x.Id == commentId && x.PostId == postId && !x.IsDeleted && x.Status == 1, ct);
-        if (comment == null) return ApiResponse<object>.Fail("KhÃ´ng tÃ¬m tháº¥y bÃ¬nh luáº­n há»£p lá»‡ trong bÃ i viáº¿t nÃ y");
+        if (comment == null) return ApiResponse<object>.Fail("Không tìm thấy bình luận hợp lệ trong bài viết này");
         await using var tx = await _db.Database.BeginTransactionAsync(ct);
         var acceptedComments = await _db.Comments.Where(x => x.PostId == postId && x.IsAcceptedAnswer).ToListAsync(ct);
         foreach (var item in acceptedComments) item.IsAcceptedAnswer = false;
@@ -291,21 +349,35 @@ public sealed class ForumModuleService : IForumModuleService
                 TargetType = "Comment",
                 TargetId = commentId,
                 ActionType = "AcceptAnswer",
-                Reason = "Moderator/Admin Ä‘Ã¡nh dáº¥u cÃ¢u tráº£ lá»i Ä‘Ãºng",
+                Reason = "Moderator/Admin đánh dấu câu trả lời đúng",
                 CreatedAt = DateTime.UtcNow
             });
         }
 
         await _db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        return ApiResponse<object>.Ok(new { postId, acceptedCommentId = commentId }, "ÄÃ£ Ä‘Ã¡nh dáº¥u cÃ¢u tráº£ lá»i Ä‘Ãºng");
+        await CreateForumNotificationIfAllowed(
+            comment.AuthorId,
+            userId,
+            "forum.accepted_answer",
+            "Câu trả lời của bạn đã được chấp nhận",
+            $"Câu trả lời của bạn trong bài viết \"{post.Title}\" đã được đánh dấu là phù hợp.",
+            ForumCommentLink(postId, commentId),
+            "accepted_answer",
+            post.Id,
+            post.Title,
+            commentId,
+            comment.ParentCommentId,
+            $"forum.accepted_answer:{postId}:{commentId}",
+            ct);
+        return ApiResponse<object>.Ok(new { postId, acceptedCommentId = commentId }, "Đã đánh dấu câu trả lời đúng");
     }
 
     public async Task<ApiResponse<object>> ClearAcceptedAnswer(long userId, bool canModerate, long postId, CancellationToken ct)
     {
         var post = await _db.Posts.FirstOrDefaultAsync(x => x.Id == postId && !x.IsDeleted && x.Status == 1, ct);
-        if (post == null) return ApiResponse<object>.Fail("KhÃ´ng tÃ¬m tháº¥y bÃ i viáº¿t hoáº·c bÃ i viáº¿t Ä‘Ã£ bá»‹ áº©n");
-        if (!canModerate && post.AuthorId != userId) return ApiResponse<object>.Fail("Chá»‰ chá»§ bÃ i viáº¿t, Admin hoáº·c Moderator Ä‘Æ°á»£c bá» Ä‘Ã¡nh dáº¥u cÃ¢u tráº£ lá»i Ä‘Ãºng");
+        if (post == null) return ApiResponse<object>.Fail("Không tìm thấy bài viết hoặc bài viết đã bị ẩn");
+        if (!canModerate && post.AuthorId != userId) return ApiResponse<object>.Fail("Chỉ chủ bài viết, Admin hoặc Moderator được bỏ đánh dấu câu trả lời đúng");
 
         var comments = await _db.Comments.Where(x => x.PostId == postId && x.IsAcceptedAnswer).ToListAsync(ct);
         foreach (var comment in comments)
@@ -316,48 +388,122 @@ public sealed class ForumModuleService : IForumModuleService
         post.AcceptedCommentId = null;
         post.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<object>.Ok(new { postId }, "ÄÃ£ bá» Ä‘Ã¡nh dáº¥u cÃ¢u tráº£ lá»i Ä‘Ãºng");
+        return ApiResponse<object>.Ok(new { postId }, "Đã bỏ đánh dấu câu trả lời đúng");
     }
 
     public async Task<ApiResponse<object>> VotePost(long userId, long postId, ForumVoteRequest request, CancellationToken ct)
     {
-        if (request.VoteType != 1 && request.VoteType != -1) return ApiResponse<object>.Fail("VoteType chá»‰ Ä‘Æ°á»£c lÃ  1 hoáº·c -1");
+        if (request.VoteType != 1 && request.VoteType != -1) return ApiResponse<object>.Fail("VoteType chỉ được là 1 hoặc -1");
         var post = await _db.Posts.FirstOrDefaultAsync(x => x.Id == postId && !x.IsDeleted && x.Status == 1, ct);
-        if (post == null) return ApiResponse<object>.Fail("KhÃ´ng tÃ¬m tháº¥y bÃ i viáº¿t");
+        if (post == null) return ApiResponse<object>.Fail("Không tìm thấy bài viết");
         var vote = await _db.PostVotes.FirstOrDefaultAsync(x => x.PostId == postId && x.UserId == userId, ct);
-        if (vote == null) _db.PostVotes.Add(new PostVote { PostId = postId, UserId = userId, VoteType = request.VoteType, CreatedAt = DateTime.UtcNow });
-        else if (vote.VoteType == request.VoteType) _db.PostVotes.Remove(vote);
-        else { vote.VoteType = request.VoteType; vote.CreatedAt = DateTime.UtcNow; }
+        var notifyVoteType = (short)0;
+        if (vote == null)
+        {
+            _db.PostVotes.Add(new PostVote { PostId = postId, UserId = userId, VoteType = request.VoteType, CreatedAt = DateTime.UtcNow });
+            notifyVoteType = request.VoteType;
+        }
+        else if (vote.VoteType == request.VoteType)
+        {
+            _db.PostVotes.Remove(vote);
+        }
+        else
+        {
+            vote.VoteType = request.VoteType;
+            vote.CreatedAt = DateTime.UtcNow;
+            notifyVoteType = request.VoteType;
+        }
         await _db.SaveChangesAsync(ct);
         post.VoteScore = await _db.PostVotes.Where(x => x.PostId == postId).SumAsync(x => (int)x.VoteType, ct);
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<object>.Ok(new { postId, post.VoteScore }, "Cáº­p nháº­t vote bÃ i viáº¿t thÃ nh cÃ´ng");
+        if (notifyVoteType != 0)
+        {
+            var actorName = await GetActorName(userId, ct);
+            var isLike = notifyVoteType > 0;
+            await CreateForumNotificationIfAllowed(
+                post.AuthorId,
+                userId,
+                isLike ? "forum.post_liked" : "forum.post_disliked",
+                isLike ? "Bài viết của bạn có lượt thích mới" : "Bài viết của bạn có phản hồi không tích cực",
+                isLike ? $"{actorName} đã thích bài viết \"{post.Title}\"." : $"{actorName} đã không thích bài viết \"{post.Title}\".",
+                ForumPostLink(postId),
+                isLike ? "like" : "dislike",
+                post.Id,
+                post.Title,
+                null,
+                null,
+                null,
+                ct);
+        }
+        var likeCount = await _db.PostVotes.CountAsync(x => x.PostId == postId && x.VoteType > 0, ct);
+        var dislikeCount = await _db.PostVotes.CountAsync(x => x.PostId == postId && x.VoteType < 0, ct);
+        return ApiResponse<object>.Ok(new { postId, post.VoteScore, LikeCount = likeCount, DislikeCount = dislikeCount }, "Cập nhật vote bài viết thành công");
     }
 
     public async Task<ApiResponse<object>> VoteComment(long userId, long commentId, ForumVoteRequest request, CancellationToken ct)
     {
-        if (request.VoteType != 1 && request.VoteType != -1) return ApiResponse<object>.Fail("VoteType chá»‰ Ä‘Æ°á»£c lÃ  1 hoáº·c -1");
+        if (request.VoteType != 1 && request.VoteType != -1) return ApiResponse<object>.Fail("VoteType chỉ được là 1 hoặc -1");
         var comment = await _db.Comments.FirstOrDefaultAsync(x => x.Id == commentId && !x.IsDeleted && x.Status == 1, ct);
-        if (comment == null) return ApiResponse<object>.Fail("KhÃ´ng tÃ¬m tháº¥y bÃ¬nh luáº­n");
+        if (comment == null) return ApiResponse<object>.Fail("Không tìm thấy bình luận");
         var vote = await _db.CommentVotes.FirstOrDefaultAsync(x => x.CommentId == commentId && x.UserId == userId, ct);
-        if (vote == null) _db.CommentVotes.Add(new CommentVote { CommentId = commentId, UserId = userId, VoteType = request.VoteType, CreatedAt = DateTime.UtcNow });
-        else if (vote.VoteType == request.VoteType) _db.CommentVotes.Remove(vote);
-        else { vote.VoteType = request.VoteType; vote.CreatedAt = DateTime.UtcNow; }
+        var notifyVoteType = (short)0;
+        if (vote == null)
+        {
+            _db.CommentVotes.Add(new CommentVote { CommentId = commentId, UserId = userId, VoteType = request.VoteType, CreatedAt = DateTime.UtcNow });
+            notifyVoteType = request.VoteType;
+        }
+        else if (vote.VoteType == request.VoteType)
+        {
+            _db.CommentVotes.Remove(vote);
+        }
+        else
+        {
+            vote.VoteType = request.VoteType;
+            vote.CreatedAt = DateTime.UtcNow;
+            notifyVoteType = request.VoteType;
+        }
         await _db.SaveChangesAsync(ct);
         comment.VoteScore = await _db.CommentVotes.Where(x => x.CommentId == commentId).SumAsync(x => (int)x.VoteType, ct);
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<object>.Ok(new { commentId, comment.VoteScore }, "Cáº­p nháº­t vote bÃ¬nh luáº­n thÃ nh cÃ´ng");
+        if (notifyVoteType != 0)
+        {
+            var postForNotification = await _db.Posts.AsNoTracking().FirstOrDefaultAsync(x => x.Id == comment.PostId, ct);
+            if (postForNotification != null)
+            {
+                var actorName = await GetActorName(userId, ct);
+                var isLike = notifyVoteType > 0;
+                await CreateForumNotificationIfAllowed(
+                    comment.AuthorId,
+                    userId,
+                    isLike ? "forum.comment_liked" : "forum.comment_disliked",
+                    isLike ? "Bình luận của bạn có lượt thích mới" : "Bình luận của bạn có phản hồi không tích cực",
+                    isLike
+                        ? $"{actorName} đã thích bình luận của bạn trong bài viết \"{postForNotification.Title}\"."
+                        : $"{actorName} đã không thích bình luận của bạn trong bài viết \"{postForNotification.Title}\".",
+                    ForumCommentLink(comment.PostId, commentId),
+                    isLike ? "like" : "dislike",
+                    postForNotification.Id,
+                    postForNotification.Title,
+                    commentId,
+                    comment.ParentCommentId,
+                    null,
+                    ct);
+            }
+        }
+        var likeCount = await _db.CommentVotes.CountAsync(x => x.CommentId == commentId && x.VoteType > 0, ct);
+        var dislikeCount = await _db.CommentVotes.CountAsync(x => x.CommentId == commentId && x.VoteType < 0, ct);
+        return ApiResponse<object>.Ok(new { commentId, comment.VoteScore, LikeCount = likeCount, DislikeCount = dislikeCount }, "Cập nhật vote bình luận thành công");
     }
 
     public async Task<ApiResponse<object>> BookmarkPost(long userId, long postId, CancellationToken ct)
     {
-        if (!await _db.Posts.AnyAsync(x => x.Id == postId && !x.IsDeleted && x.Status == 1, ct)) return ApiResponse<object>.Fail("KhÃ´ng tÃ¬m tháº¥y bÃ i viáº¿t");
+        if (!await _db.Posts.AnyAsync(x => x.Id == postId && !x.IsDeleted && x.Status == 1, ct)) return ApiResponse<object>.Fail("Không tìm thấy bài viết");
         if (!await _db.PostBookmarks.AnyAsync(x => x.PostId == postId && x.UserId == userId, ct))
         {
             _db.PostBookmarks.Add(new PostBookmark { PostId = postId, UserId = userId, CreatedAt = DateTime.UtcNow });
             await _db.SaveChangesAsync(ct);
         }
-        return ApiResponse<object>.Ok(new { postId }, "ÄÃ£ lÆ°u bÃ i viáº¿t");
+        return ApiResponse<object>.Ok(new { postId }, "Đã lưu bài viết");
     }
 
     public async Task<ApiResponse<object>> RemoveBookmark(long userId, long postId, CancellationToken ct)
@@ -368,23 +514,23 @@ public sealed class ForumModuleService : IForumModuleService
             _db.PostBookmarks.Remove(bookmark);
             await _db.SaveChangesAsync(ct);
         }
-        return ApiResponse<object>.Ok(new { postId }, "ÄÃ£ bá» lÆ°u bÃ i viáº¿t");
+        return ApiResponse<object>.Ok(new { postId }, "Đã bỏ lưu bài viết");
     }
 
     public async Task<ApiResponse<object>> CreateReport(long userId, ForumReportRequest request, CancellationToken ct)
     {
         var targetType = NormalizeTargetType(request.TargetType);
-        if (targetType is null) return ApiResponse<object>.Fail("TargetType chá»‰ Ä‘Æ°á»£c lÃ  Post hoáº·c Comment");
-        if (string.IsNullOrWhiteSpace(request.Reason) || request.Reason.Trim().Length < 5) return ApiResponse<object>.Fail("LÃ½ do report pháº£i cÃ³ Ã­t nháº¥t 5 kÃ½ tá»±");
+        if (targetType is null) return ApiResponse<object>.Fail("TargetType chỉ được là Post hoặc Comment");
+        if (string.IsNullOrWhiteSpace(request.Reason) || request.Reason.Trim().Length < 5) return ApiResponse<object>.Fail("Lý do report phải có ít nhất 5 ký tự");
         var existsTarget = targetType == "Post"
             ? await _db.Posts.AnyAsync(x => x.Id == request.TargetId && !x.IsDeleted, ct)
             : await _db.Comments.AnyAsync(x => x.Id == request.TargetId && !x.IsDeleted, ct);
-        if (!existsTarget) return ApiResponse<object>.Fail("Ná»™i dung cáº§n report khÃ´ng tá»“n táº¡i");
+        if (!existsTarget) return ApiResponse<object>.Fail("Nội dung cần report không tồn tại");
         var duplicate = await _db.Reports.AnyAsync(x => x.ReporterId == userId && x.TargetType == targetType && x.TargetId == request.TargetId && x.Status == 1, ct);
-        if (duplicate) return ApiResponse<object>.Fail("Báº¡n Ä‘Ã£ report ná»™i dung nÃ y vÃ  report Ä‘ang chá» xá»­ lÃ½");
+        if (duplicate) return ApiResponse<object>.Fail("Bạn đã report nội dung này và report đang chờ xử lý");
         _db.Reports.Add(new Report { ReporterId = userId, TargetType = targetType, TargetId = request.TargetId, Reason = request.Reason.Trim(), Description = request.Description, Status = 1, CreatedAt = DateTime.UtcNow });
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<object>.Ok(new { request.TargetId, TargetType = targetType }, "Gá»­i report thÃ nh cÃ´ng");
+        return ApiResponse<object>.Ok(new { request.TargetId, TargetType = targetType }, "Gửi report thành công");
     }
 
     public Task<ApiResponse<PagedResult<ForumPostSummaryResponse>>> AdminPosts(string? keyword, byte? status, int pageIndex, int pageSize, CancellationToken ct)
@@ -393,23 +539,23 @@ public sealed class ForumModuleService : IForumModuleService
     public async Task<ApiResponse<object>> HidePost(long moderatorId, long postId, string? reason, CancellationToken ct)
     {
         var post = await _db.Posts.FirstOrDefaultAsync(x => x.Id == postId && !x.IsDeleted, ct);
-        if (post == null) return ApiResponse<object>.Fail("KhÃ´ng tÃ¬m tháº¥y bÃ i viáº¿t");
+        if (post == null) return ApiResponse<object>.Fail("Không tìm thấy bài viết");
         post.Status = 0;
         post.UpdatedAt = DateTime.UtcNow;
         _db.ModerationActions.Add(new ModerationAction { ModeratorId = moderatorId, TargetType = "Post", TargetId = postId, ActionType = "Hide", Reason = reason, CreatedAt = DateTime.UtcNow });
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<object>.Ok(new { postId }, "ÄÃ£ áº©n bÃ i viáº¿t");
+        return ApiResponse<object>.Ok(new { postId }, "Đã ẩn bài viết");
     }
 
     public async Task<ApiResponse<object>> RestorePost(long moderatorId, long postId, string? reason, CancellationToken ct)
     {
         var post = await _db.Posts.FirstOrDefaultAsync(x => x.Id == postId && !x.IsDeleted, ct);
-        if (post == null) return ApiResponse<object>.Fail("KhÃ´ng tÃ¬m tháº¥y bÃ i viáº¿t");
+        if (post == null) return ApiResponse<object>.Fail("Không tìm thấy bài viết");
         post.Status = 1;
         post.UpdatedAt = DateTime.UtcNow;
         _db.ModerationActions.Add(new ModerationAction { ModeratorId = moderatorId, TargetType = "Post", TargetId = postId, ActionType = "Restore", Reason = reason, CreatedAt = DateTime.UtcNow });
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<object>.Ok(new { postId }, "ÄÃ£ khÃ´i phá»¥c bÃ i viáº¿t");
+        return ApiResponse<object>.Ok(new { postId }, "Đã khôi phục bài viết");
     }
 
     public async Task<ApiResponse<PagedResult<ForumCommentResponse>>> AdminComments(string? keyword, byte? status, int pageIndex, int pageSize, CancellationToken ct)
@@ -428,7 +574,7 @@ public sealed class ForumModuleService : IForumModuleService
     public async Task<ApiResponse<object>> HideComment(long moderatorId, long commentId, string? reason, CancellationToken ct)
     {
         var comment = await _db.Comments.FirstOrDefaultAsync(x => x.Id == commentId && !x.IsDeleted, ct);
-        if (comment == null) return ApiResponse<object>.Fail("KhÃ´ng tÃ¬m tháº¥y bÃ¬nh luáº­n");
+        if (comment == null) return ApiResponse<object>.Fail("Không tìm thấy bình luận");
         comment.Status = 0;
         comment.UpdatedAt = DateTime.UtcNow;
         if (comment.IsAcceptedAnswer)
@@ -443,7 +589,7 @@ public sealed class ForumModuleService : IForumModuleService
         }
         _db.ModerationActions.Add(new ModerationAction { ModeratorId = moderatorId, TargetType = "Comment", TargetId = commentId, ActionType = "Hide", Reason = reason, CreatedAt = DateTime.UtcNow });
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<object>.Ok(new { commentId }, "ÄÃ£ áº©n bÃ¬nh luáº­n");
+        return ApiResponse<object>.Ok(new { commentId }, "Đã ẩn bình luận");
     }
 
     public async Task<ApiResponse<PagedResult<ForumReportResponse>>> AdminReports(byte? status, int pageIndex, int pageSize, CancellationToken ct)
@@ -461,7 +607,7 @@ public sealed class ForumModuleService : IForumModuleService
     public async Task<ApiResponse<object>> ResolveReport(long moderatorId, long reportId, ResolveReportRequest request, CancellationToken ct)
     {
         var report = await _db.Reports.FirstOrDefaultAsync(x => x.Id == reportId, ct);
-        if (report == null) return ApiResponse<object>.Fail("KhÃ´ng tÃ¬m tháº¥y report");
+        if (report == null) return ApiResponse<object>.Fail("Không tìm thấy report");
         report.Status = request.Status == 3 ? (byte)3 : (byte)2;
         report.ResolvedByUserId = moderatorId;
         report.ResolvedAt = DateTime.UtcNow;
@@ -489,7 +635,7 @@ public sealed class ForumModuleService : IForumModuleService
         }
         _db.ModerationActions.Add(new ModerationAction { ModeratorId = moderatorId, TargetType = report.TargetType, TargetId = report.TargetId, ActionType = request.Status == 3 ? "RejectReport" : "ResolveReport", Reason = request.Reason, CreatedAt = DateTime.UtcNow });
         await _db.SaveChangesAsync(ct);
-        return ApiResponse<object>.Ok(new { reportId }, "ÄÃ£ xá»­ lÃ½ report");
+        return ApiResponse<object>.Ok(new { reportId }, "Đã xử lý report");
     }
 
     private async Task<ApiResponse<PagedResult<ForumPostSummaryResponse>>> GetPostsForAdmin(string? keyword, byte? status, int pageIndex, int pageSize, CancellationToken ct)
@@ -517,6 +663,94 @@ public sealed class ForumModuleService : IForumModuleService
             .Include(x => x.Comments.Where(c => !c.IsDeleted && c.Status == 1)).ThenInclude(x => x.Votes)
             .FirstOrDefaultAsync(x => x.Id == postId, ct);
     }
+
+    private async Task CreateForumNotificationIfAllowed(
+        long recipientId,
+        long actorId,
+        string notificationType,
+        string title,
+        string content,
+        string linkUrl,
+        string action,
+        long postId,
+        string postTitle,
+        long? commentId,
+        long? parentCommentId,
+        string? eventKey,
+        CancellationToken ct)
+    {
+        if (!await ShouldNotifyForumInteraction(actorId, recipientId, notificationType, postId, commentId, action, ct))
+        {
+            return;
+        }
+
+        var actorName = await GetActorName(actorId, ct);
+        await _notifications.CreateAsync(
+            recipientId,
+            notificationType,
+            title,
+            content,
+            linkUrl,
+            new
+            {
+                eventKey,
+                actorId,
+                actorName,
+                postId,
+                postTitle,
+                commentId,
+                parentCommentId,
+                action
+            },
+            ct);
+    }
+
+    private async Task<bool> ShouldNotifyForumInteraction(
+        long actorId,
+        long recipientId,
+        string notificationType,
+        long postId,
+        long? commentId,
+        string action,
+        CancellationToken ct)
+    {
+        if (actorId == recipientId) return false;
+
+        var since = DateTime.UtcNow.Subtract(ForumInteractionDuplicateWindow);
+        var actorNeedle = $"\"actorId\":{actorId}";
+        var actionNeedle = $"\"action\":\"{action}\"";
+        var targetNeedle = commentId.HasValue
+            ? $"\"commentId\":{commentId.Value}"
+            : $"\"postId\":{postId}";
+
+        var duplicate = await _db.Notifications.AsNoTracking()
+            .AnyAsync(x =>
+                x.UserId == recipientId
+                && x.NotificationType == notificationType
+                && x.CreatedAt >= since
+                && x.MetadataJson != null
+                && x.MetadataJson.Contains(actorNeedle)
+                && x.MetadataJson.Contains(actionNeedle)
+                && x.MetadataJson.Contains(targetNeedle),
+                ct);
+
+        return !duplicate;
+    }
+
+    private async Task<string> GetActorName(long actorId, CancellationToken ct)
+    {
+        var user = await _db.Users.AsNoTracking()
+            .Where(x => x.Id == actorId)
+            .Select(x => new { x.FullName, x.UserName })
+            .FirstOrDefaultAsync(ct);
+
+        if (user == null) return "Một người học";
+        return string.IsNullOrWhiteSpace(user.FullName) ? user.UserName : user.FullName;
+    }
+
+    private static string ForumPostLink(long postId) => $"/learner/forum/posts/{postId}";
+
+    private static string ForumCommentLink(long postId, long commentId) => $"{ForumPostLink(postId)}#comment-{commentId}";
 
     private async Task SetPostTags(long postId, List<string> tagNames, CancellationToken ct)
     {
@@ -552,7 +786,7 @@ public sealed class ForumModuleService : IForumModuleService
             .Where(f => cleanIds.Contains(f.Id) && !f.IsDeleted && f.UploadedByUserId == userId)
             .Select(f => f.Id)
             .ToListAsync(ct);
-        if (validFiles.Count != cleanIds.Count) return "CÃ³ file Ä‘Ã­nh kÃ¨m khÃ´ng tá»“n táº¡i hoáº·c khÃ´ng thuá»™c quyá»n upload cá»§a báº¡n";
+        if (validFiles.Count != cleanIds.Count) return "Có file đính kèm không tồn tại hoặc không thuộc quyền upload của bạn";
         foreach (var fileId in cleanIds)
         {
             _db.FileReferences.Add(new FileReference { FileId = fileId, OwnerService = "Forum", OwnerType = "Post", OwnerId = postId, CreatedAt = DateTime.UtcNow });
@@ -585,6 +819,8 @@ public sealed class ForumModuleService : IForumModuleService
     {
         var content = p.Content ?? string.Empty;
         var attachments = await LoadPostAttachments(p.Id, ct);
+        var likeCount = p.Votes.Count(x => x.VoteType > 0);
+        var dislikeCount = p.Votes.Count(x => x.VoteType < 0);
         return new ForumPostSummaryResponse
         {
             Id = p.Id,
@@ -595,7 +831,9 @@ public sealed class ForumModuleService : IForumModuleService
             Slug = p.Slug,
             ContentPreview = content.Length > 180 ? content[..180] + "..." : content,
             ViewCount = p.ViewCount,
-            VoteScore = p.VoteScore, LikeCount = p.Votes.Count(x => x.VoteType == 1), DislikeCount = p.Votes.Count(x => x.VoteType == -1),
+            VoteScore = likeCount - dislikeCount,
+            LikeCount = likeCount,
+            DislikeCount = dislikeCount,
             CommentCount = (p.Comments != null && p.Comments.Count > 0) ? p.Comments.Count(x => !x.IsDeleted && x.Status == 1) : p.AnswerCount,
             Status = p.Status,
             CreatedAt = p.CreatedAt,
@@ -625,7 +863,9 @@ public sealed class ForumModuleService : IForumModuleService
             ContentPreview = summary.ContentPreview,
             Content = p.Content,
             ViewCount = summary.ViewCount,
-            VoteScore = summary.VoteScore, LikeCount = summary.LikeCount, DislikeCount = summary.DislikeCount,
+            VoteScore = summary.VoteScore,
+            LikeCount = summary.LikeCount,
+            DislikeCount = summary.DislikeCount,
             CommentCount = summary.CommentCount,
             Status = summary.Status,
             CreatedAt = summary.CreatedAt,
@@ -647,12 +887,23 @@ public sealed class ForumModuleService : IForumModuleService
     private static ForumCommentResponse MapCommentTree(Comment c, IEnumerable<Comment> all, long? currentUserId, bool canModerate)
     {
         var mapped = MapComment(c, currentUserId, canModerate);
-        mapped.Replies = all.Where(x => x.ParentCommentId == c.Id).OrderBy(x => x.CreatedAt).Select(x => MapCommentTree(x, all, currentUserId, canModerate)).ToList();
+        mapped.Replies = FlattenReplies(c.Id, all)
+            .OrderBy(x => x.CreatedAt)
+            .Select(x =>
+            {
+                var reply = MapComment(x, currentUserId, canModerate);
+                reply.Replies = new List<ForumCommentResponse>();
+                return reply;
+            })
+            .ToList();
+        mapped.ReplyCount = mapped.Replies.Count;
         return mapped;
     }
 
     private static ForumCommentResponse MapComment(Comment c, long? currentUserId, bool canModerate = false)
     {
+        var likeCount = c.Votes.Count(x => x.VoteType > 0);
+        var dislikeCount = c.Votes.Count(x => x.VoteType < 0);
         return new ForumCommentResponse
         {
             Id = c.Id,
@@ -662,14 +913,39 @@ public sealed class ForumModuleService : IForumModuleService
             AuthorInitials = Initials(c.Author?.FullName ?? c.Author?.UserName ?? "U"),
             ParentCommentId = c.ParentCommentId,
             Content = c.Content,
-            VoteScore = c.VoteScore, LikeCount = c.Votes.Count(x => x.VoteType == 1), DislikeCount = c.Votes.Count(x => x.VoteType == -1),
+            VoteScore = likeCount - dislikeCount,
+            LikeCount = likeCount,
+            DislikeCount = dislikeCount,
             IsAcceptedAnswer = c.IsAcceptedAnswer,
             Status = c.Status,
             CreatedAt = c.CreatedAt,
             UpdatedAt = c.UpdatedAt,
             CanEdit = currentUserId.HasValue && (c.AuthorId == currentUserId.Value || canModerate),
-            MyVote = currentUserId.HasValue ? c.Votes.FirstOrDefault(x => x.UserId == currentUserId.Value)?.VoteType : null
+            MyVote = currentUserId.HasValue ? c.Votes.FirstOrDefault(x => x.UserId == currentUserId.Value)?.VoteType : null,
+            ReplyCount = c.Replies.Count(x => !x.IsDeleted && x.Status == 1)
         };
+    }
+
+    private static List<Comment> FlattenReplies(long parentId, IEnumerable<Comment> all)
+    {
+        var comments = all.ToList();
+        var result = new List<Comment>();
+        var queue = new Queue<long>();
+        queue.Enqueue(parentId);
+        var seen = new HashSet<long> { parentId };
+
+        while (queue.Count > 0)
+        {
+            var currentParentId = queue.Dequeue();
+            foreach (var child in comments.Where(x => x.ParentCommentId == currentParentId))
+            {
+                if (!seen.Add(child.Id)) continue;
+                result.Add(child);
+                queue.Enqueue(child.Id);
+            }
+        }
+
+        return result;
     }
 
     private static ForumAttachmentResponse MapAttachment(AppFile f) => new()
@@ -691,29 +967,29 @@ public sealed class ForumModuleService : IForumModuleService
     private static List<ApiError> ValidatePost(ForumPostRequest r)
     {
         var errors = new List<ApiError>();
-        if (string.IsNullOrWhiteSpace(r.Title)) errors.Add(new ApiError { Field = "title", Message = "TiÃªu Ä‘á» báº¯t buá»™c" });
-        else if (r.Title.Trim().Length < 10 || r.Title.Trim().Length > 200) errors.Add(new ApiError { Field = "title", Message = "TiÃªu Ä‘á» pháº£i tá»« 10 Ä‘áº¿n 200 kÃ½ tá»±" });
-        if (string.IsNullOrWhiteSpace(r.Content)) errors.Add(new ApiError { Field = "content", Message = "Ná»™i dung báº¯t buá»™c" });
-        else if (r.Content.Trim().Length < 20) errors.Add(new ApiError { Field = "content", Message = "Ná»™i dung pháº£i cÃ³ Ã­t nháº¥t 20 kÃ½ tá»±" });
-        if (r.Tags == null || !r.Tags.Any(x => !string.IsNullOrWhiteSpace(x))) errors.Add(new ApiError { Field = "tags", Message = "Cáº§n Ã­t nháº¥t 1 tag" });
-        if (r.Tags != null && r.Tags.Count(x => !string.IsNullOrWhiteSpace(x)) > 5) errors.Add(new ApiError { Field = "tags", Message = "Tá»‘i Ä‘a 5 tag" });
-        if (r.AttachmentIds != null && r.AttachmentIds.Distinct().Count() > 5) errors.Add(new ApiError { Field = "attachmentIds", Message = "Tá»‘i Ä‘a 5 file Ä‘Ã­nh kÃ¨m cho má»—i bÃ i viáº¿t" });
+        if (string.IsNullOrWhiteSpace(r.Title)) errors.Add(new ApiError { Field = "title", Message = "Tiêu đề bắt buộc" });
+        else if (r.Title.Trim().Length < 10 || r.Title.Trim().Length > 200) errors.Add(new ApiError { Field = "title", Message = "Tiêu đề phải từ 10 đến 200 ký tự" });
+        if (string.IsNullOrWhiteSpace(r.Content)) errors.Add(new ApiError { Field = "content", Message = "Nội dung bắt buộc" });
+        else if (r.Content.Trim().Length < 20) errors.Add(new ApiError { Field = "content", Message = "Nội dung phải có ít nhất 20 ký tự" });
+        if (r.Tags == null || !r.Tags.Any(x => !string.IsNullOrWhiteSpace(x))) errors.Add(new ApiError { Field = "tags", Message = "Cần ít nhất 1 tag" });
+        if (r.Tags != null && r.Tags.Count(x => !string.IsNullOrWhiteSpace(x)) > 5) errors.Add(new ApiError { Field = "tags", Message = "Tối đa 5 tag" });
+        if (r.AttachmentIds != null && r.AttachmentIds.Distinct().Count() > 5) errors.Add(new ApiError { Field = "attachmentIds", Message = "Tối đa 5 file đính kèm cho mỗi bài viết" });
         return errors;
     }
 
     private static List<ApiError> ValidateComment(ForumCommentRequest r)
     {
         var errors = new List<ApiError>();
-        if (string.IsNullOrWhiteSpace(r.Content)) errors.Add(new ApiError { Field = "content", Message = "Ná»™i dung bÃ¬nh luáº­n báº¯t buá»™c" });
-        else if (r.Content.Trim().Length < 2 || r.Content.Trim().Length > 1000) errors.Add(new ApiError { Field = "content", Message = "BÃ¬nh luáº­n pháº£i tá»« 2 Ä‘áº¿n 1000 kÃ½ tá»±" });
+        if (string.IsNullOrWhiteSpace(r.Content)) errors.Add(new ApiError { Field = "content", Message = "Nội dung bình luận bắt buộc" });
+        else if (r.Content.Trim().Length < 2 || r.Content.Trim().Length > 1000) errors.Add(new ApiError { Field = "content", Message = "Bình luận phải từ 2 đến 1000 ký tự" });
         return errors;
     }
 
     private static List<ApiError> ValidateTag(ForumTagRequest r)
     {
         var errors = new List<ApiError>();
-        if (string.IsNullOrWhiteSpace(r.Name)) errors.Add(new ApiError { Field = "name", Message = "TÃªn tag báº¯t buá»™c" });
-        else if (r.Name.Trim().Length < 2 || r.Name.Trim().Length > 100) errors.Add(new ApiError { Field = "name", Message = "TÃªn tag pháº£i tá»« 2 Ä‘áº¿n 100 kÃ½ tá»±" });
+        if (string.IsNullOrWhiteSpace(r.Name)) errors.Add(new ApiError { Field = "name", Message = "Tên tag bắt buộc" });
+        else if (r.Name.Trim().Length < 2 || r.Name.Trim().Length > 100) errors.Add(new ApiError { Field = "name", Message = "Tên tag phải từ 2 đến 100 ký tự" });
         return errors;
     }
 
@@ -735,7 +1011,7 @@ public sealed class ForumModuleService : IForumModuleService
         {
             var category = System.Globalization.CharUnicodeInfo.GetUnicodeCategory(ch);
             if (category == System.Globalization.UnicodeCategory.NonSpacingMark) continue;
-            var c = (ch == '\u0111' || ch == '\u0110') ? 'd' : ch;
+            var c = ch == 'đ' ? 'd' : ch;
             if (char.IsLetterOrDigit(c)) { sb.Append(c); lastDash = false; }
             else if (!lastDash) { sb.Append('-'); lastDash = true; }
         }
@@ -766,7 +1042,3 @@ public sealed class ForumModuleService : IForumModuleService
         await _db.SaveChangesAsync(ct);
     }
 }
-
-
-
-

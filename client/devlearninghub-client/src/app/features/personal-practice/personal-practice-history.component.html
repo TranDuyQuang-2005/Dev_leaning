@@ -1,0 +1,29 @@
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Lịch sử tự luyện</h1>
+      <p class="muted">Theo dõi các lượt luyện tập từ ngân hàng câu hỏi cá nhân.</p>
+    </div>
+    <a class="btn btn-primary" routerLink="/learner/practice-banks">Tự luyện từ file</a>
+  </div>
+
+  <div class="alert alert-error" *ngIf="error" style="white-space:pre-line">{{error}}</div>
+  <section class="card card-pad">
+    <table class="table" *ngIf="attempts.length">
+      <thead><tr><th>Ngân hàng</th><th>Bắt đầu</th><th>Nộp bài</th><th>Trạng thái</th><th>Điểm</th><th>Kết quả</th><th>Thao tác</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let a of attempts">
+          <td><b>{{a.bankTitle || a.practiceBankTitle || a.practiceBank?.title}}</b></td>
+          <td>{{a.startedAt | date:'short'}}</td>
+          <td>{{a.submittedAt ? (a.submittedAt | date:'short') : '-'}}</td>
+          <td><span class="badge badge-gray">{{a.status}}</span></td>
+          <td>{{a.score ?? '-'}}</td>
+          <td>{{a.correctCount ?? 0}} / {{a.totalQuestions ?? a.questionCount ?? 0}}</td>
+          <td><a class="btn btn-outline" [routerLink]="['/learner/practice-attempts', a.id || a.attemptId, 'result']">Xem kết quả</a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty-state" *ngIf="!attempts.length && !loading">Bạn chưa có lượt tự luyện nào.</div>
+    <div class="empty-state" *ngIf="loading">Đang tải lịch sử...</div>
+  </section>
+</div>
