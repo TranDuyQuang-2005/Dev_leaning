@@ -1,46 +1,59 @@
-<div class="admin-shell">
-  <header class="admin-top">
-    <a class="logo" routerLink="/dashboard">
-      <span class="logo-mark">&lt;/&gt;</span>
-      <span>Admin Panel</span>
+<div class="admin-shell admin-pro-page">
+  <header class="admin-pro-hero">
+    <a class="admin-pro-brand" routerLink="/dashboard">
+      <span class="admin-pro-logo">DLH</span>
+      <span class="admin-pro-brand-copy">
+        <small>Administrator Workspace</small>
+        <strong>DevLearningHub Admin</strong>
+        <span>Vận hành nội dung, người dùng và hệ thống học tập.</span>
+      </span>
     </a>
-    <div class="action-row">
-      <a class="btn btn-outline" routerLink="/code" *ngIf="can('code.manage')">Code Judge</a>
-      <button type="button" class="admin-sso-link" (click)="openUserWorkspace()">Back to User Workspace</button>
-      <button class="btn btn-ghost" type="button" (click)="auth.logout()">Logout</button>
+    <div class="admin-pro-actions">
+      <a class="admin-pro-btn ghost" routerLink="/forum" *ngIf="can('forum.moderate')">Forum Management</a>
+      <a class="admin-pro-btn ghost" routerLink="/code" *ngIf="can('code.manage')">Code Management</a>
+      <button type="button" class="admin-pro-btn ghost" (click)="openUserWorkspace()">User Workspace</button>
+      <button class="admin-pro-btn danger" type="button" (click)="auth.logout()">Đăng xuất</button>
     </div>
   </header>
 
-  <main class="admin-wrap">
-    <div class="page-title">
-      <h1>Admin Panel</h1>
-      <p>Manage quiz categories, questions, quiz sets, imports, users and access control.</p>
+  <main class="admin-wrap admin-pro-main">
+    <section class="admin-command-hero">
+      <div><span class="admin-pro-kicker">Operations overview</span><h1>Control center</h1><p>Quản trị tập trung nội dung, phân quyền, roadmap, đánh giá và hoạt động hệ thống.</p></div>
+      <div class="admin-command-status"><span></span><div><strong>Backend workspace</strong><small>Permission-aware navigation</small></div></div>
+    </section>
+
+    <div class="admin-pro-stats">
+      <article class="admin-stat-card blue"><span>Total Users</span><strong>{{users.length}}</strong><small>Tài khoản trong hệ thống</small></article>
+      <article class="admin-stat-card green"><span>Total Questions</span><strong>{{questions.length}}</strong><small>Ngân hàng câu hỏi</small></article>
+      <article class="admin-stat-card purple"><span>Quiz Sets</span><strong>{{quizSets.length}}</strong><small>Bộ đề đang quản lý</small></article>
+      <article class="admin-stat-card orange"><span>Roadmap Tracks</span><strong>{{roadmapTracks.length}}</strong><small>Lộ trình học tập</small></article>
     </div>
 
-    <div class="grid grid-4" style="margin:24px 0">
-      <div class="card card-pad stat-card"><div><p class="muted">Total Users</p><div class="stat-value">{{users.length}}</div></div><div class="stat-icon blue-bg">U</div></div>
-      <div class="card card-pad stat-card"><div><p class="muted">Total Questions</p><div class="stat-value">{{questions.length}}</div></div><div class="stat-icon green-bg">Q</div></div>
-      <div class="card card-pad stat-card"><div><p class="muted">Quiz Sets</p><div class="stat-value">{{quizSets.length}}</div></div><div class="stat-icon purple-bg">S</div></div>
-      <div class="card card-pad stat-card"><div><p class="muted">Categories</p><div class="stat-value">{{categories.length}}</div></div><div class="stat-icon orange-bg">C</div></div>
-    </div>
+    <div class="admin-alert success" *ngIf="message">{{message}}</div>
+    <div class="admin-alert danger" *ngIf="error">{{error}}</div>
 
-    <div class="alert alert-ok" *ngIf="message">{{message}}</div>
-    <div class="alert alert-error" *ngIf="error" style="white-space:pre-line">{{error}}</div>
+    <div class="admin-pro-workspace">
+      <nav class="admin-pro-tabs" aria-label="Admin sections">
+        <div class="admin-nav-label">Workspace</div>
+        <button *ngIf="canSeeTab('questions')" [class.active]="tab==='questions'" (click)="setTab('questions')"><span>Q</span><b>Questions</b></button>
+        <button *ngIf="canSeeTab('categories')" [class.active]="tab==='categories'" (click)="setTab('categories')"><span>C</span><b>Categories</b></button>
+        <button *ngIf="canSeeTab('quizsets')" [class.active]="tab==='quizsets'" (click)="setTab('quizsets')"><span>QS</span><b>Quiz Sets</b></button>
+        <button *ngIf="canSeeTab('users')" [class.active]="tab==='users'" (click)="setTab('users')"><span>U</span><b>Users</b></button>
+        <button *ngIf="canSeeTab('access')" [class.active]="tab==='access'" (click)="setTab('access')"><span>AC</span><b>Access Control</b></button>
+        <button *ngIf="canSeeTab('roadmaps')" [class.active]="tab==='roadmaps'" (click)="setTab('roadmaps')"><span>R</span><b>Roadmaps</b></button>
+        <button *ngIf="canSeeTab('audit')" [class.active]="tab==='audit'" (click)="setTab('audit')"><span>AL</span><b>Audit Logs</b></button>
+        <button *ngIf="canSeeTab('analytics')" [class.active]="tab==='analytics'" (click)="setTab('analytics')"><span>QA</span><b>Quiz Analytics</b></button>
+        <button *ngIf="canSeeTab('import')" [class.active]="tab==='import'" (click)="setTab('import')"><span>IM</span><b>Import Questions</b></button>
+        <div class="admin-nav-label admin-nav-label-secondary">Modules</div>
+        <a *ngIf="can('forum.moderate')" routerLink="/forum"><span>FM</span><b>Forum Management</b></a>
+        <a *ngIf="can('code.manage')" routerLink="/code"><span>CM</span><b>Code Management</b></a>
+      </nav>
 
-    <div class="card card-pad">
-      <h2>Content Management</h2>
-      <div class="admin-tabs">
-        <button class="admin-tab" *ngIf="canSeeTab('questions')" [class.active]="tab==='questions'" (click)="setTab('questions')">Questions</button>
-        <button class="admin-tab" *ngIf="canSeeTab('categories')" [class.active]="tab==='categories'" (click)="setTab('categories')">Categories</button>
-        <button class="admin-tab" *ngIf="canSeeTab('quizsets')" [class.active]="tab==='quizsets'" (click)="setTab('quizsets')">Quiz Sets</button>
-        <button class="admin-tab" *ngIf="canSeeTab('users')" [class.active]="tab==='users'" (click)="setTab('users')">Users</button>
-        <button class="admin-tab" *ngIf="canSeeTab('access')" [class.active]="tab==='access'" (click)="setTab('access')">Access Control</button>
-        <button class="admin-tab" *ngIf="canSeeTab('roadmaps')" [class.active]="tab==='roadmaps'" (click)="setTab('roadmaps')">Roadmaps</button>
-        <button class="admin-tab" *ngIf="canSeeTab('audit')" [class.active]="tab==='audit'" (click)="setTab('audit')">Audit Logs</button>
-        <button class="admin-tab" *ngIf="canSeeTab('analytics')" [class.active]="tab==='analytics'" (click)="setTab('analytics')">Quiz Analytics</button>
-        <button class="admin-tab" *ngIf="canSeeTab('import')" [class.active]="tab==='import'" (click)="setTab('import')">Import Questions</button>
-        <a class="admin-tab" *ngIf="can('forum.moderate')" routerLink="/forum">Forum Management</a>
-      </div>
+      <div class="admin-pro-content">
+        <header class="admin-section-head">
+          <div class="admin-section-icon">{{activeTabMeta.icon}}</div>
+          <div><span class="admin-pro-kicker">{{activeTabMeta.eyebrow}}</span><h2>{{activeTabMeta.label}}</h2><p>{{activeTabMeta.description}}</p></div>
+        </header>
 
       <div class="empty-state" *ngIf="!tab">Tài khoản đã có quyền vào Admin Portal nhưng chưa được gán quyền quản trị chức năng.</div>
 
@@ -522,6 +535,7 @@
           <pre class="output-box" *ngIf="importResult">{{importResult | json}}</pre>
         </div>
       </section>
+    </div>
     </div>
 
     <div class="modal-backdrop" *ngIf="lockUserTarget">

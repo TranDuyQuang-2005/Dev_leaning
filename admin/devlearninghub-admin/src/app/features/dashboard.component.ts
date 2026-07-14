@@ -24,6 +24,17 @@ export class DashboardComponent implements OnInit {
     analytics: ['quiz.manage'],
     import: ['question.manage']
   };
+  readonly tabMeta: Record<string, { label: string; eyebrow: string; description: string; icon: string }> = {
+    questions: { label: 'Questions', eyebrow: 'Question Bank', description: 'Quản lý ngân hàng câu hỏi, đáp án và nội dung giải thích.', icon: 'Q' },
+    categories: { label: 'Categories', eyebrow: 'Learning Taxonomy', description: 'Tổ chức chủ đề và cấu trúc nội dung học tập.', icon: 'C' },
+    quizsets: { label: 'Quiz Sets', eyebrow: 'Quiz Builder', description: 'Xây dựng bộ đề, cấu hình điểm và gắn câu hỏi.', icon: 'QS' },
+    users: { label: 'Users', eyebrow: 'Account Security', description: 'Quản lý tài khoản, role, quyền trực tiếp và trạng thái khóa.', icon: 'U' },
+    access: { label: 'Access Control', eyebrow: 'RBAC & Permission Groups', description: 'Quản lý nhóm quyền và quyền hiệu lực theo user hoặc role.', icon: 'AC' },
+    roadmaps: { label: 'Roadmaps', eyebrow: 'Learning Operations', description: 'Quản lý learning track, course, module và lesson.', icon: 'R' },
+    audit: { label: 'Audit Logs', eyebrow: 'Security & Compliance', description: 'Theo dõi hoạt động quản trị và lịch sử thay đổi dữ liệu.', icon: 'AL' },
+    analytics: { label: 'Quiz Analytics', eyebrow: 'Learning Insights', description: 'Theo dõi hiệu quả quiz và quản lý lịch sử attempt.', icon: 'QA' },
+    import: { label: 'Import Questions', eyebrow: 'Bulk Operations', description: 'Nhập ngân hàng câu hỏi bằng CSV hoặc JSON.', icon: 'IM' }
+  };
   users: any[] = [];
   roles: any[] = [];
   permissions: any[] = [];
@@ -92,6 +103,10 @@ export class DashboardComponent implements OnInit {
   resetUserId = '';
 
   constructor(private api: ApiService, public auth: AuthService) {}
+
+  get activeTabMeta(): { label: string; eyebrow: string; description: string; icon: string } {
+    return this.tabMeta[this.tab] || { label: 'Admin Workspace', eyebrow: 'DevLearningHub', description: 'Chọn một khu vực quản trị để bắt đầu.', icon: 'DLH' };
+  }
 
   ngOnInit(): void {
     this.tab = this.firstAllowedTab();
