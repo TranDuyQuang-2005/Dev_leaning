@@ -25,6 +25,41 @@
 - Notification endpoints live under `/api/v1/notifications` and require JWT auth.
 - Users can only list, mark read, mark all read, or delete their own notifications.
 - Event coverage currently includes quiz passed, code accepted, forum reply, accepted answer, and admin lock/unlock.
+- Realtime notifications use SignalR hub `/hubs/notifications` with JWT auth. Browser clients pass the JWT through the SignalR `access_token` query string, and the backend only joins the authenticated user to group `user:{userId}`.
+- The REST notification APIs remain the fallback and initial-load path.
+
+## Cấu hình gửi email thật
+
+- Email verification, resend verification, and forgot password use real SMTP. The backend does not log verification/reset links as a delivery fallback.
+- `Email:RequireRealSmtp=true` means missing `Email:FromEmail`, `Email:Smtp:Host`, `Email:Smtp:Username`, or `Email:Smtp:Password` returns: `SMTP is not configured. Please configure Email:Smtp settings.`
+- Do not commit SMTP passwords. Use user-secrets, environment variables, or a secret manager.
+
+Gmail SMTP:
+
+- Bật 2-Step Verification.
+- Tạo App Password.
+- Dùng App Password làm `Email:Smtp:Password`.
+- Không dùng mật khẩu Gmail thường.
+- Host `smtp.gmail.com`, port `587`, SSL enabled.
+
+SendGrid SMTP:
+
+- Host `smtp.sendgrid.net`.
+- Username `apikey`.
+- Password là SendGrid API key.
+- Port `587`, SSL enabled.
+
+Local development with user-secrets:
+
+```bash
+dotnet user-secrets init --project api/DevLearningHub.Api/DevLearningHub.Api.csproj
+dotnet user-secrets set "Email:Smtp:Host" "smtp.gmail.com" --project api/DevLearningHub.Api/DevLearningHub.Api.csproj
+dotnet user-secrets set "Email:Smtp:Port" "587" --project api/DevLearningHub.Api/DevLearningHub.Api.csproj
+dotnet user-secrets set "Email:Smtp:UseSsl" "true" --project api/DevLearningHub.Api/DevLearningHub.Api.csproj
+dotnet user-secrets set "Email:Smtp:Username" "your-demo-email@gmail.com" --project api/DevLearningHub.Api/DevLearningHub.Api.csproj
+dotnet user-secrets set "Email:Smtp:Password" "YOUR_APP_PASSWORD" --project api/DevLearningHub.Api/DevLearningHub.Api.csproj
+dotnet user-secrets set "Email:FromEmail" "your-demo-email@gmail.com" --project api/DevLearningHub.Api/DevLearningHub.Api.csproj
+```
 
 ## Forum Comments
 

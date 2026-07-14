@@ -1,40 +1,50 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiService } from '../core/services/api.service';
 
 @Component({
   selector: 'app-verify-email',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, RouterLink],
   templateUrl: './verify-email.component.html'
 })
 export class VerifyEmailComponent implements OnInit {
-  model = { email: '', token: '' };
   loading = false;
   message = '';
   error = '';
+  canResend = false;
 
-  constructor(private api: ApiService, private route: ActivatedRoute) {}
+  constructor(private api: ApiService, private route: ActivatedRoute, private location: Location) {}
 
   ngOnInit(): void {
-    this.model.email = this.route.snapshot.queryParamMap.get('email') || '';
-    this.model.token = this.route.snapshot.queryParamMap.get('token') || '';
-    if (this.model.email && this.model.token) this.verify();
+    const email = this.route.snapshot.queryParamMap.get('email') || '';
+    const token = this.route.snapshot.queryParamMap.get('token') || '';
+    this.location.replaceState('/verify-email');
+
+    if (!email || !token) {
+      this.error = 'Liên kết xác thực đã được xử lý hoặc không còn đầy đủ thông tin.';
+      this.canResend = true;
+      return;
+    }
+
+    this.verify(email, token);
   }
 
-  verify(): void {
+  private verify(email: string, token: string): void {
     this.loading = true;
     this.message = '';
     this.error = '';
-    this.api.verifyEmail(this.model).subscribe({
-      next: r => {
-        this.message = r.message || 'Xác minh email thành công.';
+    this.canResend = false;
+
+    this.api.verifyEmail({ email, token }).subscribe({
+      next: () => {
+        this.message = 'Xác thực email thành công. Bạn có thể đăng nhập.';
         this.loading = false;
       },
-      error: e => {
-        this.error = this.api.errorMessage(e, 'Xác minh email thất bại.');
+      error: () => {
+        this.error = 'Liên kết xác thực không hợp lệ hoặc đã hết hạn.';
+        this.canResend = true;
         this.loading = false;
       }
     });

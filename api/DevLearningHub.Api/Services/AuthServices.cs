@@ -7,6 +7,7 @@ using DevLearningHub.Api.Configurations;
 using DevLearningHub.Api.Data;
 using DevLearningHub.Api.DTOs;
 using DevLearningHub.Api.Entities;
+using DevLearningHub.Api.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -92,17 +93,29 @@ public sealed class AuthService : IAuthService
     private readonly DevLearningHubDbContext _db;
     private readonly IJwtTokenService _jwt;
     private readonly IPermissionService _permissions;
+    private readonly IEmailService _email;
     private readonly JwtSettings _settings;
+    private readonly EmailOptions _emailOptions;
     private readonly ILogger<AuthService> _logger;
     private const int MaxFailedLoginCount = 5;
     private static readonly TimeSpan LockoutDuration = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan VerificationResendCooldown = TimeSpan.FromMinutes(1);
 
-    public AuthService(DevLearningHubDbContext db, IJwtTokenService jwt, IPermissionService permissions, IOptions<JwtSettings> options, ILogger<AuthService> logger)
+    public AuthService(
+        DevLearningHubDbContext db,
+        IJwtTokenService jwt,
+        IPermissionService permissions,
+        IEmailService email,
+        IOptions<JwtSettings> options,
+        IOptions<EmailOptions> emailOptions,
+        ILogger<AuthService> logger)
     {
         _db = db;
         _jwt = jwt;
         _permissions = permissions;
+        _email = email;
         _settings = options.Value;
+        _emailOptions = emailOptions.Value;
         _logger = logger;
     }
 
@@ -111,11 +124,28 @@ public sealed class AuthService : IAuthService
         var errors = new List<ApiError>();
         if (string.IsNullOrWhiteSpace(r.FullName)) errors.Add(new() { Field = "fullName", Message = "Full name is required" });
         if (string.IsNullOrWhiteSpace(r.UserName)) errors.Add(new() { Field = "userName", Message = "User name is required" });
-        if (string.IsNullOrWhiteSpace(r.Email)) errors.Add(new() { Field = "email", Message = "Email is required" });
+        var emailValidation = EmailValidationHelper.Validate(r.Email);
+        if (!emailValidation.IsValid) errors.AddRange(emailValidation.Errors);
         errors.AddRange(ValidateNewPassword(r.Password, r.ConfirmPassword, "password"));
-        if (errors.Count > 0) return ApiResponse<object>.Fail("Validation failed", errors);
+        if (errors.Count > 0)
+        {
+            if (!string.IsNullOrWhiteSpace(emailValidation.SuggestedEmail))
+            {
+                var message = emailValidation.Message ?? "Email có vẻ bị nhập sai.";
+                return new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = message,
+                    Data = new EmailSuggestionResponse { SuggestedEmail = emailValidation.SuggestedEmail },
+                    Errors = errors,
+                    SuggestedEmail = emailValidation.SuggestedEmail
+                };
+            }
 
-        var email = r.Email.Trim().ToLowerInvariant();
+            return ApiResponse<object>.Fail(emailValidation.Message ?? "Validation failed", errors);
+        }
+
+        var email = emailValidation.NormalizedEmail;
         var username = r.UserName.Trim();
         if (await _db.Users.AnyAsync(x => x.Email == email && !x.IsDeleted, ct))
             return ApiResponse<object>.Fail("Email already exists");
@@ -142,10 +172,31 @@ public sealed class AuthService : IAuthService
         _db.UserLearningProfiles.Add(new UserLearningProfile { UserId = user.Id, CurrentLevel = 1, DailyGoalMinutes = 30, UpdatedAt = DateTime.UtcNow });
         _db.UserStats.Add(new UserStat { UserId = user.Id, UpdatedAt = DateTime.UtcNow });
         _db.UserSettings.Add(new UserSetting { UserId = user.Id, Theme = "light", Language = "vi", CodeEditorTheme = "dark", CodeEditorFontSize = 14, EnableEmailNotification = true, EnablePushNotification = true, UpdatedAt = DateTime.UtcNow });
+
+        var verificationToken = _jwt.GenerateRefreshToken();
+        _db.EmailVerificationTokens.Add(new EmailVerificationToken
+        {
+            UserId = user.Id,
+            TokenHash = _jwt.HashToken(verificationToken),
+            ExpiresAt = DateTime.UtcNow.AddHours(24),
+            CreatedAt = DateTime.UtcNow
+        });
         await _db.SaveChangesAsync(ct);
+
+        try
+        {
+            await _email.SendEmailVerificationAsync(user.Email, user.FullName, BuildFrontendUrl("verify-email", user.Email, verificationToken), ct);
+        }
+        catch (Exception ex) when (IsEmailFailure(ex))
+        {
+            await tx.RollbackAsync(ct);
+            _logger.LogWarning(ex, "Failed to send verification email to {Email}", user.Email);
+            return ApiResponse<object>.Fail(GetEmailFailureMessage(ex, "Không thể hoàn tất đăng ký vì gửi email xác thực thất bại. Vui lòng kiểm tra cấu hình SMTP."));
+        }
+
         await tx.CommitAsync(ct);
 
-        return ApiResponse<object>.Ok(new { user.Id, user.FullName, user.UserName, user.Email }, "Register successfully");
+        return ApiResponse<object>.Ok(new { user.Id, user.FullName, user.UserName, user.Email }, $"Hệ thống đã gửi email xác thực đến {user.Email}. Vui lòng mở hộp thư và bấm liên kết xác thực.");
     }
 
     public async Task<ApiResponse<AuthResponse>> Login(LoginRequest r, string? ip, string? ua, CancellationToken ct)
@@ -169,6 +220,11 @@ public sealed class AuthService : IAuthService
             }
             await _db.SaveChangesAsync(ct);
             return ApiResponse<AuthResponse>.Fail("Account or password is incorrect");
+        }
+
+        if (!user.EmailConfirmed)
+        {
+            return ApiResponse<AuthResponse>.Fail("Email chưa được xác thực. Vui lòng kiểm tra hộp thư hoặc gửi lại email xác thực.");
         }
 
         user.LastLoginAt = DateTime.UtcNow;
@@ -252,9 +308,17 @@ public sealed class AuthService : IAuthService
                 CreatedAt = DateTime.UtcNow
             });
             await _db.SaveChangesAsync(ct);
-            _logger.LogInformation("Password reset token for {Email}: {Token}", user.Email, token);
+            try
+            {
+                await _email.SendPasswordResetAsync(user.Email, user.FullName, BuildFrontendUrl("reset-password", user.Email, token), ct);
+            }
+            catch (Exception ex) when (IsEmailFailure(ex))
+            {
+                _logger.LogWarning(ex, "Failed to send password reset email to {Email}", user.Email);
+                return ApiResponse<object>.Fail(GetEmailFailureMessage(ex, "Không gửi được email đặt lại mật khẩu. Vui lòng kiểm tra cấu hình SMTP."));
+            }
         }
-        return ApiResponse<object>.Ok(new { }, "If the email exists, reset instructions have been generated.");
+        return ApiResponse<object>.Ok(new { }, "Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.");
     }
 
     public async Task<ApiResponse<object>> ResetPassword(ResetPasswordRequest r, CancellationToken ct)
@@ -284,20 +348,47 @@ public sealed class AuthService : IAuthService
     {
         var email = (r.Email ?? string.Empty).Trim().ToLowerInvariant();
         var user = await _db.Users.FirstOrDefaultAsync(x => x.Email == email && !x.IsDeleted, ct);
-        if (user != null && !user.EmailConfirmed)
+        if (user == null)
         {
-            var token = _jwt.GenerateRefreshToken();
-            _db.EmailVerificationTokens.Add(new EmailVerificationToken
-            {
-                UserId = user.Id,
-                TokenHash = _jwt.HashToken(token),
-                ExpiresAt = DateTime.UtcNow.AddHours(24),
-                CreatedAt = DateTime.UtcNow
-            });
-            await _db.SaveChangesAsync(ct);
-            _logger.LogInformation("Email verification token for {Email}: {Token}", user.Email, token);
+            return ApiResponse<object>.Ok(new { }, "Nếu tài khoản cần xác thực, email xác thực đã được gửi.");
         }
-        return ApiResponse<object>.Ok(new { }, "If verification is needed, a token has been generated.");
+
+        if (user.EmailConfirmed)
+        {
+            return ApiResponse<object>.Ok(new { }, "Tài khoản đã được xác thực.");
+        }
+
+        var lastToken = await _db.EmailVerificationTokens
+            .AsNoTracking()
+            .Where(x => x.UserId == user.Id && x.UsedAt == null)
+            .OrderByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync(ct);
+        if (lastToken != null && lastToken.CreatedAt > DateTime.UtcNow.Subtract(VerificationResendCooldown))
+        {
+            return ApiResponse<object>.Fail("Vui lòng chờ ít nhất 1 phút trước khi gửi lại email xác thực.");
+        }
+
+        var token = _jwt.GenerateRefreshToken();
+        _db.EmailVerificationTokens.Add(new EmailVerificationToken
+        {
+            UserId = user.Id,
+            TokenHash = _jwt.HashToken(token),
+            ExpiresAt = DateTime.UtcNow.AddHours(24),
+            CreatedAt = DateTime.UtcNow
+        });
+        await _db.SaveChangesAsync(ct);
+
+        try
+        {
+            await _email.SendEmailVerificationAsync(user.Email, user.FullName, BuildFrontendUrl("verify-email", user.Email, token), ct);
+        }
+        catch (Exception ex) when (IsEmailFailure(ex))
+        {
+            _logger.LogWarning(ex, "Failed to resend verification email to {Email}", user.Email);
+            return ApiResponse<object>.Fail(GetEmailFailureMessage(ex, "Không gửi được email xác thực. Vui lòng kiểm tra cấu hình SMTP."));
+        }
+
+        return ApiResponse<object>.Ok(new { }, "Email xác thực đã được gửi. Vui lòng kiểm tra hộp thư.");
     }
 
     public async Task<ApiResponse<object>> VerifyEmail(VerifyEmailRequest r, CancellationToken ct)
@@ -349,9 +440,11 @@ public sealed class AuthService : IAuthService
     {
         var errors = new List<ApiError>();
         password ??= string.Empty;
+        confirmPassword ??= string.Empty;
+        if (string.IsNullOrWhiteSpace(password)) errors.Add(new ApiError { Field = field, Message = "Password is required" });
         if (password != confirmPassword) errors.Add(new ApiError { Field = "confirmPassword", Message = "Passwords do not match" });
-        if (password.Length < 8 || !password.Any(char.IsUpper) || !password.Any(char.IsLower) || !password.Any(char.IsDigit))
-            errors.Add(new ApiError { Field = field, Message = "Password must be at least 8 characters and include upper, lower and digit" });
+        if (password.Length < 8 || !password.Any(char.IsUpper) || !password.Any(char.IsLower) || !password.Any(char.IsDigit) || !password.Any(c => !char.IsLetterOrDigit(c)))
+            errors.Add(new ApiError { Field = field, Message = "Password must be at least 8 characters and include upper, lower, digit and special character" });
         return errors;
     }
 
@@ -376,4 +469,20 @@ public sealed class AuthService : IAuthService
             IsAdminPortalAllowed = isAdminPortalAllowed
         };
     }
+
+    private string BuildFrontendUrl(string path, string email, string token)
+    {
+        var baseUrl = string.IsNullOrWhiteSpace(_emailOptions.FrontendBaseUrl)
+            ? "http://localhost:4200"
+            : _emailOptions.FrontendBaseUrl.TrimEnd('/');
+        return $"{baseUrl}/{path}?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}";
+    }
+
+    private static bool IsEmailFailure(Exception ex)
+        => ex is InvalidOperationException || ex is System.Net.Mail.SmtpException || ex is IOException || ex is OperationCanceledException;
+
+    private static string GetEmailFailureMessage(Exception ex, string fallback)
+        => ex is InvalidOperationException { Message: EmailService.SmtpNotConfiguredMessage }
+            ? EmailService.SmtpNotConfiguredMessage
+            : fallback;
 }

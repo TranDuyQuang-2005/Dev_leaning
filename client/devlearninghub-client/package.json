@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "test:e2e": "playwright test",
-"test:e2e:headed": "playwright test --headed",
-"test:e2e:ui": "playwright test --ui",
-"test:e2e:report": "playwright show-report",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report",
     "start": "ng serve --port 4200",
     "build": "ng build",
     "clean": "node -e \"require('fs').rmSync('node_modules',{recursive:true,force:true}); require('fs').rmSync('package-lock.json',{force:true})\""
@@ -20,6 +20,7 @@
     "@angular/platform-browser": "20.3.25",
     "@angular/platform-browser-dynamic": "20.3.25",
     "@angular/router": "20.3.25",
+    "@microsoft/signalr": "^10.0.0",
     "rxjs": "~7.8.1",
     "tslib": "^2.6.2",
     "zone.js": "~0.15.0"
@@ -32,5 +33,4 @@
     "@types/node": "^26.1.1",
     "typescript": "~5.8.2"
   }
-  
 }

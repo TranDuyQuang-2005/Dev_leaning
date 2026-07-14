@@ -7,6 +7,7 @@ public sealed class ApiResponse<T>
     public T? Data { get; set; }
     public List<ApiError>? Errors { get; set; }
     public string? TraceId { get; set; }
+    public string? SuggestedEmail { get; set; }
 
     public static ApiResponse<T> Ok(T data, string message = "Thao tác thành công") => new()
     {

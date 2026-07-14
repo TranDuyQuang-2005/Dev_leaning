@@ -3,7 +3,9 @@ using DevLearningHub.Api.Common;
 using DevLearningHub.Api.Data;
 using DevLearningHub.Api.DTOs;
 using DevLearningHub.Api.Entities;
+using DevLearningHub.Api.Hubs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
 
 namespace DevLearningHub.Api.Services;
 
@@ -21,10 +23,14 @@ public sealed class NotificationService : INotificationService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly DevLearningHubDbContext _db;
+    private readonly IHubContext<NotificationHub> _hub;
+    private readonly ILogger<NotificationService> _logger;
 
-    public NotificationService(DevLearningHubDbContext db)
+    public NotificationService(DevLearningHubDbContext db, IHubContext<NotificationHub> hub, ILogger<NotificationService> logger)
     {
         _db = db;
+        _hub = hub;
+        _logger = logger;
     }
 
     public async Task<NotificationDto> CreateAsync(long userId, string type, string title, string message, string? linkUrl, object? metadata, CancellationToken ct)
@@ -63,12 +69,20 @@ public sealed class NotificationService : INotificationService
         };
 
         _db.Notifications.Add(notification);
-        if (_db.Database.CurrentTransaction == null)
+        var savedHere = _db.Database.CurrentTransaction == null;
+        if (savedHere)
         {
             await _db.SaveChangesAsync(ct);
         }
 
-        return Map(notification);
+        var dto = Map(notification);
+        if (savedHere)
+        {
+            await EmitNotificationCreatedAsync(userId, dto, ct);
+            await EmitUnreadCountChangedAsync(userId, ct);
+        }
+
+        return dto;
     }
 
     public async Task<ApiResponse<PagedResult<NotificationDto>>> GetMyNotificationsAsync(long userId, NotificationListQuery query, CancellationToken ct)
@@ -110,6 +124,7 @@ public sealed class NotificationService : INotificationService
             notification.IsRead = true;
             notification.ReadAt = DateTime.UtcNow;
             await _db.SaveChangesAsync(ct);
+            await EmitUnreadCountChangedAsync(userId, ct);
         }
 
         return ApiResponse<NotificationDto>.Ok(Map(notification), "Notification marked as read");
@@ -126,6 +141,7 @@ public sealed class NotificationService : INotificationService
         }
 
         if (notifications.Count > 0) await _db.SaveChangesAsync(ct);
+        await EmitUnreadCountChangedAsync(userId, 0, ct);
         return ApiResponse<NotificationUnreadCountDto>.Ok(new NotificationUnreadCountDto { UnreadCount = 0 }, "All notifications marked as read");
     }
 
@@ -135,6 +151,7 @@ public sealed class NotificationService : INotificationService
         if (notification == null) return ApiResponse<object>.Fail("Notification not found");
         _db.Notifications.Remove(notification);
         await _db.SaveChangesAsync(ct);
+        await EmitUnreadCountChangedAsync(userId, ct);
         return ApiResponse<object>.Ok(new { id }, "Notification deleted");
     }
 
@@ -172,6 +189,38 @@ public sealed class NotificationService : INotificationService
 
     private static bool EventKeyMatches(string? metadataJson, string eventKey)
         => string.Equals(ExtractEventKey(metadataJson), eventKey, StringComparison.Ordinal);
+
+    private async Task EmitNotificationCreatedAsync(long userId, NotificationDto notification, CancellationToken ct)
+    {
+        try
+        {
+            await _hub.Clients.Group(GroupName(userId)).SendAsync("notification.created", notification, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to emit realtime notification.created for user {UserId}", userId);
+        }
+    }
+
+    private async Task EmitUnreadCountChangedAsync(long userId, CancellationToken ct)
+    {
+        var unread = await _db.Notifications.AsNoTracking().CountAsync(x => x.UserId == userId && !x.IsRead, ct);
+        await EmitUnreadCountChangedAsync(userId, unread, ct);
+    }
+
+    private async Task EmitUnreadCountChangedAsync(long userId, int unreadCount, CancellationToken ct)
+    {
+        try
+        {
+            await _hub.Clients.Group(GroupName(userId)).SendAsync("notification.unreadCountChanged", new NotificationUnreadCountDto { UnreadCount = unreadCount }, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to emit realtime notification.unreadCountChanged for user {UserId}", userId);
+        }
+    }
+
+    private static string GroupName(long userId) => $"user:{userId}";
 
     private static NotificationDto Map(Notification x) => new()
     {

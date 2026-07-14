@@ -24,7 +24,7 @@ export class ResendVerificationComponent {
     this.loading = true;
     this.api.resendEmailVerification({ email: this.email }).subscribe({
       next: r => {
-        this.message = r.message || 'Đã gửi lại email xác minh nếu tài khoản tồn tại.';
+        this.message = r.message || 'Email xác thực đã được gửi. Vui lòng kiểm tra hộp thư.';
         this.loading = false;
       },
       error: e => {

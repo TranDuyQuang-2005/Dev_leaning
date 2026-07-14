@@ -69,7 +69,7 @@
   <div class="empty-state card" *ngIf="!answers.length">Chưa có câu trả lời. Hãy là người trả lời đầu tiên.</div>
 
   <section class="forum-answer-list-pro">
-    <article class="forum-answer-card-pro" *ngFor="let c of visibleAnswers; trackBy: trackByComment" [class.accepted-root]="c.isAcceptedAnswer">
+    <article class="forum-answer-card-pro" *ngFor="let c of visibleAnswers; trackBy: trackByComment" [id]="'comment-' + c.id" [class.accepted-root]="c.isAcceptedAnswer" [style.box-shadow]="highlightedCommentId===c.id ? '0 0 0 3px rgba(37, 99, 235, 0.28)' : null">
       <div class="accepted-ribbon-pro" *ngIf="c.isAcceptedAnswer">Accepted Answer</div>
 
       <div class="comment-header-pro">
@@ -110,7 +110,7 @@
           <span>{{c.threadReplies.length}} phản hồi</span>
         </div>
 
-        <div class="reply-item-pro" *ngFor="let r of getVisibleReplies(c); trackBy: trackByComment" [class.accepted-reply]="r.isAcceptedAnswer" [style.margin-left.px]="replyIndent(r)">
+        <div class="reply-item-pro" *ngFor="let r of getVisibleReplies(c); trackBy: trackByComment" [id]="'comment-' + r.id" [class.accepted-reply]="r.isAcceptedAnswer" [style.margin-left.px]="replyIndent(r)" [style.box-shadow]="highlightedCommentId===r.id ? '0 0 0 3px rgba(37, 99, 235, 0.28)' : null">
           <div class="accepted-ribbon-pro mini" *ngIf="r.isAcceptedAnswer">Accepted Answer</div>
 
           <div class="comment-header-pro small">

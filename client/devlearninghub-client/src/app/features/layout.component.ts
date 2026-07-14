@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { filter } from 'rxjs';
+import { filter, Subject, takeUntil } from 'rxjs';
 import { ApiService } from '../core/services/api.service';
 import { AuthService } from '../core/services/auth.service';
+import { NotificationRealtimeService } from '../core/services/notification-realtime.service';
 
 @Component({
   selector: 'app-layout',
@@ -11,13 +12,19 @@ import { AuthService } from '../core/services/auth.service';
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './layout.component.html'
 })
-export class LayoutComponent implements OnInit {
+export class LayoutComponent implements OnInit, OnDestroy {
   pageTitle = 'Dashboard';
   pageSubtitle = 'Dev-Learning Hub workspace';
   themeLabel = 'Light';
   unreadCount = 0;
+  private destroy$ = new Subject<void>();
 
-  constructor(private router: Router, private route: ActivatedRoute, public auth: AuthService, private api: ApiService) {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    public auth: AuthService,
+    private api: ApiService,
+    private realtime: NotificationRealtimeService) {}
 
   get initials(): string {
     const name = this.auth.currentUser()?.fullName || this.auth.currentUser()?.userName || 'User';
@@ -39,10 +46,25 @@ export class LayoutComponent implements OnInit {
     document.documentElement.dataset['theme'] = localStorage.getItem('dlh-theme') || 'light';
     this.updateTitle();
     this.loadUnreadCount();
-    this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => {
+    void this.realtime.start();
+
+    this.realtime.unreadCountChanged$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(count => this.unreadCount = Math.max(0, Number(count || 0)));
+
+    this.realtime.notificationCreated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.unreadCount += 1);
+
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd), takeUntil(this.destroy$)).subscribe(() => {
       this.updateTitle();
       this.loadUnreadCount();
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   updateTitle(): void {
@@ -60,6 +82,7 @@ export class LayoutComponent implements OnInit {
   }
 
   logout(): void {
+    void this.realtime.stop();
     this.auth.logout();
   }
 

@@ -24,7 +24,7 @@ export class ForgotPasswordComponent {
     this.loading = true;
     this.api.forgotPassword({ email: this.email }).subscribe({
       next: () => {
-        this.message = 'Nếu email tồn tại, hệ thống đã gửi hướng dẫn đặt lại mật khẩu.';
+        this.message = 'Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.';
         this.loading = false;
       },
       error: e => {

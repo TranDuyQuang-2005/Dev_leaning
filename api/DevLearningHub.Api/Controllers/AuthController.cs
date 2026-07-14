@@ -65,7 +65,10 @@ public sealed class AuthController : BaseApiController
     [AllowAnonymous]
     [EnableRateLimiting("auth-sensitive")]
     public async Task<ActionResult<ApiResponse<object>>> ForgotPassword(ForgotPasswordRequest request, CancellationToken ct)
-        => Ok(await _service.ForgotPassword(request, ct));
+    {
+        var res = await _service.ForgotPassword(request, ct);
+        return res.Success ? Ok(res) : BadRequest(res);
+    }
 
     [HttpPost("reset-password")]
     [AllowAnonymous]
@@ -76,10 +79,14 @@ public sealed class AuthController : BaseApiController
     }
 
     [HttpPost("resend-email-verification")]
+    [HttpPost("resend-verification")]
     [AllowAnonymous]
     [EnableRateLimiting("auth-sensitive")]
     public async Task<ActionResult<ApiResponse<object>>> ResendEmailVerification(ResendEmailVerificationRequest request, CancellationToken ct)
-        => Ok(await _service.ResendEmailVerification(request, ct));
+    {
+        var res = await _service.ResendEmailVerification(request, ct);
+        return res.Success ? Ok(res) : BadRequest(res);
+    }
 
     [HttpPost("verify-email")]
     [AllowAnonymous]

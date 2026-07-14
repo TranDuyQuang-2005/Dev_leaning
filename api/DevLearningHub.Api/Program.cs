@@ -3,6 +3,7 @@ using System.Threading.RateLimiting;
 using DevLearningHub.Api.Common;
 using DevLearningHub.Api.Configurations;
 using DevLearningHub.Api.Data;
+using DevLearningHub.Api.Hubs;
 using DevLearningHub.Api.Middlewares;
 using DevLearningHub.Api.Security;
 using DevLearningHub.Api.Services;
@@ -21,6 +22,7 @@ builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<ObjectStorageOptions>(builder.Configuration.GetSection("ObjectStorage"));
 builder.Services.Configure<CodeRunnerOptions>(builder.Configuration.GetSection("CodeRunner"));
 var jwt = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>() ?? throw new InvalidOperationException("JwtSettings is missing");
@@ -32,6 +34,7 @@ builder.Services.AddDbContext<DevLearningHubDbContext>(options =>
 
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserModuleService, UserModuleService>();
 builder.Services.AddScoped<IRoadmapProgressService, RoadmapProgressService>();
@@ -53,6 +56,7 @@ builder.Services.AddScoped<ICodeExecutionProvider>(sp =>
         : sp.GetRequiredService<LocalCodeExecutionProvider>();
 });
 builder.Services.AddScoped<ICodeJudgeService, CodeJudgeService>();
+builder.Services.AddSignalR();
 
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>
@@ -91,6 +95,20 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwt.Audience,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SecretKey)),
         ClockSkew = TimeSpan.Zero
+    };
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrWhiteSpace(accessToken) && path.StartsWithSegments("/hubs/notifications"))
+            {
+                context.Token = accessToken;
+            }
+
+            return Task.CompletedTask;
+        }
     };
 });
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
@@ -160,12 +178,13 @@ builder.Services.AddCors(options =>
                     "http://localhost:5000",
                     "https://localhost:5001")
                 .AllowAnyHeader()
-                .AllowAnyMethod();
+                .AllowAnyMethod()
+                .AllowCredentials();
         }
         else
         {
             var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
-            p.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod();
+            p.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
         }
     });
 });
@@ -192,6 +211,7 @@ app.UseAuthentication();
 app.UseRateLimiter();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.MapGet("/", () => Results.Ok(new
 {

@@ -4,7 +4,10 @@
       <h1>Notifications</h1>
       <p>{{ unreadCount ? unreadCount + ' thông báo chưa đọc' : 'Bạn đã đọc hết thông báo' }}</p>
     </div>
-    <button class="btn btn-outline" type="button" (click)="markAllRead()" [disabled]="!unreadCount">Mark All as Read</button>
+    <div class="action-row">
+      <button class="btn btn-outline" type="button" (click)="load()">Refresh</button>
+      <button class="btn btn-outline" type="button" (click)="markAllRead()" [disabled]="!unreadCount">Mark All as Read</button>
+    </div>
   </div>
 
   <div class="alert" *ngIf="error">{{ error }}</div>
@@ -22,14 +25,17 @@
 
         <div style="flex:1">
           <div style="display:flex;justify-content:space-between;gap:12px">
-            <h3 style="margin:0">{{ item.title }}</h3>
+            <div>
+              <span class="badge">{{ typeLabel(item) }}</span>
+              <h3 style="margin:6px 0 0">{{ item.title }}</h3>
+            </div>
             <span class="badge badge-solid" *ngIf="!item.isRead">New</span>
           </div>
           <p>{{ item.message || item.content }}</p>
           <span class="muted">{{ date(item.createdAt) }}</span>
 
           <div class="action-row" style="margin-top:10px">
-            <a class="btn btn-outline" *ngIf="item.linkUrl" [routerLink]="item.linkUrl" (click)="markRead(item)">Mở</a>
+            <button class="btn btn-outline" type="button" *ngIf="item.linkUrl" (click)="open(item)">Mở</button>
             <button class="btn btn-ghost" type="button" *ngIf="!item.isRead" (click)="markRead(item)">Đã đọc</button>
             <button class="btn btn-ghost" type="button" (click)="delete(item)">Xóa</button>
           </div>

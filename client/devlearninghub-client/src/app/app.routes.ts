@@ -61,6 +61,7 @@ export const routes: Routes = [
   { path:'roadmaps/:slug', component:RoadmapTrackComponent, data:{title:'Roadmap',subtitle:'Track detail'} },
   { path:'courses/:slug', component:CourseDetailComponent, data:{title:'Course',subtitle:'Course detail'} },
   { path:'forum', component:ForumComponent, data:{title:'Forum',subtitle:'Community discussions'} },
+  { path:'forum/posts/:id', component:ForumPostComponent, data:{title:'Forum',subtitle:'Community discussions'} },
   { path:'forum-post/:id', component:ForumPostComponent, data:{title:'Forum',subtitle:'Community discussions'} },
   { path:'forum-post', component:ForumComponent, data:{title:'Forum',subtitle:'Community discussions'} },
   { path:'create-post', component:CreatePostComponent, data:{title:'Forum',subtitle:'Create a new discussion'} },

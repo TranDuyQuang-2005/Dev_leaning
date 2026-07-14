@@ -42,6 +42,7 @@ public sealed class ForumModuleService : IForumModuleService
     private readonly DevLearningHubDbContext _db;
     private readonly IObjectStorageService _storage;
     private readonly INotificationService _notifications;
+    private static readonly TimeSpan ForumInteractionDuplicateWindow = TimeSpan.FromMinutes(5);
 
     public ForumModuleService(DevLearningHubDbContext db, IObjectStorageService storage, INotificationService notifications)
     {
@@ -217,10 +218,11 @@ public sealed class ForumModuleService : IForumModuleService
         if (errors.Count > 0) return ApiResponse<ForumCommentResponse>.Fail("Dữ liệu bình luận không hợp lệ", errors);
         var post = await _db.Posts.FirstOrDefaultAsync(x => x.Id == postId && !x.IsDeleted && x.Status == 1, ct);
         if (post == null) return ApiResponse<ForumCommentResponse>.Fail("Không tìm thấy bài viết hoặc bài đã bị ẩn");
+        Comment? parentComment = null;
         if (request.ParentCommentId.HasValue)
         {
-            var parentOk = await _db.Comments.AnyAsync(x => x.Id == request.ParentCommentId && x.PostId == postId && !x.IsDeleted && x.Status == 1, ct);
-            if (!parentOk) return ApiResponse<ForumCommentResponse>.Fail("Bình luận cha không hợp lệ");
+            parentComment = await _db.Comments.FirstOrDefaultAsync(x => x.Id == request.ParentCommentId && x.PostId == postId && !x.IsDeleted && x.Status == 1, ct);
+            if (parentComment == null) return ApiResponse<ForumCommentResponse>.Fail("Bình luận cha không hợp lệ");
         }
         var comment = new Comment { PostId = postId, AuthorId = userId, ParentCommentId = request.ParentCommentId, Content = request.Content.Trim(), Status = 1, CreatedAt = DateTime.UtcNow };
         _db.Comments.Add(comment);
@@ -228,20 +230,58 @@ public sealed class ForumModuleService : IForumModuleService
         post.LastActivityAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
         await UpdateUserForumStats(userId, postsDelta: 0, commentsDelta: 1, ct);
-        if (post.AuthorId != userId)
+        var actorName = await GetActorName(userId, ct);
+        if (parentComment == null)
         {
-            var actorName = await _db.Users.AsNoTracking()
-                .Where(x => x.Id == userId)
-                .Select(x => x.FullName == string.Empty ? x.UserName : x.FullName)
-                .FirstOrDefaultAsync(ct) ?? "Một người học";
-            await _notifications.CreateAsync(
+            await CreateForumNotificationIfAllowed(
                 post.AuthorId,
-                "forum.reply",
-                "Có phản hồi mới",
-                $"{actorName} đã phản hồi bài viết của bạn.",
-                $"/learner/forum-post/{postId}",
-                new { eventKey = $"forum.reply:{comment.Id}", postId, commentId = comment.Id, actorUserId = userId },
+                userId,
+                "forum.post_reply",
+                "Có phản hồi mới trong bài viết của bạn",
+                $"{actorName} đã phản hồi bài viết \"{post.Title}\".",
+                ForumCommentLink(postId, comment.Id),
+                "reply",
+                post.Id,
+                post.Title,
+                comment.Id,
+                null,
+                $"forum.post_reply:{comment.Id}",
                 ct);
+        }
+        else
+        {
+            await CreateForumNotificationIfAllowed(
+                parentComment.AuthorId,
+                userId,
+                "forum.comment_reply",
+                "Có người trả lời bình luận của bạn",
+                $"{actorName} đã trả lời bình luận của bạn trong bài viết \"{post.Title}\".",
+                ForumCommentLink(postId, comment.Id),
+                "reply",
+                post.Id,
+                post.Title,
+                comment.Id,
+                parentComment.Id,
+                $"forum.comment_reply:{comment.Id}:parent:{parentComment.Id}",
+                ct);
+
+            if (post.AuthorId != parentComment.AuthorId)
+            {
+                await CreateForumNotificationIfAllowed(
+                    post.AuthorId,
+                    userId,
+                    "forum.post_reply",
+                    "Có phản hồi mới trong bài viết của bạn",
+                    $"{actorName} đã phản hồi bài viết \"{post.Title}\".",
+                    ForumCommentLink(postId, comment.Id),
+                    "reply",
+                    post.Id,
+                    post.Title,
+                    comment.Id,
+                    parentComment.Id,
+                    $"forum.post_reply:{comment.Id}:post:{post.Id}",
+                    ct);
+            }
         }
 
         var loaded = await _db.Comments.Include(x => x.Author).Include(x => x.Votes).FirstAsync(x => x.Id == comment.Id, ct);
@@ -316,13 +356,19 @@ public sealed class ForumModuleService : IForumModuleService
 
         await _db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        await _notifications.CreateAsync(
+        await CreateForumNotificationIfAllowed(
             comment.AuthorId,
+            userId,
             "forum.accepted_answer",
-            "Câu trả lời được chấp nhận",
-            "Câu trả lời của bạn đã được đánh dấu là Accepted Answer.",
-            $"/learner/forum-post/{postId}",
-            new { eventKey = $"forum.accepted_answer:{postId}:{commentId}", postId, commentId, actorUserId = userId },
+            "Câu trả lời của bạn đã được chấp nhận",
+            $"Câu trả lời của bạn trong bài viết \"{post.Title}\" đã được đánh dấu là phù hợp.",
+            ForumCommentLink(postId, commentId),
+            "accepted_answer",
+            post.Id,
+            post.Title,
+            commentId,
+            comment.ParentCommentId,
+            $"forum.accepted_answer:{postId}:{commentId}",
             ct);
         return ApiResponse<object>.Ok(new { postId, acceptedCommentId = commentId }, "Đã đánh dấu câu trả lời đúng");
     }
@@ -351,12 +397,44 @@ public sealed class ForumModuleService : IForumModuleService
         var post = await _db.Posts.FirstOrDefaultAsync(x => x.Id == postId && !x.IsDeleted && x.Status == 1, ct);
         if (post == null) return ApiResponse<object>.Fail("Không tìm thấy bài viết");
         var vote = await _db.PostVotes.FirstOrDefaultAsync(x => x.PostId == postId && x.UserId == userId, ct);
-        if (vote == null) _db.PostVotes.Add(new PostVote { PostId = postId, UserId = userId, VoteType = request.VoteType, CreatedAt = DateTime.UtcNow });
-        else if (vote.VoteType == request.VoteType) _db.PostVotes.Remove(vote);
-        else { vote.VoteType = request.VoteType; vote.CreatedAt = DateTime.UtcNow; }
+        var notifyVoteType = (short)0;
+        if (vote == null)
+        {
+            _db.PostVotes.Add(new PostVote { PostId = postId, UserId = userId, VoteType = request.VoteType, CreatedAt = DateTime.UtcNow });
+            notifyVoteType = request.VoteType;
+        }
+        else if (vote.VoteType == request.VoteType)
+        {
+            _db.PostVotes.Remove(vote);
+        }
+        else
+        {
+            vote.VoteType = request.VoteType;
+            vote.CreatedAt = DateTime.UtcNow;
+            notifyVoteType = request.VoteType;
+        }
         await _db.SaveChangesAsync(ct);
         post.VoteScore = await _db.PostVotes.Where(x => x.PostId == postId).SumAsync(x => (int)x.VoteType, ct);
         await _db.SaveChangesAsync(ct);
+        if (notifyVoteType != 0)
+        {
+            var actorName = await GetActorName(userId, ct);
+            var isLike = notifyVoteType > 0;
+            await CreateForumNotificationIfAllowed(
+                post.AuthorId,
+                userId,
+                isLike ? "forum.post_liked" : "forum.post_disliked",
+                isLike ? "Bài viết của bạn có lượt thích mới" : "Bài viết của bạn có phản hồi không tích cực",
+                isLike ? $"{actorName} đã thích bài viết \"{post.Title}\"." : $"{actorName} đã không thích bài viết \"{post.Title}\".",
+                ForumPostLink(postId),
+                isLike ? "like" : "dislike",
+                post.Id,
+                post.Title,
+                null,
+                null,
+                null,
+                ct);
+        }
         var likeCount = await _db.PostVotes.CountAsync(x => x.PostId == postId && x.VoteType > 0, ct);
         var dislikeCount = await _db.PostVotes.CountAsync(x => x.PostId == postId && x.VoteType < 0, ct);
         return ApiResponse<object>.Ok(new { postId, post.VoteScore, LikeCount = likeCount, DislikeCount = dislikeCount }, "Cập nhật vote bài viết thành công");
@@ -368,12 +446,50 @@ public sealed class ForumModuleService : IForumModuleService
         var comment = await _db.Comments.FirstOrDefaultAsync(x => x.Id == commentId && !x.IsDeleted && x.Status == 1, ct);
         if (comment == null) return ApiResponse<object>.Fail("Không tìm thấy bình luận");
         var vote = await _db.CommentVotes.FirstOrDefaultAsync(x => x.CommentId == commentId && x.UserId == userId, ct);
-        if (vote == null) _db.CommentVotes.Add(new CommentVote { CommentId = commentId, UserId = userId, VoteType = request.VoteType, CreatedAt = DateTime.UtcNow });
-        else if (vote.VoteType == request.VoteType) _db.CommentVotes.Remove(vote);
-        else { vote.VoteType = request.VoteType; vote.CreatedAt = DateTime.UtcNow; }
+        var notifyVoteType = (short)0;
+        if (vote == null)
+        {
+            _db.CommentVotes.Add(new CommentVote { CommentId = commentId, UserId = userId, VoteType = request.VoteType, CreatedAt = DateTime.UtcNow });
+            notifyVoteType = request.VoteType;
+        }
+        else if (vote.VoteType == request.VoteType)
+        {
+            _db.CommentVotes.Remove(vote);
+        }
+        else
+        {
+            vote.VoteType = request.VoteType;
+            vote.CreatedAt = DateTime.UtcNow;
+            notifyVoteType = request.VoteType;
+        }
         await _db.SaveChangesAsync(ct);
         comment.VoteScore = await _db.CommentVotes.Where(x => x.CommentId == commentId).SumAsync(x => (int)x.VoteType, ct);
         await _db.SaveChangesAsync(ct);
+        if (notifyVoteType != 0)
+        {
+            var postForNotification = await _db.Posts.AsNoTracking().FirstOrDefaultAsync(x => x.Id == comment.PostId, ct);
+            if (postForNotification != null)
+            {
+                var actorName = await GetActorName(userId, ct);
+                var isLike = notifyVoteType > 0;
+                await CreateForumNotificationIfAllowed(
+                    comment.AuthorId,
+                    userId,
+                    isLike ? "forum.comment_liked" : "forum.comment_disliked",
+                    isLike ? "Bình luận của bạn có lượt thích mới" : "Bình luận của bạn có phản hồi không tích cực",
+                    isLike
+                        ? $"{actorName} đã thích bình luận của bạn trong bài viết \"{postForNotification.Title}\"."
+                        : $"{actorName} đã không thích bình luận của bạn trong bài viết \"{postForNotification.Title}\".",
+                    ForumCommentLink(comment.PostId, commentId),
+                    isLike ? "like" : "dislike",
+                    postForNotification.Id,
+                    postForNotification.Title,
+                    commentId,
+                    comment.ParentCommentId,
+                    null,
+                    ct);
+            }
+        }
         var likeCount = await _db.CommentVotes.CountAsync(x => x.CommentId == commentId && x.VoteType > 0, ct);
         var dislikeCount = await _db.CommentVotes.CountAsync(x => x.CommentId == commentId && x.VoteType < 0, ct);
         return ApiResponse<object>.Ok(new { commentId, comment.VoteScore, LikeCount = likeCount, DislikeCount = dislikeCount }, "Cập nhật vote bình luận thành công");
@@ -547,6 +663,94 @@ public sealed class ForumModuleService : IForumModuleService
             .Include(x => x.Comments.Where(c => !c.IsDeleted && c.Status == 1)).ThenInclude(x => x.Votes)
             .FirstOrDefaultAsync(x => x.Id == postId, ct);
     }
+
+    private async Task CreateForumNotificationIfAllowed(
+        long recipientId,
+        long actorId,
+        string notificationType,
+        string title,
+        string content,
+        string linkUrl,
+        string action,
+        long postId,
+        string postTitle,
+        long? commentId,
+        long? parentCommentId,
+        string? eventKey,
+        CancellationToken ct)
+    {
+        if (!await ShouldNotifyForumInteraction(actorId, recipientId, notificationType, postId, commentId, action, ct))
+        {
+            return;
+        }
+
+        var actorName = await GetActorName(actorId, ct);
+        await _notifications.CreateAsync(
+            recipientId,
+            notificationType,
+            title,
+            content,
+            linkUrl,
+            new
+            {
+                eventKey,
+                actorId,
+                actorName,
+                postId,
+                postTitle,
+                commentId,
+                parentCommentId,
+                action
+            },
+            ct);
+    }
+
+    private async Task<bool> ShouldNotifyForumInteraction(
+        long actorId,
+        long recipientId,
+        string notificationType,
+        long postId,
+        long? commentId,
+        string action,
+        CancellationToken ct)
+    {
+        if (actorId == recipientId) return false;
+
+        var since = DateTime.UtcNow.Subtract(ForumInteractionDuplicateWindow);
+        var actorNeedle = $"\"actorId\":{actorId}";
+        var actionNeedle = $"\"action\":\"{action}\"";
+        var targetNeedle = commentId.HasValue
+            ? $"\"commentId\":{commentId.Value}"
+            : $"\"postId\":{postId}";
+
+        var duplicate = await _db.Notifications.AsNoTracking()
+            .AnyAsync(x =>
+                x.UserId == recipientId
+                && x.NotificationType == notificationType
+                && x.CreatedAt >= since
+                && x.MetadataJson != null
+                && x.MetadataJson.Contains(actorNeedle)
+                && x.MetadataJson.Contains(actionNeedle)
+                && x.MetadataJson.Contains(targetNeedle),
+                ct);
+
+        return !duplicate;
+    }
+
+    private async Task<string> GetActorName(long actorId, CancellationToken ct)
+    {
+        var user = await _db.Users.AsNoTracking()
+            .Where(x => x.Id == actorId)
+            .Select(x => new { x.FullName, x.UserName })
+            .FirstOrDefaultAsync(ct);
+
+        if (user == null) return "Một người học";
+        return string.IsNullOrWhiteSpace(user.FullName) ? user.UserName : user.FullName;
+    }
+
+    private static string ForumPostLink(long postId) => $"/learner/forum/posts/{postId}";
+
+    private static string ForumCommentLink(long postId, long commentId) => $"{ForumPostLink(postId)}#comment-{commentId}";
 
     private async Task SetPostTags(long postId, List<string> tagNames, CancellationToken ct)
     {
